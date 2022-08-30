@@ -1,0 +1,2 @@
+if(inspTotalTime > 0  && matches(inspResult,"Pass","Fail"))
+    addFeeWithExtraData("INSPT","E_ENC","FINAL",inspTotalTime,"N",capId,"Inspection: " + inspType + " Hours: " + inspTotalTime + " resulted on " + inspResultDate,null,null);

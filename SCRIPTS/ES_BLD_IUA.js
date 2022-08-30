@@ -1,0 +1,10 @@
+if(inspResult == "Not Ready")
+    scheduleInspectDate((inspType),dateAdd(null,0,"Y"),null,"PM","Scheduled by script after a Not Ready status");
+if(inspType == "3000 Final - Building Permit" && inspResult == "Pass")
+    closeTask("Inspections","Finaled","Finaled by script after final building inspection passed","Finaled by script","B_COMBO");updateAppStatus("Finaled");
+if(inspResult == "Pass" && capStatus == "Issued" && !matches(inspType,"0008 Courtesy Inspection","0009 Miscellaneous Inspection","2002 Final Flood Elevation Certificate","2010 Final - Plumbing","2015 Final - Residential Fire Sprinklers","2020 Final - Mechanical","2030 Final - Electrical","2040 Final - Fireplace","2050 Final - Electrical Service Release","2060 Final - Gas Service Release","2065 Final - Temporary Power Pole","2070 Final - Energy Regulations","3500 Department Release - Engineering & Transportation","3750 Department Release - Environment Services","4000 Department Release - Fire","Final - C&D Ordinance Compliance"))
+    editAppSpecific("Permit Expiration Date",dateAdd(null,181));
+if(inspResult == "Pass" && capStatus == "Issued" && matches(inspType,"3000 Final - Building Permit","2010 Final - Plumbing","2015 Final - Residential Fire Sprinklers","2020 Final - Mechanical","2030 Final - Electrical","2040 Final - Fireplace","2050 Final - Electrical Service Release","2060 Final - Gas Service Release","2065 Final - Temporary Power Pole","2070 Final - Energy Regulations","3500 Department Release - Engineering & Transportation","4000 Department Release - Fire"))
+    closeTask("Inspections","Finaled","Finaled by script after final building inspection passed","Finaled by script","B_COMBO");
+if(inspType == "3000 Final - Building Permit" && inspResult == "Pass")
+    closeTask("Inspections","Finaled","Finaled by script after final building inspection passed","Finaled by script","B_OTC");updateAppStatus("Finaled");
