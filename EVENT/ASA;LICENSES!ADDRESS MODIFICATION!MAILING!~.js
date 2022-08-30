@@ -22,27 +22,27 @@ if(contactToEdit)
 if(ca)
 {
     if (AInfo["Address Line 1"] != "")
-        ca.setAddressLine1({Address Line 1});
+        ca.setAddressLine1(AInfo["Address Line 1"]);
     else
         ca.setAddressLine1("");
 
     if (AInfo["Address Line 2"] != "")
-        ca.setAddressLine2({Address Line 2});
+        ca.setAddressLine2(AInfo["Address Line 2"]);
     else
         ca.setAddressLine2("");
 
     if (AINfo["City"] != "")
-        ca.setCity({City});
+        ca.setCity(AInfo["City"]);
     else
         ca.setCity("");
 
     if (AInfo["State"] != "")
-        ca.setState({State});
+        ca.setState(AInfo["State"]);
     else
         ca.setState("");
 
     if (AInfo["Zip"] != "")
-        ca.setZip({Zip});
+        ca.setZip(AInfo["Zip"]);
     else
         ca.setZip("");
 }
@@ -52,17 +52,17 @@ if(contactToEdit)
 if(p)
 {
     if (AInfo["Phone"] != "")
-        p.setPhone1({Phone});
+        p.setPhone1(AInfo["Phone"]);
     else
         p.setPhone1("");
 
     if (AInfo["Mobile Phone"] != "")
-        p.setPhone2({Mobile Phone});
+        p.setPhone2(AInfo["Mobile Phone"]);
     else
         p.setPhone2("");
 
     if (AInfo["Fax"] != "")
-        p.setFax({Fax});
+        p.setFax(AInfo["Fax"]);
     else
         p.setFax("");
 }
