@@ -5,14 +5,21 @@ if(matches(wfTask,"Inspections","Consolidated Comments") && matches(wfStatus,"Re
     updateAppStatus("Revision "+nextRev);
 }
 if(matches(wfTask,"Inspections","Consolidated Comments") && matches(wfStatus,"Revision") && AInfo["RevisionNo"] == null)
-    editAppSpecific("RevisionNo","1"); updateAppStatus("Revision 1","Revision needed");
+{
+    editAppSpecific("RevisionNo","1");
+    updateAppStatus("Revision 1","Revision needed");
+}
 if(matches(wfTask,"Consolidated Comments") && matches(wfStatus,"Resubmittal") && AInfo["ResubmittalNo"] != null)
 {
     nextRes = parseInt(AInfo["ResubmittalNo"]) + 1;
-    editAppSpecific("ResubmittalNo",nextRes);updateAppStatus("Resubmittal "+nextRes);
+    editAppSpecific("ResubmittalNo",nextRes);
+    updateAppStatus("Resubmittal "+nextRes);
 }
 if(matches(wfTask,"Consolidated Comments") && matches(wfStatus,"Resubmittal") && AInfo["ResubmittalNo"] == null)
-    editAppSpecific("ResubmittalNo","1"); updateAppStatus("Resubmittal 1","Resubmittal");
+{
+    editAppSpecific("ResubmittalNo","1");
+    updateAppStatus("Resubmittal 1","Resubmittal");
+}
 if(appMatch("*/*/Residential Water Heater/*") && AInfo["Water Heater 90 Gallons or Less"] == "CHECKED")
     addFee("PWTH","B_WTRHTR","FINAL",1,"N");
 if(appMatch("*/*/Residential Water Heater/*") && AInfo["Water Heater 90 Gallons or Less"] != "CHECKED")
