@@ -12,8 +12,8 @@ if (r.length > 0 ) {
             if (!docsMissing) {
                 comment("The following documents are required based on the information you have provided: ");
                 docsMissing = true;
-                docStr += r[x] + "\n";
             }
+            docStr += r[x] + "\n";
         }
     }
     if (r.length > 0 && docsMissing) {

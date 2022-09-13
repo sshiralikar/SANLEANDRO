@@ -163,8 +163,8 @@ try {
                 if (!docsMissing)  {
                     comment("<div class='docList'><span class='fontbold font14px ACA_Title_Color'>The following documents are required based on the information you have provided: </span><ol>");
                     docsMissing = true;
-                    docStr+=r[x]+"\n";
                 }
+                docStr+=r[x]+"\n";
                 /*conditionType = "Required Document";
                 dr = r[x].condition;
                 publicDisplayCond = null;
@@ -228,6 +228,7 @@ if (debug.indexOf("**ERROR") > 0) {
 function getProComplRequiredDocuments()
 {
     var requirementArray = [];
+
     if((String(AInfo["Insulation?"]).toUpperCase() == "YES" || String(AInfo["Insulation?"]).toUpperCase() == "Y")
         ||(String(AInfo["Plumbing?"]).toUpperCase() == "YES" || String(AInfo["Plumbing?"]).toUpperCase() == "Y")
         ||(String(AInfo["Mechanical?"]).toUpperCase() == "YES" || String(AInfo["Mechanical?"]).toUpperCase() == "Y")
