@@ -3,7 +3,7 @@ r = getProComplRequiredDocuments();
 submittedDocList = aa.document.getDocumentListByEntity(capId,"TMP_CAP").getOutput().toArray();
 uploadedDocs = new Array();
 for (var i in submittedDocList ) uploadedDocs[submittedDocList[i].getDocCategory()] = true;
-var docStr = "";
+//var docStr = "";
 if (r.length > 0 ) {
     for (x in r) {
         if (uploadedDocs[r[x]] == undefined) {
@@ -13,11 +13,12 @@ if (r.length > 0 ) {
                 comment("The following documents are required based on the information you have provided: ");
                 docsMissing = true;
             }
-            docStr += r[x] + "\n";
+            //docStr += r[x] + "\n";
+            comment(r[x]);
         }
     }
     if (r.length > 0 && docsMissing) {
-        comment("</ol>"+docStr+"</div>");
+        //comment("</ol>"+docStr+"</div>");
     }
 }
 
