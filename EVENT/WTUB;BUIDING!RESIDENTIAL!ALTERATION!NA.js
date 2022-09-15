@@ -4,7 +4,10 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due" && balance
     showMessage = true;
     comment("The fee balance is <b>Zero</b>.");
 }
-if((wfTask == "Planning Review" || wfTask == "Public Works") && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments") && (wfHours == null || wfHours == ""))
+if((wfTask == "Planning Review" || wfTask == "Public Works Review"
+        || wfTask == "Environmental Services Review" || wfTask == "Engineering & Transportation")
+    && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments")
+    && (wfHours == null || wfHours == ""))
 {
     cancel = true;
     showMessage = true;
