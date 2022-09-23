@@ -102,6 +102,6 @@ if(wfHours > 0 && wfStaffUserID == "MZOOBI")
     addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
 if(wfHours > 0 && wfStaffUserID == "RLEYVA")
     addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(Overtime == "Yes")
+if(wfTimeOT  == "Y")
     email("myoung@youngconsultingllc.com","noreply@accela.com","OVERTIME","A overtime has been triggered" + capIDString + ", " + capName + ".");
 include("WTUA_EXECUTE_DIGEPLAN_SCRIPTS_ENG");
