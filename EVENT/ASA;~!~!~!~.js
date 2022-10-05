@@ -9,3 +9,6 @@ if(appMatch("Building/*/*/*"))
     include("ES_BLD_ASA");
 if(appMatch("Planning/*/*/*"))
     include("ES_PLN_ASA");
+
+//#GIS Interface
+copyParcelGisObjects();
