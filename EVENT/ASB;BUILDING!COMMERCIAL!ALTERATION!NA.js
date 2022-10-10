@@ -1,8 +1,15 @@
 docsMissing = false;
 r = getProComplRequiredDocuments();
-submittedDocList = aa.document.getDocumentListByEntity(capId,"TMP_CAP").getOutput().toArray();
+//submittedDocList = aa.document.getDocumentListByEntity(capId,"TMP_CAP").getOutput().toArray();
 uploadedDocs = new Array();
-for (var i in submittedDocList ) uploadedDocs[submittedDocList[i].getDocCategory()] = true;
+//for (var i in submittedDocList ) uploadedDocs[submittedDocList[i].getDocCategory()] = true;
+var submittedDocArray = aa.env.getValue("DocumentModelList");
+if (submittedDocArray != null && submittedDocArray != '' && submittedDocArray) {
+    submittedDocArray = submittedDocArray.toArray();
+    for (doc in submittedDocArray) {
+        uploadedDocs[submittedDocArray[doc].getDocCategory()] = true;
+    }
+}
 //var docStr = "";
 if (r.length > 0 ) {
     for (x in r) {
