@@ -46,9 +46,9 @@ function getProComplRequiredDocuments()
     }
     if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
         requirementArray.push("WELO");
-    if((String(AInfo["Accessibility Upgrades?"]).toUpperCase() == "YES" || String(AInfo["Accessibility Upgrades?"]).toUpperCase() == "Y"))
+    if(String(AInfo["Type of Work"]).toUpperCase() == "ACCESSIBILITY UPGRADES" )
         requirementArray.push("ADA Document");
-    if((String(AInfo["Tenant improvement?"]).toUpperCase() == "YES" || String(AInfo["Tenant improvement?"]).toUpperCase() == "Y"))
+    if(String(AInfo["Type of Work"]).toUpperCase() == "TENANT IMPROVEMENT" )
         requirementArray.push("Owner Approval Letter");
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
