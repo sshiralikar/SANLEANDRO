@@ -44,8 +44,8 @@ function getProComplRequiredDocuments()
         requirementArray.push("Structural Calculations");
         requirementArray.push("Structural Plans");
     }
-    if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
-        requirementArray.push("WELO");
+    /*if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
+        requirementArray.push("WELO");*/
     if(String(AInfo["Type of Work"]).toUpperCase() == "ACCESSIBILITY UPGRADES" )
         requirementArray.push("ADA Document");
     if(String(AInfo["Type of Work"]).toUpperCase() == "TENANT IMPROVEMENT" )
