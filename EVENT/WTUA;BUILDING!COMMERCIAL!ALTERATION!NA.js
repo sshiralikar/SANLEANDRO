@@ -280,6 +280,20 @@ if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approv
 }
 //CASANLEAN-860
 
+//CASANLEAN-868
+if(wfTask == "Water Pollution Control Plant Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    addFee("XWPC","B_COMBO","FINAL",1,"N");
+}
+//CASANLEAN-868
+
+//CASANLEAN-865
+if(wfTask == "Environmental Services Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    addFee("XECX","ENVI","FINAL",1,"N");
+}
+//CASANLEAN-865
+
 function sendEmail(fromEmail, toEmail, CC, template, eParams, files) { // optional: itemCap
     var itemCap = capId;
     if (arguments.length == 7)
