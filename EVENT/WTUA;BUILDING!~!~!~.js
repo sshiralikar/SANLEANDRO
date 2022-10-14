@@ -61,6 +61,34 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
 }
 //CASANLEAN-1393
 
+//CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
+if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    var feeAmt = 0.0;
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "NEW");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList)
+            if (feeList[feeNum].getFeeitemStatus().equals("NEW")) {
+                feeAmt = feeList[feeNum].getFee();
+            }
+    }
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "INVOICED");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList)
+            if (feeList[feeNum].getFeeitemStatus().equals("INVOICED")) {
+                feeAmt = feeList[feeNum].getFee();
+            }
+    }
+    if(feeAmt <= 100000)
+        addFee("XSWR","B_COMBO","FINAL",1,"N");
+    else
+        addFee("XSWMR","B_COMBO","FINAL",1,"N");
+
+}
+//CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
+
 function addFeeReturnAmt(fcode,fsched,fperiod,fqty,finvoice) // Adds a single fee, optional argument: fCap
 {
     // Updated Script will return feeSeq number or null if error encountered (SR5112)
