@@ -190,6 +190,31 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
 }
 //CASANLEAN-1140
 
+//CASANLEAN-1136
+if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    var feeAmt = 0.0;
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "NEW");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList)
+            if (feeList[feeNum].getFeeitemStatus().equals("NEW")) {
+                feeAmt = feeList[feeNum].getFee();
+            }
+    }
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "INVOICED");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList)
+            if (feeList[feeNum].getFeeitemStatus().equals("INVOICED")) {
+                feeAmt = feeList[feeNum].getFee();
+            }
+    }
+    if(feeAmt > 0)
+        addFee("MISC","B_FIRE","FINAL",feeAmt * 0.65,"N");
+}
+//CASANLEAN-1136
+
 function sendEmail(fromEmail, toEmail, CC, template, eParams, files) { // optional: itemCap
     var itemCap = capId;
     if (arguments.length == 7)
