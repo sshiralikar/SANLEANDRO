@@ -269,7 +269,7 @@ if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w
                 feeAmt = feeList[feeNum].getFee();
             }
     }
-    if(feeAmt > 0)
+    if(feeAmt > 0 && !feeExists("MISC","NEW","INVOICED"))
         addFee("MISC","B_FIRE","FINAL",feeAmt * 0.65,"N");
 }
 //CASANLEAN-861
