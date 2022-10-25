@@ -352,7 +352,7 @@ if(wfTask == "Water Pollution Plant Control Review" && (wfStatus == "Approved" |
 //CASANLEAN-865
 if(wfTask == "Environmental Services Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
-    addFee("XECX","ENVI","FINAL",1,"N");
+    addFee("XECX","ENVI","FINAL",parseInt(wfHours),"N");
 }
 //CASANLEAN-865
 
