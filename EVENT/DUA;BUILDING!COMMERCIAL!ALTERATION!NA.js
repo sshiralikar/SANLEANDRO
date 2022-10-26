@@ -1,5 +1,2 @@
-if(publicUser)
-{
-    if(isTaskStatus("Plans Distribution", "Resubmittal Required"))
+if(isTaskStatus("Plans Distribution", "Resubmittal Required"))
         updateTask("Plans Distribution","Updated Documents","","");
-}
