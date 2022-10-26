@@ -113,6 +113,13 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
 }
 //CASANLEAN-1393
 
+//CASANLEAN-1420
+if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review")
+{
+    addFee("BPMT","B_COMBO","FINAL",1,"N");
+}
+//CASANLEAN-1420
+
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
 if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
