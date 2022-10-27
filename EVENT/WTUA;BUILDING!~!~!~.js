@@ -114,7 +114,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
 //CASANLEAN-1393
 
 //CASANLEAN-1420
-if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review" && feeExists("BPMT","NEW","INVOICED"))
+if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review" && !feeExists("BPMT","NEW","INVOICED"))
 {
     addFee("BPMT","B_COMBO","FINAL",1,"N");
 }
