@@ -345,7 +345,7 @@ if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approv
 //CASANLEAN-868
 if(wfTask == "Water Pollution Plant Control Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
-    addFee("XWPC","B_COMBO","FINAL",1,"N");
+    addFee("XWPC","B_COMBO","FINAL",parseInt(wfHours),"N");
 }
 //CASANLEAN-868
 
