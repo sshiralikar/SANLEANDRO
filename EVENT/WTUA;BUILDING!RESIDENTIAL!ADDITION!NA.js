@@ -308,7 +308,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
 //CASANLEAN-1104
 if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 {
-    addFee("PLNC","B_COMBO","FINAL",1,"N");
+    addFee("PLNC","B_COMBO","FINAL",1,"Y");
 
     var params = aa.util.newHashtable();
 

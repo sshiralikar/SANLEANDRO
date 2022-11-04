@@ -1,6 +1,6 @@
 //CASANLEAN-1393
 if(wfTask == "Plans Distribution" && wfStatus == "Fees Due") {
-    addFee("PLNC  ","B_COMBO","FINAL",1,"N");
+    addFee("PLNC  ","B_COMBO","FINAL",1,"Y");
 
     var params = aa.util.newHashtable();
 

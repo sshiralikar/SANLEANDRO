@@ -22,7 +22,7 @@ if(wfTask == "Permit Issuance" && wfStatus == "Issued")
 //CASANLEAN-1130
 if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 {
-    addFee("PLNC","B_COMBO","FINAL",1,"N");
+    addFee("PLNC","B_COMBO","FINAL",1,"Y");
 
     var params = aa.util.newHashtable();
 

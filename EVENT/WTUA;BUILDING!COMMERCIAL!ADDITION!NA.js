@@ -195,7 +195,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required")
 //CASANLEAN-821
 if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 {
-    addFee("PLNC","B_COMBO","FINAL",1,"N");
+    addFee("PLNC","B_COMBO","FINAL",1,"Y");
 
     var params = aa.util.newHashtable();
 
