@@ -249,7 +249,8 @@ function getProComplRequiredDocuments()
         requirementArray.push("Electric Line Diagram");
 
     }
-    if((String(AInfo["Main Panel"]).toUpperCase() == "YES" || String(AInfo["Main Panel"]).toUpperCase() == "Y" || String(AInfo["Main Panel"]).toUpperCase() == "CHECKED"))
+    if((String(AInfo["Main Panel"]).toUpperCase() == "YES" || String(AInfo["Main Panel"]).toUpperCase() == "Y" || String(AInfo["Main Panel"]).toUpperCase() == "CHECKED")
+        ||(String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Electric Load Calculations");
 
     return requirementArray;
