@@ -13,5 +13,6 @@ if(appMatch("Planning/*/*/*"))
 //#GIS Interface
 copyParcelGisObjects();
 if(appMatch("Building/*/*/*")) {
+    correctParcelData();
     copyGISDataToCustomFields(capId);
 }
