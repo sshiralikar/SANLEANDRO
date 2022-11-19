@@ -367,7 +367,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 //CASANLEAN-860
 if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
-    addFee("PLNNRR","P_PLN","FINAL",1,"N");
+    addFee("PLNAAR","P_PLN","FINAL",1,"N");
 }
 //CASANLEAN-860
 
