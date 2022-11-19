@@ -197,7 +197,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required")
 //CASANLEAN-1201
 if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
-    addFee("PLNNRR","P_PLN","FINAL",1,"N");
+    addFee("PLNAAR","P_PLN","FINAL",1,"N");
 }
 //CASANLEAN-1201
 //CASANLEAN-1205
