@@ -65,8 +65,8 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 }
 
 //TESTING
+// var testingCap = aa.cap.getCapID("22TMP-000600").getOutput();
 // var testingCap = aa.cap.getCapID("BRPOOL-22-0005").getOutput();
-// // var testingCap = aa.cap.getCapID("22TMP-000599").getOutput();
 // var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
 // var capTest = aa.env.setValue("CapModel", capModel);
 // aa.env.setValue("CurrentUserID", "ADMIN");
@@ -148,7 +148,7 @@ logDebug("balanceDue = " + balanceDue);
 // page flow custom code begin
 
 try {
-    //var showDebug = true; //testing
+    // var showDebug = true; //testing
 
     var block = true;
     (function () {
@@ -159,20 +159,30 @@ try {
             if(parcel.parcelNo) {
                 parcelNum = String(parcel.parcelNo);
             }
+            logDebug(parcelNum)
             if(!parcelNum) {
+                logDebug("No parcel number");
                 return;
             }
             var obj = aa.gis.getParcelGISObjects(parcelNum).getOutput();
             if(!obj || !obj.length) {
+                logDebug("No GIS objects");
                 return;
             }
             if(obj) {
                 var gisTypeScriptModel = obj[0];
                 var buffObj = aa.gis.getGISType("SANLEANDRO", "CityLimit").getOutput();
-                var bufferArr = aa.gis.getBufferByRadius(gisTypeScriptModel, 0, 'FEET', buffObj).getOutput();                
-                if(bufferArr.length) {
-                    block = false;
+                var bufferArr = aa.gis.getBufferByRadius(gisTypeScriptModel, 0, 'FEET', buffObj).getOutput();                 
+                if(!bufferArr.length) {
+                    logDebug("No buffer array");
+                    return;
+                }            
+                var gisObj = bufferArr[0].getGISObjects();
+                if(!gisObj.length) {
+                    logDebug("Parcel Number does not exist within City Limit layer");
+                    return;
                 }
+                block = false;                
             }           
         }
     })();
