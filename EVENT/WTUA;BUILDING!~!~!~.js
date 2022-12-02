@@ -148,6 +148,11 @@ if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Ap
 }
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
 
+//CASANLEAN-1449
+if(wfTask == "Application Intake" && wfStatus == "Approved") {
+    checkLP(capId);
+}
+
 function addFeeReturnAmt(fcode,fsched,fperiod,fqty,finvoice) // Adds a single fee, optional argument: fCap
 {
     // Updated Script will return feeSeq number or null if error encountered (SR5112)
