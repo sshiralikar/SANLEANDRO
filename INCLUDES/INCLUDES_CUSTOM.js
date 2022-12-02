@@ -315,3 +315,810 @@ function createRefContactsFromCapContactsAndLink(pCapId, contactTypeArray, ignor
         }  // end if user hand entered contact
     }  // end for each CAP contact
 } // end function
+
+function XMLTagValue(xmlstring, tag) {
+    var startIndex = xmlstring.indexOf("<" + tag + ">");
+    if (startIndex == -1)
+        return "";
+    //   logDebug("startIndex:" + startIndex);
+    //   logDebug("");
+    var endIndex = xmlstring.indexOf("</" + tag + ">", startIndex + 1);
+    //   logDebug("endIndex:" + endIndex);
+    //   logDebug("");
+    //   logDebug("");
+    var substring = xmlstring.slice(startIndex + 1 + tag.length + 1, endIndex);
+    //   logDebug("substring:" + substring);
+    //   logDebug("");
+    //   logDebug("");
+    return substring;
+}
+
+String.prototype.formatToHTML = function () {
+    return this.replace("&\amp;", "&").replace("&\nbsp;", " ").replace("&\lt;", "<").replace("&\gt;", ">").replace("&\quot;", "\"").replace("<br />", "\r\n");
+}
+
+function trim(strText) {
+    return (String(strText).replace(/^\s+|\s+$/g, ''));
+}
+
+function externalLP_SLCA(licNum, rlpType, doPopulateRef, doPopulateTrx, itemCap) {
+    /*
+    Version: 3.2
+
+    Usage:
+
+    licNum			:  Valid CA license number.   Non-alpha, max 8 characters.  If null, function will use the LPs on the supplied CAP ID
+    rlpType			:  License professional type to use when validating and creating new LPs
+    doPopulateRef 	:  If true, will create/refresh a reference LP of this number/type
+    doPopulateTrx 	:  If true, will copy create/refreshed reference LPs to the supplied Cap ID.   doPopulateRef must be true for this to work
+    itemCap			:  If supplied, licenses on the CAP will be validated.  Also will be refreshed if doPopulateRef and doPopulateTrx are true
+
+    returns: non-null string of status codes for invalid licenses
+
+    examples:
+
+    appsubmitbefore   (will validate the LP entered, if any, and cancel the event if the LP is inactive, cancelled, expired, etc.)
+    ===============
+    true ^ cslbMessage = "";
+    CAELienseNumber ^ cslbMessage = externalLP_CA(CAELienseNumber,CAELienseType,false,false,null);
+    cslbMessage.length > 0 ^ cancel = true ; showMessage = true ; comment(cslbMessage)
+
+    appsubmitafter  (update all CONTRACTOR LPs on the CAP and REFERENCE with data from CSLB.  Link the CAP LPs to REFERENCE.   Pop up a message if any are inactive...)
+    ==============
+    true ^ 	cslbMessage = externalLP_CA(null,"CONTRACTOR",true,true,capId)
+    cslbMessage.length > 0 ^ showMessage = true ; comment(cslbMessage);
+
+    Note;  Custom LP Template Field Mappings can be edited in the script below
+     */
+
+    var returnMessage = "";
+
+    // Build array of LPs to check
+    var workArray = new Array();
+    if (licNum)
+        workArray.push(String(licNum));
+
+    if (itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return false;
+        }
+
+        if (capLicenseArr == null || !capLicenseArr.length) {
+            logDebug("**WARNING: no licensed professionals on this CAP");
+        } else {
+            for (var thisLic in capLicenseArr)
+                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
+                    workArray.push(capLicenseArr[thisLic]);
+        }
+    } else {
+        doPopulateTrx = false; // can't do this without a CAP;
+    }
+
+    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
+        var licNum = workArray[thisLic];
+        var licObj = null;
+        var isObject = false;
+
+        if (typeof licNum == "object") {
+            // is this one an object or string?
+            licObj = licNum;
+            licNum = licObj.getLicenseNbr();
+            isObject = true;
+        }
+
+        // Make the call to the California State License Board
+
+        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+        var method = "http://CSLB.Ca.gov/GetLicense";
+        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+        //var licNum = "9";
+        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+        if (!token || token == "") {
+            logDebug("GRAYQUARTER CSLB TOKEN not configured");
+            return false;
+        }
+
+        xmlout = xmlout.replace("%%LICNUM%%", licNum);
+        xmlout = xmlout.replace("%%TOKEN%%", token);
+
+        var headers = aa.util.newHashMap();
+        headers.put("Content-Type", "text/xml");
+        headers.put("SOAPAction", method);
+
+        var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+
+		// check the results
+		var result;
+        var isError = false;
+        if (res.getSuccess()) {
+            result = String(res.getOutput());
+        } else {
+            isError = true;
+        }
+		
+        var lpStatus = XMLTagValue(result, "Status");
+        // Primary Status
+        //
+        if (lpStatus && lpStatus != "") {
+            returnMessage += "License:" + licNum + " status is " + lpStatus + ".";
+        } else {
+			isError = true;
+			returnMessage += "CLSB returns no data ";
+}
+        if (isError) {
+            returnMessage += "License " + licNum + " : ";
+			returnMessage += "URL: " + endPoint + " : ";
+			returnMessage +="Headers:" + headers + " : ";
+			returnMessage +="Payload: "+ xmlout + " : ";
+			returnMessage +="Result: " + result + " : ";
+            continue;
+        }
+
+        //logDebug(result);
+        
+
+        if (doPopulateRef) {
+            // refresh or create a reference LP
+            var updating = false;
+            // check to see if the licnese already exists...if not, create.
+            var newLic = getRefLicenseProf(licNum);
+
+            if (newLic) {
+                updating = true;
+                logDebug("Updating existing Ref Lic Prof : " + licNum);
+            } else {
+                var newLic = aa.licenseScript.createLicenseScriptModel();
+            }
+
+            if (isObject) {
+                // update the reference LP with data from the transactional, if we have some.
+                if (licObj.getAddress1())
+                    newLic.setAddress1(licObj.getAddress1());
+                if (licObj.getAddress2())
+                    newLic.setAddress2(licObj.getAddress2());
+                if (licObj.getAddress3())
+                    newLic.setAddress3(licObj.getAddress3());
+                if (licObj.getAgencyCode())
+                    newLic.setAgencyCode(licObj.getAgencyCode());
+                if (licObj.getBusinessLicense())
+                    newLic.setBusinessLicense(licObj.getBusinessLicense());
+                if (licObj.getBusinessName())
+                    newLic.setBusinessName(licObj.getBusinessName());
+                if (licObj.getBusName2())
+                    newLic.setBusinessName2(licObj.getBusName2());
+                if (licObj.getCity())
+                    newLic.setCity(licObj.getCity());
+                if (licObj.getCityCode())
+                    newLic.setCityCode(licObj.getCityCode());
+                if (licObj.getContactFirstName())
+                    newLic.setContactFirstName(licObj.getContactFirstName());
+                if (licObj.getContactLastName())
+                    newLic.setContactLastName(licObj.getContactLastName());
+                if (licObj.getContactMiddleName())
+                    newLic.setContactMiddleName(licObj.getContactMiddleName());
+                if (licObj.getCountryCode())
+                    newLic.setContryCode(licObj.getCountryCode());
+                if (licObj.getEmail())
+                    newLic.setEMailAddress(licObj.getEmail());
+                if (licObj.getCountry())
+                    newLic.setCountry(licObj.getCountry());
+                if (licObj.getEinSs())
+                    newLic.setEinSs(licObj.getEinSs());
+                if (licObj.getFax())
+                    newLic.setFax(licObj.getFax());
+                if (licObj.getFaxCountryCode())
+                    newLic.setFaxCountryCode(licObj.getFaxCountryCode());
+                if (licObj.getHoldCode())
+                    newLic.setHoldCode(licObj.getHoldCode());
+                if (licObj.getHoldDesc())
+                    newLic.setHoldDesc(licObj.getHoldDesc());
+                if (licObj.getLicenseExpirDate())
+                    newLic.setLicenseExpirationDate(licObj.getLicenseExpirDate());
+                if (licObj.getLastRenewalDate())
+                    newLic.setLicenseLastRenewalDate(licObj.getLastRenewalDate());
+                if (licObj.getLicesnseOrigIssueDate())
+                    newLic.setLicOrigIssDate(licObj.getLicesnseOrigIssueDate());
+                if (licObj.getPhone1())
+                    newLic.setPhone1(licObj.getPhone1());
+                if (licObj.getPhone1CountryCode())
+                    newLic.setPhone1CountryCode(licObj.getPhone1CountryCode());
+                if (licObj.getPhone2())
+                    newLic.setPhone2(licObj.getPhone2());
+                if (licObj.getPhone2CountryCode())
+                    newLic.setPhone2CountryCode(licObj.getPhone2CountryCode());
+                if (licObj.getSelfIns())
+                    newLic.setSelfIns(licObj.getSelfIns());
+                if (licObj.getState())
+                    newLic.setState(licObj.getState());
+                if (licObj.getSuffixName())
+                    newLic.setSuffixName(licObj.getSuffixName());
+                if (licObj.getZip())
+                    newLic.setZip(licObj.getZip());
+            }
+
+            // Now set data from the CSLB
+            var BusinessName = XMLTagValue(result, "BusinessName");
+            if (BusinessName != "")
+                newLic.setBusinessName(BusinessName.replace(/\+/g, " ").formatToHTML());
+            var Address = XMLTagValue(result, "Address");
+            if (Address != "")
+                newLic.setAddress1(Address.replace(/\+/g, " ").formatToHTML());
+            var City = XMLTagValue(result, "City");
+            if (City != "")
+                newLic.setCity(City.replace(/\+/g, " ").formatToHTML());
+            var State = XMLTagValue(result, "State");
+            if (State != "")
+                newLic.setState(State.replace(/\+/g, " ").formatToHTML());
+            var Zip = XMLTagValue(result, "ZIP");
+            if (Zip != "")
+                newLic.setZip(Zip.replace(/\+/g, " ").formatToHTML());
+
+            var PhoneNumber = XMLTagValue(result, "PhoneNumber");
+            if (PhoneNumber != "")
+                newLic.setPhone1((PhoneNumber.replace(/\+/g, "-").formatToHTML()));
+            newLic.setAgencyCode(aa.getServiceProviderCode());
+            newLic.setAuditDate(sysDate);
+            newLic.setAuditID(currentUserID);
+            newLic.setAuditStatus("A");
+            newLic.setLicenseType(rlpType);
+            newLic.setLicState("CA"); // hardcode CA
+            newLic.setStateLicense(licNum);
+
+            var IssueDate = XMLTagValue(result, "IssueDate");
+            if (IssueDate)
+                newLic.setLicenseIssueDate(aa.date.parseDate(IssueDate));
+            var ExpirationDate = XMLTagValue(result, "ExpirationDate");
+            if (ExpirationDate)
+                newLic.setLicenseExpirationDate(aa.date.parseDate(ExpirationDate));
+            var WorkersCompPolicyNumber = XMLTagValue(result, "WorkersCompPolicyNumber");
+            if (WorkersCompPolicyNumber) {
+                newLic.setWcPolicyNo(WorkersCompPolicyNumber);                
+            }
+            var PolicyEffectiveDate = XMLTagValue(result, "PolicyEffectiveDate");
+            if (PolicyEffectiveDate) {
+                newLic.setWcEffDate(aa.date.parseDate(PolicyEffectiveDate));
+            }
+            var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
+            if (PolicyExpirationDate) {
+                newLic.setWcExpDate(aa.date.parseDate(PolicyExpirationDate));
+            }
+
+            //
+            // Do the refresh/create and get the sequence number
+            //
+            if (updating) {
+                var myResult = aa.licenseScript.editRefLicenseProf(newLic);
+                var licSeqNbr = newLic.getLicSeqNbr();
+            } else {
+                var myResult = aa.licenseScript.createRefLicenseProf(newLic);
+
+                if (!myResult.getSuccess()) {
+                    logDebug("**WARNING: can't create ref lic prof: " + myResult.getErrorMessage());
+                    continue;
+                }
+
+                var licSeqNbr = myResult.getOutput();
+            }
+
+            logDebug("Successfully added/updated License No. " + licNum + ", Type: " + rlpType + " Sequence Number " + licSeqNbr);
+
+            /////
+            /////  Attribute Data -- first copy from the transactional LP if it exists
+            /////
+
+            if (isObject) {
+                // update the reference LP with attributes from the transactional, if we have some.
+                var attrArray = licObj.getAttributes();
+
+                if (attrArray) {
+                    for (var k in attrArray) {
+                        var attr = attrArray[k];
+                        editRefLicProfAttribute(
+                            licNum,
+                            attr.getAttributeName(),
+                            attr.getAttributeValue());
+                    }
+                }
+            }
+
+            /////
+            /////  Attribute Data
+            /////
+            /////  NOTE!  Agencies may have to configure template data below based on their configuration.  Please note all edits
+            /////
+            var Classifications = XMLTagValue(result, "Classifications");
+            var ClassificationList = Classifications.split("|");
+
+            for (var m = 0; m < ClassificationList.length; m++) {
+                cb = ClassificationList[m];
+                logDebug(cb);
+                editRefLicProfAttribute(licNum, "CLASS CODE " + (m + 1), cb);
+            }
+
+            var ContractorBondAmount = XMLTagValue(result, "ContractorBondAmount");
+
+            if (ContractorBondAmount)
+                editRefLicProfAttribute(licNum, "BOND AMOUNT", ContractorBondAmount.replace(/[^\d.-]/g, ''));
+
+            if(WorkersCompPolicyNumber) {
+                editRefLicProfAttribute(licNum, "WORKER'S COMP POLICY #", WorkersCompPolicyNumber);
+            }
+            if(PolicyExpirationDate) {
+                editRefLicProfAttribute(licNum, "WORKER'S COMP EXPIRATION DATE", PolicyExpirationDate);
+            }
+            // if(PolicyEffectiveDate) {
+            //     editRefLicProfAttribute(licNum, "WORKER'S COMP EFFECTIVE DATE", PolicyEffectiveDate);
+            // }
+
+            // populate transactional LP
+            if (doPopulateTrx) {
+                var lpsmResult = aa.licenseScript.getRefLicenseProfBySeqNbr(servProvCode, licSeqNbr);
+                if (!lpsmResult.getSuccess()) {
+                    logDebug("**WARNING error retrieving the LP just created " + lpsmResult.getErrorMessage());
+                }
+
+                var lpsm = lpsmResult.getOutput();
+
+                // Remove from CAP
+
+                var isPrimary = false;
+
+                if (capLicenseArr != null) {
+                    for (var currLic in capLicenseArr) {
+                        var thisLP = capLicenseArr[currLic];
+                        if (
+                            thisLP.getLicenseType() == rlpType &&
+                            thisLP.getLicenseNbr() == licNum) {
+                            logDebug("Removing license: " + thisLP.getLicenseNbr() + " from CAP.  We will link the new reference LP");
+                            if (thisLP.getPrintFlag() == "Y") {
+                                logDebug("...remove primary status...");
+                                isPrimary = true;
+                                thisLP.setPrintFlag("N");
+                                aa.licenseProfessional.editLicensedProfessional(thisLP);
+                            }
+                            var remCapResult = aa.licenseProfessional.removeLicensedProfessional(thisLP);
+                            if (capLicenseResult.getSuccess()) {
+                                logDebug("...Success.");
+                            } else {
+                                logDebug("**WARNING removing lic prof: " + remCapResult.getErrorMessage());
+                            }
+                        }
+                    }
+                }
+
+                // add the LP to the CAP
+                var asCapResult = aa.licenseScript.associateLpWithCap(itemCap, lpsm);
+                if (!asCapResult.getSuccess()) {
+                    logDebug("**WARNING error associating CAP to LP: " + asCapResult.getErrorMessage());
+                } else {
+                    logDebug("Associated the CAP to the new LP");
+                }
+
+                // Now make the LP primary again
+                if (isPrimary) {
+                    var capLps = getLicenseProfessional(itemCap);
+
+                    for (var thisCapLpNum in capLps) {
+                        if (capLps[thisCapLpNum].getLicenseNbr().equals(licNum)) {
+                            var thisCapLp = capLps[thisCapLpNum];
+                            thisCapLp.setPrintFlag("Y");
+                            aa.licenseProfessional.editLicensedProfessional(thisCapLp);
+                            logDebug("Updated primary flag on Cap LP : " + licNum);
+                        }
+                    }
+                }
+            } // do populate on the CAP
+        } // do populate on the REF
+    } // for each license
+
+    if (returnMessage.length > 0)
+        return returnMessage;
+    else
+        return null;
+}
+
+function copyGISDataToCustomFields(itemCap) {
+    var exposedMap = {};
+    var capParcelResult = aa.parcel.getParcelandAttribute(itemCap, null);
+    if(!capParcelResult.getSuccess()) {
+        logDebug("Failed to get parcel: " + capParcelResult.getErrorMessage());
+        return false;
+    }
+
+    capParcelResult = capParcelResult.getOutput();
+    if(!capParcelResult) {
+        logDebug("Failed to output parcel array: " + capParcelResult);
+        return false;
+    }
+    var parcelArray = capParcelResult.toArray();
+    logDebug("Parcels: " + parcelArray.length);
+    for(var parcelIndex in parcelArray) {
+        var parcelObj = parcelArray[parcelIndex];
+        var parcelNum = parcelObj.parcelNumber;
+        var parcelAttributes = parcelObj.parcelAttribute;
+        if(!parcelAttributes) {
+            continue;
+        }
+        parcelAttributes = parcelAttributes.toArray();        
+        logDebug("Parcel number: " + parcelNum);
+        logDebug("Attributes size: " + parcelAttributes.length);
+        for(var attributeIndex in parcelAttributes) {
+            var attributeObj = parcelAttributes[attributeIndex];
+            var attributeName = attributeObj.b1AttributeName;
+            var attributeValue = attributeObj.value;
+            var attributeType = attributeObj.b1AttributeValueDataType;            
+            var asiField = lookup("GIS_ASI_MAP", attributeName);
+            exposedMap[attributeName] = String(attributeValue);
+            if(asiField && attributeValue) {
+                logDebug("Type: " + attributeType + " name: " + attributeName + " value: " + attributeValue);                
+                if(asiField == "Liquefaction") {
+                    var options = String(attributeValue).split(" ");
+                    var remainders = [];
+                    for(var optIndex in options) {
+                        var possibleValue = options[optIndex];
+                        if(possibleValue == "Earthquake") {
+                            editAppSpecific("Earthquake Zone", possibleValue, itemCap);
+                        } else {
+                            remainders.push(possibleValue);
+                        }
+                    }
+                    if(remainders.length) {
+                        editAppSpecific(asiField, remainders.join(" "), itemCap);        
+                    }
+                    continue;
+                }
+                editAppSpecific(asiField, attributeValue, itemCap);
+            }
+        }
+        break;
+    }
+    //aa.print(JSON.stringify(exposedMap));
+    return true;
+}
+
+function correctParcelData() {
+    var data = getGISBufferInfo("SANLEANDRO", "Parcels", 0);
+    var parcelMap = {};
+    for(var i in data){        
+        var gisData = data[i];
+        var parcelNum = gisData.GIS_ID;        
+        if(parcelNum && !parcelMap[parcelNum]) {
+            parcelMap[parcelNum] = {};
+            for(var prop in gisData) {
+                var value = gisData[prop];
+                var key = String(prop).replace(/_/g, "");
+                parcelMap[parcelNum][key] = value;
+            }
+        }
+    }
+    var recParcels = aa.parcel.getParcelandAttribute(capId, null);
+    if (recParcels.getSuccess()) {
+        var recParcels = recParcels.getOutput().toArray();
+        for (var parcelIndex in recParcels) {
+            var recParcelObj = recParcels[parcelIndex];
+            var recParcelNum = recParcelObj.parcelNumber;
+            if(parcelMap[recParcelNum]) {
+                logDebug("Loaded data for " + recParcelNum);
+                //props(recParcelObj)
+                var parcelAttributes = recParcelObj.parcelAttribute;
+                if(!parcelAttributes) {
+                    continue;
+                }
+                var iterator = parcelAttributes.iterator();
+                var parcelGISData = parcelMap[recParcelNum];
+                //props(parcelGISData);
+                var count = 0;
+                while(iterator.hasNext()) {
+                    var parcelAttrObj = iterator.next();
+                    //explore(parcelAttrObj);
+                    var parcelAttrName = parcelAttrObj.getB1AttributeName();
+                    var currentVal = parcelAttrObj.getB1AttributeValue();
+                    if(!currentVal && parcelGISData[parcelAttrName]) {
+                        parcelAttrObj.setB1AttributeValue(parcelGISData[parcelAttrName]);
+                        count++;
+                    } else if(!parcelGISData[parcelAttrName]) {
+                        //TODO: Custom lookup
+                        logDebug("Field not found in GIS Data Map: " + parcelAttrName);
+                    }
+                }
+                if(count == 0) {
+                    continue;
+                }
+                var capParcelModel = aa.parcel.warpCapIdParcelModel2CapParcelModel(capId, recParcelObj).getOutput();
+                if(capParcelModel) {
+                    var update = aa.parcel.updateDailyParcelWithAPOAttribute(capParcelModel);
+                    if(update.getSuccess()) {
+                        logDebug("Successfuly loaded parcel " + recParcelNum + " data (Fields updated: " + count + ") to " + capId.getCustomID());
+                    }
+                }
+            }
+        }
+    }
+}
+
+function checkLP(itemCap) {
+    var transLPList = aa.licenseScript.getLicenseProf(capId).getOutput();
+    if(!transLPList || transLPList.length == 0) {
+        logDebug("No LPs on " + itemCap.getCustomID());
+        return;
+    }
+    for(var lpIndex in transLPList) {
+        var lpObj = transLPList[lpIndex];//LicenseProfessionalScriptModel
+        var lpModel = lpObj.licenseProfessionalModel;
+        var refId = lpModel.licSeqNbr;        
+        var licNumber = lpModel.licenseNbr;
+        if(refId > 0) {
+            logDebug("LP " + licNumber + " is already a reference LP " + refId);
+            continue;
+        }        
+        var existingRef = getRefLicenseProf(licNumber);
+        if(existingRef) {
+            //replace with reference and sync any unknown data
+            var licSeqNbr = syncDataFromTransToRef(lpObj, existingRef, licNumber);  
+            refreshLP(lpObj, itemCap, licSeqNbr);
+        } else {            
+            //no existing reference LP, need to create it and sync it to the lp
+            var licSeqNbr = createReferenceLicenseProf(lpObj, licNumber, lpModel.licenseType);
+            refreshLP(lpObj, itemCap, licSeqNbr);
+        }        
+    }
+}
+
+function refreshLP(transLpScriptModel, itemCap, refSeqNbr) {
+    //Fetch Ref LP
+    var lpsmResult = aa.licenseScript.getRefLicenseProfBySeqNbr(aa.getServiceProviderCode(), refSeqNbr);
+    if (!lpsmResult.getSuccess()) {
+        logDebug("**WARNING error retrieving the LP just created " + lpsmResult.getErrorMessage());
+    }
+    var lpsm = lpsmResult.getOutput();
+    //Check if reference LP exists
+    if(!lpsm) {
+        return;
+    }
+
+    //Keep track if primary
+    var isPrimary = false;
+    var licNum = transLpScriptModel.getLicenseNbr();
+    logDebug("Removing license: " + licNum + " from CAP.  We will link the new reference LP");
+    if (transLpScriptModel.getPrintFlag() == "Y") {
+        logDebug("...remove primary status...");
+        isPrimary = true;
+        transLpScriptModel.setPrintFlag("N");
+        aa.licenseProfessional.editLicensedProfessional(transLpScriptModel);
+    }
+    var remCapResult = aa.licenseProfessional.removeLicensedProfessional(transLpScriptModel);
+    if (remCapResult.getSuccess()) {
+        logDebug("...Success.");
+    } else {
+        logDebug("**WARNING removing lic prof: " + remCapResult.getErrorMessage());                
+    }
+
+    var asCapResult = aa.licenseScript.associateLpWithCap(itemCap, lpsm);
+    if (!asCapResult.getSuccess()) {
+        logDebug("**WARNING error associating CAP to LP: " + asCapResult.getErrorMessage());
+    } else {
+        logDebug("Associated the CAP to the new LP");
+    }
+
+    // Now make the LP primary again
+    if (isPrimary) {
+        var capLps = getLicenseProfessional(itemCap);
+        for (var thisCapLpNum in capLps) {
+            var thisCapLp = capLps[thisCapLpNum];
+            if (thisCapLp.getLicenseNbr().equals(licNum)) {
+                thisCapLp.setPrintFlag("Y");
+                aa.licenseProfessional.editLicensedProfessional(thisCapLp);
+                logDebug("Updated primary flag on Cap LP : " + licNum);
+            }
+        }
+    }
+}
+
+function createReferenceLicenseProf(licObj, licNum, licType) {
+    var newLic = aa.licenseScript.createLicenseScriptModel();
+    // update the reference LP with data from the transactional, if we have some.
+    if (licObj.getAddress1())
+        newLic.setAddress1(licObj.getAddress1());
+    if (licObj.getAddress2())
+        newLic.setAddress2(licObj.getAddress2());
+    if (licObj.getAddress3())
+        newLic.setAddress3(licObj.getAddress3());
+    if (licObj.getAgencyCode())
+        newLic.setAgencyCode(licObj.getAgencyCode());
+    if (licObj.getBusinessLicense())
+        newLic.setBusinessLicense(licObj.getBusinessLicense());
+    if (licObj.getBusinessName())
+        newLic.setBusinessName(licObj.getBusinessName());
+    if (licObj.getBusName2())
+        newLic.setBusinessName2(licObj.getBusName2());
+    if (licObj.getCity())
+        newLic.setCity(licObj.getCity());
+    if (licObj.getCityCode())
+        newLic.setCityCode(licObj.getCityCode());
+    if (licObj.getContactFirstName())
+        newLic.setContactFirstName(licObj.getContactFirstName());
+    if (licObj.getContactLastName())
+        newLic.setContactLastName(licObj.getContactLastName());
+    if (licObj.getContactMiddleName())
+        newLic.setContactMiddleName(licObj.getContactMiddleName());
+    if (licObj.getCountryCode())
+        newLic.setContryCode(licObj.getCountryCode());
+    if (licObj.getEmail())
+        newLic.setEMailAddress(licObj.getEmail());
+    if (licObj.getCountry())
+        newLic.setCountry(licObj.getCountry());
+    if (licObj.getEinSs())
+        newLic.setEinSs(licObj.getEinSs());
+    if (licObj.getFax())
+        newLic.setFax(licObj.getFax());
+    if (licObj.getFaxCountryCode())
+        newLic.setFaxCountryCode(licObj.getFaxCountryCode());
+    if (licObj.getHoldCode())
+        newLic.setHoldCode(licObj.getHoldCode());
+    if (licObj.getHoldDesc())
+        newLic.setHoldDesc(licObj.getHoldDesc());
+    if (licObj.getLicenseExpirDate())
+        newLic.setLicenseExpirationDate(licObj.getLicenseExpirDate());
+    if (licObj.getLastRenewalDate())
+        newLic.setLicenseLastRenewalDate(licObj.getLastRenewalDate());
+    if (licObj.getLicesnseOrigIssueDate())
+        newLic.setLicOrigIssDate(licObj.getLicesnseOrigIssueDate());
+    if (licObj.getPhone1())
+        newLic.setPhone1(licObj.getPhone1());
+    if (licObj.getPhone1CountryCode())
+        newLic.setPhone1CountryCode(licObj.getPhone1CountryCode());
+    if (licObj.getPhone2())
+        newLic.setPhone2(licObj.getPhone2());
+    if (licObj.getPhone2CountryCode())
+        newLic.setPhone2CountryCode(licObj.getPhone2CountryCode());
+    if (licObj.getSelfIns())
+        newLic.setSelfIns(licObj.getSelfIns());
+    if (licObj.getState())
+        newLic.setState(licObj.getState());
+    if (licObj.getSuffixName())
+        newLic.setSuffixName(licObj.getSuffixName());
+    if (licObj.getZip())
+        newLic.setZip(licObj.getZip());
+
+    newLic.setAgencyCode(aa.getServiceProviderCode());
+    newLic.setAuditDate(sysDate);
+    newLic.setAuditID(currentUserID);
+    newLic.setAuditStatus("A");
+    newLic.setLicenseType(licType);
+    newLic.setLicState("CA"); // hardcode CA
+    newLic.setStateLicense(licNum);
+
+    var myResult = aa.licenseScript.createRefLicenseProf(newLic);
+    if (myResult.getSuccess()) {
+        logDebug("Created fresh reference LP for " + licNum);
+    }
+
+    var licSeqNbr = myResult.getOutput();    
+    return licSeqNbr;
+}
+
+function syncDataFromTransToRef(transObj, refObj, transLicNum) {
+    // logDebug(transObj);
+    // logDebug(refObj);
+    // explore(transObj);
+    // logDebug("");
+    // explore(refObj);
+    if (transObj.getAddress1() && !refObj.getAddress1())
+        refObj.setAddress1(transObj.getAddress1());
+    if (transObj.getAddress2() && !refObj.getAddress2())
+        refObj.setAddress2(transObj.getAddress2());
+    if (transObj.getAddress3() && !refObj.getAddress3())
+        refObj.setAddress3(transObj.getAddress3());
+    if (transObj.getAgencyCode() && !refObj.getAgencyCode())
+        refObj.setAgencyCode(transObj.getAgencyCode());
+    if (transObj.getBusinessLicense() && !refObj.getBusinessLicense())
+        refObj.setBusinessLicense(transObj.getBusinessLicense());
+    if (transObj.getBusinessName() && !refObj.getBusinessName())
+        refObj.setBusinessName(transObj.getBusinessName());
+    if (transObj.getBusName2() && !refObj.getBusName2())
+        refObj.setBusinessName2(transObj.getBusName2());
+    if (transObj.getCity() && !refObj.getCity())
+        refObj.setCity(transObj.getCity());
+    if (transObj.getCityCode() && !refObj.getCityCode())
+        refObj.setCityCode(transObj.getCityCode());
+    if (transObj.getContactFirstName() && !refObj.getContactFirstName())
+        refObj.setContactFirstName(transObj.getContactFirstName());
+    if (transObj.getContactLastName() && !refObj.getContactLastName())
+        refObj.setContactLastName(transObj.getContactLastName());
+    if (transObj.getContactMiddleName() && !refObj.getContactMiddleName())
+        refObj.setContactMiddleName(transObj.getContactMiddleName());
+    if (transObj.getCountryCode() && !refObj.getCountryCode())
+        refObj.setContryCode(transObj.getCountryCode());
+    if (transObj.getEmail() && !refObj.getEMailAddress())
+        refObj.setEMailAddress(transObj.getEmail());
+    if (transObj.getCountry() && !refObj.getCountry())
+        refObj.setCountry(transObj.getCountry());
+    if (transObj.getEinSs() && !refObj.getEinSs())
+        refObj.setEinSs(transObj.getEinSs());
+    if (transObj.getFax() && !refObj.getFax())
+        refObj.setFax(transObj.getFax());
+    if (transObj.getFaxCountryCode() && !refObj.getFaxCountryCode())
+        refObj.setFaxCountryCode(transObj.getFaxCountryCode());
+    if (transObj.getHoldCode() && !refObj.getHoldCode())
+        refObj.setHoldCode(transObj.getHoldCode());
+    if (transObj.getHoldDesc() && !refObj.getHoldDesc())
+        refObj.setHoldDesc(transObj.getHoldDesc());
+    if (transObj.getLicenseExpirDate() && !refObj.getLicenseExpirDate())
+        refObj.setLicenseExpirationDate(transObj.getLicenseExpirDate());
+    if (transObj.getLastRenewalDate() && !refObj.getLastRenewalDate())
+        refObj.setLicenseLastRenewalDate(transObj.getLastRenewalDate());
+    if (transObj.getLicesnseOrigIssueDate() && !refObj.getLicesnseOrigIssueDate())
+        refObj.setLicOrigIssDate(transObj.getLicesnseOrigIssueDate());
+    if (transObj.getPhone1() && !refObj.getPhone1())
+        refObj.setPhone1(transObj.getPhone1());
+    if (transObj.getPhone1CountryCode() && !refObj.getPhone1CountryCode())
+        refObj.setPhone1CountryCode(transObj.getPhone1CountryCode());
+    if (transObj.getPhone2() && !refObj.getPhone2())
+        refObj.setPhone2(transObj.getPhone2());
+    if (transObj.getPhone2CountryCode() && !refObj.getPhone2CountryCode())
+        refObj.setPhone2CountryCode(transObj.getPhone2CountryCode());
+    if (transObj.getSelfIns() && !refObj.getSelfIns())
+        refObj.setSelfIns(transObj.getSelfIns());
+    if (transObj.getState() && !refObj.getState())
+        refObj.setState(transObj.getState());
+    if (transObj.getSuffixName() && !refObj.getSuffixName())
+        refObj.setSuffixName(transObj.getSuffixName());
+    if (transObj.getZip() && !refObj.getZip())
+        refObj.setZip(transObj.getZip());
+
+    var myResult = aa.licenseScript.editRefLicenseProf(refObj);
+    if(myResult.getSuccess()) {
+        logDebug("Successfully updated reference LP " + transLicNum);
+    }
+    return refObj.getLicSeqNbr();
+}
+
+function populateFromRefLP(licSeqNbr, transLPList, itemCap, licNum, licenseType) {
+    var lpsmResult = aa.licenseScript.getRefLicenseProfBySeqNbr(aa.getServiceProviderCode(), licSeqNbr);
+    if (!lpsmResult.getSuccess()) {
+        logDebug("**WARNING error retrieving the LP just created " + lpsmResult.getErrorMessage());
+    }
+
+    var lpsm = lpsmResult.getOutput();
+
+    // Remove from CAP
+
+    var isPrimary = false;
+    if (transLPList != null) {
+        for (var currLic in transLPList) {
+            var thisLP = transLPList[currLic];
+            if (
+                thisLP.getLicenseType() == licenseType &&
+                thisLP.getLicenseNbr() == licNum) {
+                
+            }
+        }
+    }
+
+    // add the LP to the CAP
+    var asCapResult = aa.licenseScript.associateLpWithCap(itemCap, lpsm);
+    if (!asCapResult.getSuccess()) {
+        logDebug("**WARNING error associating CAP to LP: " + asCapResult.getErrorMessage());
+    } else {
+        logDebug("Associated the CAP to the new LP");
+    }
+
+    // Now make the LP primary again
+    if (isPrimary) {
+        var capLps = getLicenseProfessional(itemCap);
+        for (var thisCapLpNum in capLps) {
+            var thisCapLp = capLps[thisCapLpNum];
+            if (thisCapLp.getLicenseNbr().equals(licNum)) {
+                thisCapLp.setPrintFlag("Y");
+                aa.licenseProfessional.editLicensedProfessional(thisCapLp);
+                logDebug("Updated primary flag on Cap LP : " + licNum);
+            }
+        }
+    }
+}
