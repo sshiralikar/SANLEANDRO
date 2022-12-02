@@ -149,7 +149,7 @@ if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Ap
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
 
 //CASANLEAN-1449
-if(wfTask == "Application Intake" && wfStatus == "Approved") {
+if(wfTask == "Application Intake" && String(wfStatus).indexOf("Accepted") >= 0) {
     checkLP(capId);
 }
 
