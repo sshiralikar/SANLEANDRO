@@ -5,7 +5,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due" && balance
     comment("The fee balance is <b>Zero</b>.");
 }
 if((wfTask == "Planning Review" || wfTask == "Public Works Review"
-        || wfTask == "Environmental Services Review" || wfTask == "Engineering & Transportation")
+        || wfTask == "Environmental Services Review")
     && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments")
     && (wfHours == null || wfHours == ""))
 {

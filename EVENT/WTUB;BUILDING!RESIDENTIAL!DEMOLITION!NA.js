@@ -7,7 +7,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due" && balance
 //CASANLEAN-448
 //CASANLEAN-926
 if((wfTask == "Planning Review" || wfTask == "Public Works Review"
-        || wfTask == "Environmental Services Review" || wfTask == "Engineering & Transportation")
+        || wfTask == "Environmental Services Review")
     && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments")
     && (wfHours == null || wfHours == ""))
 {
