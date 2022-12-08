@@ -9,4 +9,9 @@ for (var i in wfhistoryresult) {
         updateTask("Plans Distribution","Updated Documents","","");
         break;
     }
+    if (pTask.getTaskDescription() == "Fire Plan Review"
+        && pTask.getDisposition() == "Resubmittal Required") {
+        updateTask("Plans Distribution","Updated Documents","","");
+        break;
+    }
 }
