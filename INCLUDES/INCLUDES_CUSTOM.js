@@ -1122,3 +1122,111 @@ function populateFromRefLP(licSeqNbr, transLPList, itemCap, licNum, licenseType)
         }
     }
 }
+
+function validateFromCSLB(licNum, itemCap) {
+    
+
+    var expiredLPs = [];
+    var checkDate = new Date();
+
+    // Build array of LPs to check
+    var workArray = new Array();
+    if (licNum) {
+        workArray.push(String(licNum));
+    }
+    var rlpType = "Contractor";
+    if (itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return false;
+        }
+
+        if (capLicenseArr == null || !capLicenseArr.length) {
+            logDebug("**WARNING: no licensed professionals on this CAP");
+        } else {
+            for (var thisLic in capLicenseArr)
+                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
+                    workArray.push(capLicenseArr[thisLic]);
+        }
+    }
+
+    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
+        var licNum = workArray[thisLic];
+        var licObj = null;        
+
+        if (typeof licNum == "object") {
+            // is this one an object or string?
+            licObj = licNum;
+            licNum = licObj.getLicenseNbr();            
+        }
+
+        // Make the call to the California State License Board
+
+        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+        var method = "http://CSLB.Ca.gov/GetLicense";
+        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+        //var licNum = "9";
+        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+        if (!token || token == "") {
+            logDebug("GRAYQUARTER CSLB TOKEN not configured");
+            return false;
+        }
+
+        xmlout = xmlout.replace("%%LICNUM%%", licNum);
+        xmlout = xmlout.replace("%%TOKEN%%", token);
+
+        var headers = aa.util.newHashMap();
+        headers.put("Content-Type", "text/xml");
+        headers.put("SOAPAction", method);
+
+        var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+
+		// check the results
+		var result;
+        var isError = false;
+        if (!res.getSuccess()) {
+            logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+            continue;   
+        }
+        result = String(res.getOutput());
+        aa.print(result);
+		
+        var lpStatus = XMLTagValue(result, "Status");
+        logDebug(licNum + " status from CSLB: " + lpStatus);
+
+        if(!lpStatus || lpStatus == "") {
+            logDebug("CSLB did not return an LP Status for " + licNum);
+            continue;
+        }
+
+        if (lpStatus && lpStatus != "CLEAR") {
+            logDebug("Status not clear for " + licNum + " status: " + licNum);
+            expiredLPs.push("Status not clear for " + licNum + " status: " + licNum);
+        }
+        
+       
+
+        var ExpirationDate = XMLTagValue(result, "ExpirationDate");
+        if (ExpirationDate) {            
+            var cslbExpDate = new Date(ExpirationDate);
+            if(cslbExpDate <= checkDate) {
+                expiredLPs.push("LP " + licNum + " License date has expired in CSLB: " + ExpirationDate);
+            }
+        }
+        
+        var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
+        if (PolicyExpirationDate) {            
+            var workersCompExpDate = new Date(PolicyExpirationDate);
+            if(workersCompExpDate <= checkDate) {
+                expiredLPs.push("LP " + licNum + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
+            }
+        }
+         
+    } // for each license
+    return expiredLPs;
+}

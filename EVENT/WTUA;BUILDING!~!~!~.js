@@ -153,6 +153,16 @@ if(wfTask == "Application Intake" && String(wfStatus).indexOf("Accepted") >= 0) 
     checkLP(capId);
 }
 
+//CASANLEAN-766
+if((wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Not Req") || (wfTask == "Plans Coordination" && String(wfStatus).indexOf("Approved") >= 0)) {
+    var expiredLPData = validateFromCSLB(null, capId);
+    if(expiredLPData && expiredLPData.length > 0) {
+        cancel = true;
+        showMessage = true;
+        comment(expiredLPData.join("<br>"));
+    }
+}
+
 function addFeeReturnAmt(fcode,fsched,fperiod,fqty,finvoice) // Adds a single fee, optional argument: fCap
 {
     // Updated Script will return feeSeq number or null if error encountered (SR5112)
