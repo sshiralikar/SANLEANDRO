@@ -363,7 +363,7 @@ if(wfTask == "Application Intake" && wfStatus == "Additional Info Required")
 if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
     var feeAmt = 0.0;
-    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "NEW");
+    /*var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "NEW");
     if (getFeeResult.getSuccess()) {
         var feeList = getFeeResult.getOutput();
         for (feeNum in feeList)
@@ -378,11 +378,11 @@ if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w
             if (feeList[feeNum].getFeeitemStatus().equals("INVOICED")) {
                 feeAmt = feeList[feeNum].getFee();
             }
-    }
-    /*var valobj = aa.finance.getContractorSuppliedValuation(capId,null).getOutput(); // Calculated valuation
+    }*/
+    var valobj = aa.finance.getContractorSuppliedValuation(capId,null).getOutput(); // Calculated valuation
     if (valobj.length) {
         feeAmt = parseFloat(valobj[0].getEstimatedValue());
-    }*/
+    }
     if(feeAmt > 0 && !feeExists("MISC","NEW","INVOICED"))
         addFee("MISC","B_FIRE","FINAL",feeAmt * 0.65,"N");
 }

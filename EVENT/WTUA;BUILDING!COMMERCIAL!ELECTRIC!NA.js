@@ -1,3 +1,13 @@
+if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    var feeAmt = 0.0;
+    var valobj = aa.finance.getContractorSuppliedValuation(capId,null).getOutput(); // Calculated valuation
+    if (valobj.length) {
+        feeAmt = parseFloat(valobj[0].getEstimatedValue());
+    }
+    if(feeAmt > 0 && !feeExists("MISC","NEW","INVOICED"))
+        addFee("MISC","B_FIRE","FINAL",feeAmt * 0.65,"N");
+}
 //CASANLEAN-924
 if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
 {

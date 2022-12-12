@@ -365,7 +365,16 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
     sendEmail("", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
 }
 //CASANLEAN-949
-
+if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    var feeAmt = 0.0;
+    var valobj = aa.finance.getContractorSuppliedValuation(capId,null).getOutput(); // Calculated valuation
+    if (valobj.length) {
+        feeAmt = parseFloat(valobj[0].getEstimatedValue());
+    }
+    if(feeAmt > 0 && !feeExists("MISC","NEW","INVOICED"))
+        addFee("MISC","B_FIRE","FINAL",feeAmt * 0.65,"N");
+}
 
 
 
