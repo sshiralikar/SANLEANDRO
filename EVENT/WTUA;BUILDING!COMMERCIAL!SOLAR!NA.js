@@ -368,7 +368,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
 if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
     var feeAmt = 0.0;
-    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "NEW");
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BAUTO", "FINAL", "NEW");
     if (getFeeResult.getSuccess()) {
         var feeList = getFeeResult.getOutput();
         for (feeNum in feeList)
@@ -376,7 +376,7 @@ if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w
                 feeAmt = feeList[feeNum].getFee();
             }
     }
-    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BPMT", "FINAL", "INVOICED");
+    var getFeeResult = aa.finance.getFeeItemsByFeeCodeAndPeriod(capId, "BAUTO", "FINAL", "INVOICED");
     if (getFeeResult.getSuccess()) {
         var feeList = getFeeResult.getOutput();
         for (feeNum in feeList)
