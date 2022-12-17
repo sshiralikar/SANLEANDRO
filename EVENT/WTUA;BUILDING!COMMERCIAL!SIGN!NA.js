@@ -368,7 +368,25 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
 
 
 
+function runEmailThroughSLEmailFilter(vEmail)
+{
+    var filter = lookup("SL_EMAIL_CONTROL", "FILTER");
+    if(filter == "ON")
+    {
+        var domains = String(lookup("SL_EMAIL_CONTROL", "DOMAIN_EXCEPTIONS"));
+        var emails = String(lookup("SL_EMAIL_CONTROL", "EMAIL_EXCEPTIONS"));
+        var vOriginalDomain = vEmail.substring(vEmail.indexOf("@") + 1, vEmail.length).toLowerCase();
 
+        if(domains.toLowerCase().indexOf(String(vOriginalDomain).toLowerCase()) != -1)
+            return vEmail;
+        if(emails.toLowerCase().indexOf(String(vOriginalDomain).toLowerCase()) != -1)
+            return vEmail;
+
+
+        vEmail = vEmail.replace(vOriginalDomain, "DoNotSend.com");
+    }
+    return vEmail;
+}
 
 
 function sendEmail(fromEmail, toEmail, CC, template, eParams, files) { // optional: itemCap
@@ -377,7 +395,7 @@ function sendEmail(fromEmail, toEmail, CC, template, eParams, files) { // option
         itemCap = arguments[6]; // use cap ID specified in args
 
     //var sent = aa.document.sendEmailByTemplateName(fromEmail, toEmail, CC, template, eParams, files);
-
+    fromEmail = runEmailThroughSLEmailFilter(fromEmail);
     var itempAltIDScriptModel = aa.cap.createCapIDScriptModel(itemCap.getID1(), itemCap.getID2(), itemCap.getID3());
     var sent = aa.document.sendEmailAndSaveAsDocument(fromEmail, toEmail, CC, template, eParams, itempAltIDScriptModel, files);
     if (!sent.getSuccess()) {
