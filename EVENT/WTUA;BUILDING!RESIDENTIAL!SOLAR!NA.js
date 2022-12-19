@@ -168,7 +168,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required")
 }
 //CASALEAN-470
 //CASANLEAN-938
-if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
+/*if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 {
     addFee("PLNC","B_COMBO","FINAL",1,"Y");
 
@@ -223,7 +223,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
     sendEmail("", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
-}
+}*/
 //CASANLEAN-938
 //CASANLEAN-938
 if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
