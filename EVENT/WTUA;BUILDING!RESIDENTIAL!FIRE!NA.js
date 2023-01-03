@@ -56,7 +56,7 @@ if(wfTask == "Application Intake" && wfStatus == "Additional Info Required")
 }
 //CASANLEAN-468
 //CASANLEAN-469
-if(wfTask == "Fire PLan Review" && wfStatus == "Resubmittal Required")
+if(wfTask == "Fire Plan Review" && wfStatus == "Resubmittal Required")
 {
     var params = aa.util.newHashtable();
 
