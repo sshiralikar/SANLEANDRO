@@ -1,3 +1,8 @@
+if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review" && !feeExists("EPV4","NEW","INVOICED"))
+{
+    removeFee("BPMT","FINAL")
+    addFee("EPV4","B_COMBO","FINAL",parseInt(AInfo["System Size (KW)"]),"N");
+}
 //CASANLEAN-468
 if(wfTask == "Application Intake" && wfStatus == "Additional Info Required")
 {
