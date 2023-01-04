@@ -1,3 +1,5 @@
+showDebug = false;
+showMessage = false;
 if(isTaskActive("Inspection") && inspResult == "Finaled")
 {
     updateTask("Inspection"," Final Inspection Complete","","");
