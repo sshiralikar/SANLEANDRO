@@ -1,3 +1,10 @@
+if(wfTask == "Environmental Services Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+{
+    if(wfHours == null || wfHours == "")
+        addFee("XECX","ENVI","FINAL",1,"N");
+    else
+        addFee("XECX","ENVI","FINAL",wfHours,"N");
+}
 if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
     var feeAmt = 0.0;
