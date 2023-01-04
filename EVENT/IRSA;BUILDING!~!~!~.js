@@ -1,4 +1,4 @@
-if(isTaskActive("Inspection"))
+if(isTaskActive("Inspection") && inspResult == "Finaled")
 {
     updateTask("Inspection"," Final Inspection Complete","","");
     //activateTask("Permit Issuance");
