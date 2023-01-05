@@ -230,7 +230,7 @@ function getProComplRequiredDocuments()
 {
     var requirementArray = [];
 
-    if(AInfo["Multi Unit Building"]=="Yes" )
+    if(AInfo["Multi Unit Building?"]=="Yes" )
         requirementArray.push("Plans");
 
     return requirementArray;
