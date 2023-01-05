@@ -166,7 +166,7 @@ if((wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Not Re
 if(wfTask == "Application Intake")
 {
     //assignTask("Application Intake",currentUserID);
-    assignCap(assignId);
+    assignCap(currentUserID);
 }
 //CASANLEAN-1429
 function addFeeReturnAmt(fcode,fsched,fperiod,fqty,finvoice) // Adds a single fee, optional argument: fCap
