@@ -1,3 +1,6 @@
+cancel = true;
+showDebug = true;
+aa.print("balanceDue+ "+ balanceDue);
 if((wfTask == "Plans Coordination" || wfTask == "Fire Plan Review")
     && (wfStatus == "Approved - Fee Due" || wfStatus == "Approved - Fees Due") && balanceDue <= 0)
 {
