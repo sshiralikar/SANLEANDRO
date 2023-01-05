@@ -115,7 +115,7 @@ if (capDetailObjResult.getSuccess())
 var AInfo = new Array();                        // Create array for tokenized variables
 loadAppSpecific4ACA(AInfo);                         // Add AppSpecific Info
 //loadTaskSpecific(AInfo);                      // Add task specific info
-//loadParcelAttributes(AInfo);                      // Add parcel attributes
+loadParcelAttributes(AInfo);                      // Add parcel attributes
 loadASITables();
 
 logDebug("<B>EMSE Script Results for " + capIDString + "</B>");
@@ -241,5 +241,12 @@ function getProComplRequiredDocuments()
     }
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
+    if(isFloodZone())
+        requirementArray.push("FEMA Documents");
     return requirementArray;
+}
+function isFloodZone()
+{
+    comment("AInfo[ParcelAttribute.FLOODZONE]: "+ AInfo["ParcelAttribute.FLOODZONE"]);
+    return true;
 }
