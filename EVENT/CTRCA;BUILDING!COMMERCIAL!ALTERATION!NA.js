@@ -35,7 +35,7 @@ addParameter(params, "$$altID$$", capId.getCustomID()+"");
 addParameter(params, "$$projectDescription$$", cap.getSpecialText());
 addParameter(params, "$$Location$$", vAddress);
 addParameter(params, "$$ACAUrl$$", lookup("ACA_CONFIGS", "ACA_SITE"));
-sendEmail("", applicantEmail, "", "BLD_ACA_APPLICATION_RECEIVED", params, null, capId);
+sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_ACA_APPLICATION_RECEIVED", params, null, capId);
 //CASANLEAN-72
 function runEmailThroughSLEmailFilter(vEmail)
 {

@@ -106,7 +106,7 @@ if(wfTask == "Application Intake" && wfStatus == "Additional Info Required")
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
     addParameter(params, "$$wfTaskComments$$", wfComment);
-    sendEmail("noreply@sanleandro.org", applicantEmail, "", "BLD_ADDITIONAL_INFO_REQ", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_ADDITIONAL_INFO_REQ", params, null, capId);
 }
 //CASANLEAN-249
 //CASANLEAN-250
@@ -162,7 +162,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
 }
 //CASANLEAN-250
 //CASALEAN-251
@@ -218,7 +218,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
 }
 //CASALEAN-251
 //CASANLEAN-821
@@ -276,7 +276,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-821
 //CASANLEAN-828
@@ -338,7 +338,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
 }
 //CASANLEAN-839
 //CASANLEAN-838
@@ -394,7 +394,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-838
 
