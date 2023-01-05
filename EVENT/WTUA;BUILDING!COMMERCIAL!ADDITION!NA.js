@@ -106,7 +106,7 @@ if(wfTask == "Application Intake" && wfStatus == "Additional Info Required")
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
     addParameter(params, "$$wfTaskComments$$", wfComment);
-    sendEmail("", applicantEmail, "", "BLD_ADDITIONAL_INFO_REQ", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "BLD_ADDITIONAL_INFO_REQ", params, null, capId);
 }
 //CASANLEAN-249
 //CASANLEAN-250
