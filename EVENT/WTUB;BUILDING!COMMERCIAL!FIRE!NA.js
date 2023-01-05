@@ -1,4 +1,5 @@
-if((wfTask == "Plans Coordination" || wfTask == "Fire Plan Review") && wfStatus == "Approved - Fee Due" && balanceDue <= 0)
+if((wfTask == "Plans Coordination" || wfTask == "Fire Plan Review")
+    && (wfStatus == "Approved - Fee Due" || wfStatus == "Approved - Fees Due") && balanceDue <= 0)
 {
     cancel = true;
     showMessage = true;
