@@ -236,6 +236,10 @@ function getProComplRequiredDocuments()
 
     if(isFloodZone())
         requirementArray.push("FEMA Documents");
+
+    if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
+        requirementArray.push("BAAQMD - J number");
+
     return requirementArray;
 }
 function isFloodZone()

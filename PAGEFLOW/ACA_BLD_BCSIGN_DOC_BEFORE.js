@@ -239,5 +239,9 @@ function getProComplRequiredDocuments()
     }
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
+
+    if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
+        requirementArray.push("BAAQMD - J number");
+
     return requirementArray;
 }

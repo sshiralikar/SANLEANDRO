@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------------------------------/
-| Program : ACA_BLD_BCADD_DOC_BEFORE.js
+| Program : ACA_PRO_APPLICATION_DOC_BEFORE_RA.js
 | Event   : ACA Page Flow attachments before event
 |
 | Usage   : Master Script by Accela.  See accompanying documentation and release notes.
@@ -115,7 +115,7 @@ if (capDetailObjResult.getSuccess())
 var AInfo = new Array();                        // Create array for tokenized variables
 loadAppSpecific4ACA(AInfo);                         // Add AppSpecific Info
 //loadTaskSpecific(AInfo);                      // Add task specific info
-loadParcelAttributes(AInfo);                      // Add parcel attributes
+//loadParcelAttributes(AInfo);                      // Add parcel attributes
 loadASITables();
 
 logDebug("<B>EMSE Script Results for " + capIDString + "</B>");
@@ -163,6 +163,7 @@ try {
                 if (!docsMissing)  {
                     comment("<div class='docList'><span class='fontbold font14px ACA_Title_Color'>The following documents are required based on the information you have provided: </span><ol>");
                     docsMissing = true;
+
                 }
                 docStr+=r[x]+"\n";
                 /*conditionType = "Required Document";
@@ -229,28 +230,8 @@ function getProComplRequiredDocuments()
 {
     var requirementArray = [];
 
-    if((String(AInfo["Plumbing?"]).toUpperCase() == "YES" || String(AInfo["Plumbing?"]).toUpperCase() == "Y")
-        ||(String(AInfo["Mechanical?"]).toUpperCase() == "YES" || String(AInfo["Mechanical?"]).toUpperCase() == "Y")
-        ||(String(AInfo["Electrical?"]).toUpperCase() == "YES" || String(AInfo["Electrical?"]).toUpperCase() == "Y"))
-        requirementArray.push("Title 24");
-
-    if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
-    {
-        requirementArray.push("Structural Calculations");
-        requirementArray.push("Structural Plans");
-    }
-    if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
-        requirementArray.push("Manufacturer Specifications");
-    if(isFloodZone())
-        requirementArray.push("FEMA Documents");
     if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
         requirementArray.push("BAAQMD - J number");
+
     return requirementArray;
-}
-function isFloodZone()
-{
-    var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
-    if(value.toUpperCase().indexOf("NONE") == -1)
-        return true;
-    return false;
 }

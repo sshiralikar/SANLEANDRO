@@ -251,6 +251,7 @@ function getProComplRequiredDocuments()
         requirementArray.push("Manufacturer Specifications");
     if((String(AInfo["Health Department?"]).toUpperCase() == "YES" || String(AInfo["Health Department?"]).toUpperCase() == "Y"))
         requirementArray.push("Health Department Approval");
-
+    if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
+        requirementArray.push("BAAQMD - J number");
     return requirementArray;
 }

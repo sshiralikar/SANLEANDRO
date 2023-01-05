@@ -253,5 +253,7 @@ function getProComplRequiredDocuments()
         ||(String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Electric Load Calculations");
 
+    if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
+        requirementArray.push("BAAQMD - J number");
     return requirementArray;
 }

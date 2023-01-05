@@ -241,6 +241,7 @@ function getProComplRequiredDocuments()
         requirementArray.push("Structural Calculations");
         requirementArray.push("Structural Plans");
     }
-
+    if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
+        requirementArray.push("BAAQMD - J number");
     return requirementArray;
 }
