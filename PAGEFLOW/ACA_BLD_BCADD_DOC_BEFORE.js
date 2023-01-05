@@ -247,6 +247,8 @@ function getProComplRequiredDocuments()
 }
 function isFloodZone()
 {
-    comment("AInfo[ParcelAttribute.FLOODZONE]: "+ AInfo["ParcelAttribute.FLOODZONE"]);
-    return true;
+    var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
+    if(value.toUpperCase().indexOf("NONE") == -1)
+        return true;
+    return false;
 }

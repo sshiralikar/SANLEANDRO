@@ -229,11 +229,6 @@ function getProComplRequiredDocuments()
 {
     var requirementArray = [];
 
-    if((String(AInfo["Plumbing?"]).toUpperCase() == "YES" || String(AInfo["Plumbing?"]).toUpperCase() == "Y")
-        ||(String(AInfo["Mechanical?"]).toUpperCase() == "YES" || String(AInfo["Mechanical?"]).toUpperCase() == "Y")
-        ||(String(AInfo["Electrical?"]).toUpperCase() == "YES" || String(AInfo["Electrical?"]).toUpperCase() == "Y"))
-        requirementArray.push("Title 24");
-
     if(isFloodZone())
         requirementArray.push("FEMA Documents");
     return requirementArray;
