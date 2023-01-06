@@ -149,19 +149,10 @@ if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Ap
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
 
 //CASANLEAN-1449
-if(wfTask == "Application Intake" && String(wfStatus).indexOf("Accepted") >= 0) {
+if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req")) {
     checkLP(capId);
 }
 
-//CASANLEAN-766
-if((wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Not Req") || (wfTask == "Plans Coordination" && String(wfStatus).indexOf("Approved") >= 0)) {
-    var expiredLPData = validateFromCSLB(null, capId);
-    if(expiredLPData && expiredLPData.length > 0) {
-        cancel = true;
-        showMessage = true;
-        comment(expiredLPData.join("<br>"));
-    }
-}
 //CASANLEAN-1429
 if(wfTask == "Application Intake")
 {
