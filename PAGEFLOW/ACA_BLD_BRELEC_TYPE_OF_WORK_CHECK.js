@@ -140,7 +140,9 @@ logDebug("feesInvoicedTotal = " + feesInvoicedTotal);
 logDebug("balanceDue = " + balanceDue);
 
 // page flow custom code begin
-
+cancel = true;
+showDebug = true;
+logDebug("SHASHANK TEST");
 try {
     if((AInfo["Backup Generator"] == "UNCHECKED" || AInfo["Backup Generator"] == null)
         &&(AInfo["Electric Repair"] == "UNCHECKED" || AInfo["Electric Repair"] == null)
