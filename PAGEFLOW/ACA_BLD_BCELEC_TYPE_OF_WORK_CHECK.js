@@ -140,18 +140,15 @@ logDebug("feesInvoicedTotal = " + feesInvoicedTotal);
 logDebug("balanceDue = " + balanceDue);
 
 // page flow custom code begin
-cancel = true;
-showDebug = true;
-logDebug("---->'"+AInfo["Backup Generator"]+"'")
 try {
-    if((AInfo["Backup Generator"] == "" || AInfo["Backup Generator"] == null)
-        &&(AInfo["Electric Repair"] == "" || AInfo["Electric Repair"] == null)
-        &&(AInfo["EV Charger"] == "" || AInfo["EV Charger"] == null)
-        &&(AInfo["Lighting"] == "" || AInfo["Lighting"] == null)
-        &&(AInfo["New Equipment Electrical Supply"] == "" || AInfo["New Equipment Electrical Supply"] == null)
-        &&(AInfo["Main Panel"] == "" || AInfo["Main Panel"] == null)
-        &&(AInfo["Rewire"] == "" || AInfo["Rewire"] == null)
-        &&(AInfo["Transformer"] == "" || AInfo["Transformer"] == null))
+    if((AInfo["Backup Generator"] == "UNCHECKED" || AInfo["Backup Generator"] == null)
+        &&(AInfo["Electric Repair"] == "UNCHECKED" || AInfo["Electric Repair"] == null)
+        &&(AInfo["EV Charger"] == "UNCHECKED" || AInfo["EV Charger"] == null)
+        &&(AInfo["Lighting"] == "UNCHECKED" || AInfo["Lighting"] == null)
+        &&(AInfo["New Equipment Electrical Supply"] == "UNCHECKED" || AInfo["New Equipment Electrical Supply"] == null)
+        &&(AInfo["Main Panel"] == "UNCHECKED" || AInfo["Main Panel"] == null)
+        &&(AInfo["Rewire"] == "UNCHECKED" || AInfo["Rewire"] == null)
+        &&(AInfo["Transformer"] == "UNCHECKED" || AInfo["Transformer"] == null))
     {
         cancel = true;
         showMessage = true;
