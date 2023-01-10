@@ -140,7 +140,9 @@ logDebug("feesInvoicedTotal = " + feesInvoicedTotal);
 logDebug("balanceDue = " + balanceDue);
 
 // page flow custom code begin
-
+cancel = true;
+showDebug = true;
+logDebug("---->'"+AInfo["Backup Generator"]+"'")
 try {
     if((AInfo["Backup Generator"] == "" || AInfo["Backup Generator"] == null)
         &&(AInfo["Electric Repair"] == "" || AInfo["Electric Repair"] == null)
