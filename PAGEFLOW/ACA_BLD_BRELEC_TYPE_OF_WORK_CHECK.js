@@ -117,7 +117,7 @@ loadAppSpecific4ACA(AInfo);                         // Add AppSpecific Info
 //loadTaskSpecific(AInfo);                      // Add task specific info
 //loadParcelAttributes(AInfo);                      // Add parcel attributes
 //loadASITables();
-loadASITables4ACA();
+//loadASITables4ACA();
 
 logDebug("<B>EMSE Script Results for " + capIDString + "</B>");
 logDebug("capId = " + capId.getClass());
