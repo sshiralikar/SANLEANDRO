@@ -1,10 +1,3 @@
-showDebug = false;
-showMessage = false;
-if(matches(currentUserID,"SSHIRALIKAR"))
-{
-    showDebug = true;
-    showMessage= true;
-}
 if(inspType == "2030 Final Electrical" &&
     isTaskActive("Inspection") &&
     (inspResult == "Finaled" || inspResult == "Pass") &&
