@@ -1,6 +1,10 @@
 showDebug = false;
 showMessage = false;
-if(isTaskActive("Inspection") && inspResult == "Finaled" && isAllConditionsMet(capId) && balanceDue <= 0)
+if(inspType == "2030 Final Electrical" &&
+    isTaskActive("Inspection") &&
+    inspResult == "Finaled" &&
+    isAllConditionsMet(capId) &&
+    balanceDue <= 0)
 {
     var flag = true;
     var relChildren = getChildren("Building/*/*/*", capId);
@@ -11,7 +15,7 @@ if(isTaskActive("Inspection") && inspResult == "Finaled" && isAllConditionsMet(c
             {
                 capDetail = capDetailObjResult.getOutput();
                 var vBalanceDue = capDetail.getBalance();
-                if(parseFloat(vBalanceDue) > 0)
+                if(parseFloat(vBalanceDue) > 0 || !isAllConditionsMet(relChildren[r]))
                     flag = false;
             }
         }
@@ -41,7 +45,7 @@ function isAllConditionsMet(vCapId)
         for (var cc in capConds) {
             var thisCondX = capConds[cc];
             var cNbr = thisCondX.getConditionNumber();
-            var thisCond = aa.capCondition.getCapCondition(cIds[x],cNbr).getOutput();
+            var thisCond = aa.capCondition.getCapCondition(vCapId,cNbr).getOutput();
             var cStatus = thisCond.getConditionStatus();
             //var isCOA = thisCond.getConditionOfApproval();
             if(matches(cStatus, "Not Met", "Applied"))
