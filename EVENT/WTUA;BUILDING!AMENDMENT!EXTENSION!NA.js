@@ -1,4 +1,4 @@
-if(wfTask == "Extension" && wfStatus == "Approve")
+if(wfTask == "Extension" && wfStatus == "Approved")
 {
     var c = new Date();
     c.setFullYear(c.getFullYear() + 1);
