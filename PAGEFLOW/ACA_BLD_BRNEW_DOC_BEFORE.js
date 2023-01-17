@@ -239,9 +239,16 @@ function getProComplRequiredDocuments()
 }
 function isFloodZone()
 {
-    var value = String(AInfo["ParcelAttribute.SFHA2018"]);
-    logDebug("value: "+ value);
-    logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018"));
+    var capParcelResult = aa.parcel.getParcelandAttribute(capId,null);
+    if (capParcelResult.getSuccess()) {
+        var Parcels = capParcelResult.getOutput().toArray();
+        for (zz in Parcels) {
+            ParcelValidatedNumber =  Parcels[zz].getParcelNumber();
+            logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018"));
+        }
+    }
+
+
     if(value.toUpperCase() == "Y")
         return true;
     return false;
