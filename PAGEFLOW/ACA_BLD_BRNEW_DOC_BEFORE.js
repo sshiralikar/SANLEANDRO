@@ -239,7 +239,7 @@ function getProComplRequiredDocuments()
 }
 function isFloodZone()
 {
-    var value = String(AInfo["ParcelAttribute.Flood Zone"]);
+    var value = String(AInfo["ParcelAttribute.SFHA2018"]);
     logDebug("value: "+ value);
     if(value.toUpperCase() == "Y")
         return true;
