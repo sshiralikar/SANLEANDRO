@@ -239,11 +239,11 @@ function getProComplRequiredDocuments()
 }
 function isFloodZone()
 {
-    var capParcelResult = aa.parcel.getParcelandAttribute(capId,null);
-    if (capParcelResult.getSuccess()) {
-        var Parcels = capParcelResult.getOutput().toArray();
-        for (zz in Parcels) {
-            ParcelValidatedNumber =  Parcels[zz].getParcelNumber();
+    var parcel = cap.getParcelModel();
+    if(parcel) {
+        //explore(parcel)
+        if (parcel.parcelNo) {
+            ParcelValidatedNumber = String(parcel.parcelNo);
             logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018"));
         }
     }
