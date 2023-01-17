@@ -1,4 +1,6 @@
-var floodZone = getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018");
+var floodZone = getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018");
+logDebug("Flood zone: " + floodZone);
+logDebug("Parcel: " + ParcelValidatedNumber);
 if(floodZone == "Y") {
     var capIdString = capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3();
     var currentDocs = aa.document.getDocumentListByEntity(capIdString,"TMP_CAP").getOutput().toArray();
