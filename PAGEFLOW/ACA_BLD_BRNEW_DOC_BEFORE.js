@@ -142,12 +142,12 @@ logDebug("balanceDue = " + balanceDue);
 
 try {
 
-    showDebug = false;
+    showDebug = true;
     docsMissing = false;
     showList = true;
     addConditions = false;
     addTableRows = false;
-    cancel = false;
+    cancel = true;
     showMessage = false;
     capIdString = capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3();
     r = getProComplRequiredDocuments();
