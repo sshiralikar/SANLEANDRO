@@ -1,5 +1,5 @@
 if(!publicUser) {
-    if(AInfo["Flood Zone"] == "Y") {
+    if(getAppSpecific("Flood Zone", capId) == "Y") {
         addStdCondition("General", "FEMA Documents", capId);
     }
 }
