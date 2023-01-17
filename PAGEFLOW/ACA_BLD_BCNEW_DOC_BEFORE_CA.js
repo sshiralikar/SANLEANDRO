@@ -17,11 +17,11 @@
 |     will no longer be considered a "Master" script and will not be supported in future releases.  If
 |     changes are made, please add notes above.
 /------------------------------------------------------------------------------------------------------*/
-var showMessage = true; // Set to true to see results in popup window
-var showDebug = true; // Set to true to see debug messages in popup window
+var showMessage = false; // Set to true to see results in popup window
+var showDebug = false; // Set to true to see debug messages in popup window
 var useAppSpecificGroupName = false; // Use Group name when populating App Specific Info Values
 var useTaskSpecificGroupName = false; // Use Group name when populating Task Specific Info Values
-var cancel = true;
+var cancel = false;
 var useCustomScriptFile = true;             // if true, use Events->Custom Script, else use Events->Scripts->INCLUDES_CUSTOM
 /*------------------------------------------------------------------------------------------------------/
 | END User Configurable Parameters
@@ -142,13 +142,13 @@ logDebug("balanceDue = " + balanceDue);
 
 try {
 
-    showDebug = true;
+    showDebug = false;
     docsMissing = false;
     showList = true;
     addConditions = false;
     addTableRows = false;
-    cancel = true;
-    showMessage = true;
+    cancel = false;
+    showMessage = false;
     capIdString = capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3();
     r = getProComplRequiredDocuments();
     submittedDocList = aa.document.getDocumentListByEntity(capIdString,"TMP_CAP").getOutput().toArray();
@@ -227,7 +227,6 @@ if (debug.indexOf("**ERROR") > 0) {
 
 function getProComplRequiredDocuments()
 {
-    logDebug(isFloodZone());
     var requirementArray = [];
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
@@ -240,7 +239,6 @@ function getProComplRequiredDocuments()
 function isFloodZone()
 {
     var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
-    logDebug(value);
     if(value.toUpperCase() == "Y")
         return true;
     return false;
