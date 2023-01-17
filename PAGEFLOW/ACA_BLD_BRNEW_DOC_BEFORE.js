@@ -241,6 +241,7 @@ function isFloodZone()
 {
     var value = String(AInfo["ParcelAttribute.SFHA2018"]);
     logDebug("value: "+ value);
+    logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018"));
     if(value.toUpperCase() == "Y")
         return true;
     return false;
