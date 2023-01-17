@@ -18,10 +18,10 @@
 |     changes are made, please add notes above.
 /------------------------------------------------------------------------------------------------------*/
 var showMessage = false; // Set to true to see results in popup window
-var showDebug = false; // Set to true to see debug messages in popup window
+var showDebug = true; // Set to true to see debug messages in popup window
 var useAppSpecificGroupName = false; // Use Group name when populating App Specific Info Values
 var useTaskSpecificGroupName = false; // Use Group name when populating Task Specific Info Values
-var cancel = false;
+var cancel = true;
 var useCustomScriptFile = true;             // if true, use Events->Custom Script, else use Events->Scripts->INCLUDES_CUSTOM
 /*------------------------------------------------------------------------------------------------------/
 | END User Configurable Parameters
@@ -228,7 +228,7 @@ if (debug.indexOf("**ERROR") > 0) {
 function getProComplRequiredDocuments()
 {
     var requirementArray = [];
-
+    logDebug("isFloodZone(): "+ isFloodZone())
     if(isFloodZone())
         requirementArray.push("FEMA Documents");
 
@@ -240,6 +240,7 @@ function getProComplRequiredDocuments()
 function isFloodZone()
 {
     var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
+    logDebug("value: "+ value);
     if(value.toUpperCase() == "Y")
         return true;
     return false;
