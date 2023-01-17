@@ -248,8 +248,5 @@ function isFloodZone()
         }
     }
 
-
-    if(value.toUpperCase() == "Y")
-        return true;
     return false;
 }
