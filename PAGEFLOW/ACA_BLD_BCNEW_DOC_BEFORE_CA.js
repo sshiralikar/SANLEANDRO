@@ -142,13 +142,13 @@ logDebug("balanceDue = " + balanceDue);
 
 try {
 
-    showDebug = false;
+    showDebug = true;
     docsMissing = false;
     showList = true;
     addConditions = false;
     addTableRows = false;
-    cancel = false;
-    showMessage = false;
+    cancel = true;
+    showMessage = true;
     capIdString = capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3();
     r = getProComplRequiredDocuments();
     submittedDocList = aa.document.getDocumentListByEntity(capIdString,"TMP_CAP").getOutput().toArray();
@@ -227,6 +227,7 @@ if (debug.indexOf("**ERROR") > 0) {
 
 function getProComplRequiredDocuments()
 {
+    logDebug(isFloodZone());
     var requirementArray = [];
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
@@ -239,6 +240,7 @@ function getProComplRequiredDocuments()
 function isFloodZone()
 {
     var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
+    logDebug(value);
     if(value.toUpperCase() == "Y")
         return true;
     return false;
