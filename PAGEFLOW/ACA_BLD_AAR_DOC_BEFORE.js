@@ -233,5 +233,7 @@ function getProComplRequiredDocuments()
     if(AInfo["Multi Unit Building?"]=="Yes" )
         requirementArray.push("Plans");
 
+    if(AInfo["Are you the Property Owner?"] == "No")
+        requirementArray.push("Owner Approval Letter");
     return requirementArray;
 }
