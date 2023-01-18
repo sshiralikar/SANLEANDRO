@@ -238,8 +238,16 @@ function getProComplRequiredDocuments()
 }
 function isFloodZone()
 {
-    var value = String(AInfo["ParcelAttribute.FLOODZONE"]);
-    if(value.toUpperCase() == "Y")
-        return true;
+    var parcel = cap.getParcelModel();
+    if(parcel) {
+        //explore(parcel)
+        if (parcel.parcelNo) {
+            ParcelValidatedNumber = String(parcel.parcelNo);
+            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018");
+            if(value == "Y")
+                return true;
+        }
+    }
+
     return false;
 }
