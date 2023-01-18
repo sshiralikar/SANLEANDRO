@@ -244,7 +244,7 @@ function isFloodZone()
         //explore(parcel)
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
-            logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA2018"));
+            logDebug("getGISInfo2ASB(SFHA2018): "+ getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018"));
         }
     }
 
