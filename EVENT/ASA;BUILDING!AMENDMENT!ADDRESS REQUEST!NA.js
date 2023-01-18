@@ -8,6 +8,20 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyAdditionalInfo(vParentId,capId);
     aa.cap.copyCapDetailInfo(vParentId,capId);
     aa.cap.copyCapWorkDesInfo(vParentId,capId);
+    editAppName(getAppName(vParentId),capId);
+}
+function getAppName() {
+    var itemCap = capId;
+    if (arguments.length == 1) itemCap = arguments[0]; // use cap ID specified in args
+
+    capResult = aa.cap.getCap(itemCap)
+
+    if (!capResult.getSuccess())
+    { logDebug("**WARNING: error getting cap : " + capResult.getErrorMessage()); return false }
+
+    capModel = capResult.getOutput().getCapModel()
+
+    return capModel.getSpecialText()
 }
 function copyAdditionalInfo(srcCapId, targetCapId)
 {
