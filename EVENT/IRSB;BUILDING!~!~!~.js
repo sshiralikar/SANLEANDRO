@@ -4,5 +4,6 @@ if((!inspComment || inspComment == "")
 {
     cancel = true;
     showMessage = true;
+    showDebug = false;
     comment("Please enter the result comments.");
 }
