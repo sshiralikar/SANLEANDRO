@@ -244,8 +244,13 @@ function isDistrictValid()
         //explore(parcel)
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
-            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "Sewer District");
-            logDebug("Val: "+ value);
+
+            for (i in parcel) {
+                parcelArea += parcel[i].getParcelArea()
+                var parcelAttrObj = parcel[i].getParcelAttribute().toArray();
+                for (var z in parcelAttrObj)
+                    logDebug("parcelAttrObj[z].getB1AttributeName(): "+ parcelAttrObj[z].getB1AttributeName()+" --> "+ parcelAttrObj[z].getB1AttributeValue());
+            }
 
             if(value == "Y")
                 return true;
