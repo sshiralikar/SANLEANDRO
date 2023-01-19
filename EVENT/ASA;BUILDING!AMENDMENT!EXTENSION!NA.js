@@ -1,21 +1,21 @@
-/*if(!publicUser)
-{
-  */  var vParentId = getParent();
-    if (vParentId != null && vParentId != false && vParentId != "undefined") {
-        copyContacts(vParentId, capId);
-        copyParcels(vParentId,capId);
-        copyOwnersByParcel();
-        copyAddresses(vParentId, capId);
-        //updateWorkDesc(vParentId,capId);
-        copyAdditionalInfo(vParentId,capId);
-        aa.cap.copyCapDetailInfo(vParentId,capId);
-        aa.cap.copyCapWorkDesInfo(vParentId,capId);
-        editAppName(getAppName(vParentId),capId);
-        copyLicensedProf(vParentId, capId);
-        editAppSpecific("Parent Permit Number",vParentId.getCustomID()+"");
-        aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
-    }
-//}
+var vParentId = getParent();
+if (vParentId != null && vParentId != false && vParentId != "undefined") {
+    copyContacts(vParentId, capId);
+    copyParcels(vParentId,capId);
+    copyOwnersByParcel();
+    copyAddresses(vParentId, capId);
+    //updateWorkDesc(vParentId,capId);
+    copyAdditionalInfo(vParentId,capId);
+    aa.cap.copyCapDetailInfo(vParentId,capId);
+    aa.cap.copyCapWorkDesInfo(vParentId,capId);
+    editAppName(getAppName(vParentId),capId);
+    copyLicensedProf(vParentId, capId);
+    editAppSpecific("Parent Permit Number",vParentId.getCustomID()+"");
+}
+if(!publicUser) {
+  aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
+}
+
 
 function getAppName() {
     var itemCap = capId;
