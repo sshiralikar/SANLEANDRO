@@ -245,8 +245,14 @@ function isDistrictValid()
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
 
-            for(var i in parcel)
-                aa.print(i);
+            var capParcelObj = cap.getParcelModel();
+            var parceMod = capParcelObj.getParcelModel();
+            var parseNum = parceMod.getParcelNumber();
+            var attArray = parceMod.getParcelAttribute().toArray();
+            for (att in attArray) {
+                logDebug(attArray[att].getB1AttributeName())
+
+                }
         }
     }
 
