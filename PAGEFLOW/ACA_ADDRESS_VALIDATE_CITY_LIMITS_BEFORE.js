@@ -245,7 +245,7 @@ function isDistrictValid()
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
             var fcapParcelObj = null;
-            var capParcelResult = aa.parcel.getParcelandAttribute(itemCap, null);
+            var capParcelResult = aa.parcel.getParcelandAttribute(capId, null);
             if (capParcelResult.getSuccess())
                 var fcapParcelObj = capParcelResult.getOutput().toArray();
             else
