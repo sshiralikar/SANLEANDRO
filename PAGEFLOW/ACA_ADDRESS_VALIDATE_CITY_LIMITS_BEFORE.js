@@ -194,19 +194,14 @@ try {
     }
 
     //aa.print(message);
-
-    cancel = true;
-    showMessage = true;
-        if(!isDistrictValid())
-        {
-            cancel = true;
-            showMessage = true;
-            comment("Your location is outside of our area. Please contact the Oro Loma Sanitary District.");
-        }
-
-
-
-
+    //CASANLEAN-1388
+    if(!isDistrictValid())
+    {
+        cancel = true;
+        showMessage = true;
+        comment("Your location is outside of our area. Please contact the Oro Loma Sanitary District.");
+    }
+    //CASANLEAN-1388
 } catch (err) {
     logDebug(err);
     showMessage = true;
@@ -239,23 +234,17 @@ if (debug.indexOf("**ERROR") > 0) {
 }
 function isDistrictValid()
 {
-    var parcel = cap.getParcelModel();
-    if(parcel) {
-        //explore(parcel)
-        if (parcel.parcelNo) {
-            ParcelValidatedNumber = String(parcel.parcelNo);
-
-            var capParcelObj = cap.getParcelModel();
-            var parceMod = capParcelObj.getParcelModel();
-            var parseNum = parceMod.getParcelNumber();
-            var attArray = parceMod.getParcelAttribute().toArray();
-            for (att in attArray) {
-                logDebug(attArray[att].getB1AttributeName()+" --> "+ attArray[att].getB1AttributeValue())
-
-                }
-        }
+    var val = null;
+    var capParcelObj = cap.getParcelModel();
+    var parceMod = capParcelObj.getParcelModel();
+    var attArray = parceMod.getParcelAttribute().toArray();
+    for (att in attArray) {
+        if(attArray[att].getB1AttributeName() == "SEWERDISTRICT")
+            val = attArray[att].getB1AttributeValue()+"";
     }
 
+    if(val && (val.toUpperCase().indexOf("SANITARY DISTRICT"))>-1 || (val.toUpperCase().indexOf("POLLUTION CONTROL PLANT"))>-1)
+        return true;
     return false;
 }
 function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, distanceType
