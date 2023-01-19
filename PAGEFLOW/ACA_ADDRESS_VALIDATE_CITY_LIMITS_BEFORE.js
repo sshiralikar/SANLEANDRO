@@ -244,11 +244,17 @@ function isDistrictValid()
         //explore(parcel)
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
+            var fcapParcelObj = null;
+            var capParcelResult = aa.parcel.getParcelandAttribute(itemCap, null);
+            if (capParcelResult.getSuccess())
+                var fcapParcelObj = capParcelResult.getOutput().toArray();
+            else
+                logDebug("**ERROR: Failed to get Parcel object: " + capParcelResult.getErrorType() + ":" + capParcelResult.getErrorMessage())
 
-            for (i in parcel) {
-                parcelArea += parcel[i].getParcelArea()
-                var parcelAttrObj = parcel[i].getParcelAttribute().toArray();
-                for (var z in parcelAttrObj)
+            for (i in fcapParcelObj) {
+                parcelArea += fcapParcelObj[i].getParcelArea()
+                var parcelAttrObj = fcapParcelObj[i].getParcelAttribute().toArray();
+                for (z in parcelAttrObj)
                     logDebug("parcelAttrObj[z].getB1AttributeName(): "+ parcelAttrObj[z].getB1AttributeName()+" --> "+ parcelAttrObj[z].getB1AttributeValue());
             }
 
