@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------------------------------/
-| Program : ACA_BLD_BCNEW_DOC_BEFORE_CA.js
+| Program : ACA_BLD_PLUMB_SEWER_DISTRICT_CHECK.js
 | Event   : ACA Page Flow attachments before event
 |
 | Usage   : Master Script by Accela.  See accompanying documentation and release notes.
@@ -141,14 +141,14 @@ logDebug("balanceDue = " + balanceDue);
 // page flow custom code begin
 
 try {
-    cancel = true;
-    showDebug = true;
+    //CASANLEAN-1388
     if(!isDistrictValid())
     {
         cancel = true;
         showMessage = true;
         comment("Your location is outside of our area. Please contact the Oro Loma Sanitary District.");
     }
+    //CASANLEAN-1388
 
 } catch (err) {
 
@@ -175,21 +175,18 @@ if (debug.indexOf("**ERROR") > 0) {
             aa.env.setValue("ErrorMessage", debug);
     }
 }
-
 function isDistrictValid()
 {
-    var parcel = cap.getParcelModel();
-    if(parcel) {
-        //explore(parcel)
-        if (parcel.parcelNo) {
-            ParcelValidatedNumber = String(parcel.parcelNo);
-            logDebug("ParcelAttribute.OVERLAY: "+AInfo["ParcelAttribute.OVERLAY"]);
-            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018");
-
-            if(value == "Y")
-                return true;
-        }
+    var val = null;
+    var capParcelObj = cap.getParcelModel();
+    var parceMod = capParcelObj.getParcelModel();
+    var attArray = parceMod.getParcelAttribute().toArray();
+    for (att in attArray) {
+        if(attArray[att].getB1AttributeName() == "SEWERDISTRICT")
+            val = attArray[att].getB1AttributeValue()+"";
     }
 
+    if( AInfo["Type of Work"] == "Sewer" && val && (val.toUpperCase().indexOf("SANITARY DISTRICT"))>-1 || (val.toUpperCase().indexOf("POLLUTION CONTROL PLANT"))>-1)
+        return true;
     return false;
 }
