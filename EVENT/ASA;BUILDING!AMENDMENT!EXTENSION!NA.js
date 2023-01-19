@@ -1,6 +1,6 @@
-if(!publicUser)
+/*if(!publicUser)
 {
-    var vParentId = getParent();
+  */  var vParentId = getParent();
     if (vParentId != null && vParentId != false && vParentId != "undefined") {
         copyContacts(vParentId, capId);
         copyParcels(vParentId,capId);
@@ -15,7 +15,7 @@ if(!publicUser)
         editAppSpecific("Parent Permit Number",vParentId.getCustomID()+"");
         aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
     }
-}
+//}
 
 function getAppName() {
     var itemCap = capId;
