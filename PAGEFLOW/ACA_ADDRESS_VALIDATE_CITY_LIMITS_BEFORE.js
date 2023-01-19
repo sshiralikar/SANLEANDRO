@@ -250,7 +250,7 @@ function isDistrictValid()
             var parseNum = parceMod.getParcelNumber();
             var attArray = parceMod.getParcelAttribute().toArray();
             for (att in attArray) {
-                logDebug(attArray[att].getB1AttributeName())
+                logDebug(attArray[att].getB1AttributeName()+" --> "+ attArray[att].getB1AttributeValue())
 
                 }
         }
