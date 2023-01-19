@@ -245,7 +245,8 @@ function isDistrictValid()
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
             logDebug("ParcelAttribute.SEWERDISTRICT: "+AInfo["ParcelAttribute.SEWERDISTRICT"]);
-            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018");
+            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "SEWERDISTRICT");
+            logDebug("Val: "+ value);
 
             if(value == "Y")
                 return true;
