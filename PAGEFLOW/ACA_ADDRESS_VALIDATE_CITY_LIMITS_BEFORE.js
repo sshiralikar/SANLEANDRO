@@ -122,7 +122,7 @@ if (capDetailObjResult.getSuccess()) {
 var AInfo = new Array(); // Create array for tokenized variables
 loadAppSpecific4ACA(AInfo); // Add AppSpecific Info
 //loadTaskSpecific(AInfo);						// Add task specific info
-//loadParcelAttributes(AInfo);						// Add parcel attributes
+loadParcelAttributes(AInfo);						// Add parcel attributes
 loadASITables();
 
 logDebug("<B>EMSE Script Results for " + capIDString + "</B>");
@@ -194,8 +194,19 @@ try {
     }
 
     //aa.print(message);
-    
-    
+
+    cancel = true;
+    showMessage = true;
+        if(!isDistrictValid())
+        {
+            cancel = true;
+            showMessage = true;
+            comment("Your location is outside of our area. Please contact the Oro Loma Sanitary District.");
+        }
+
+
+
+
 } catch (err) {
     logDebug(err);
     showMessage = true;
@@ -226,7 +237,23 @@ if (debug.indexOf("**ERROR") > 0) {
             
     }
 }
+function isDistrictValid()
+{
+    var parcel = cap.getParcelModel();
+    if(parcel) {
+        //explore(parcel)
+        if (parcel.parcelNo) {
+            ParcelValidatedNumber = String(parcel.parcelNo);
+            logDebug("ParcelAttribute.OVERLAY: "+AInfo["ParcelAttribute.OVERLAY"]);
+            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "SFHA_2018");
 
+            if(value == "Y")
+                return true;
+        }
+    }
+
+    return false;
+}
 function explore(objExplore) {
     logDebug("Methods:")
     for (x in objExplore) {
