@@ -61,7 +61,7 @@ if(wfTask == "Extension" && wfStatus == "Approved")
         for (var i in capContacts) {
             //if (capContacts[i].getPeople().getContactType() == "Applicant") {
                 addParameter(params, "$$FullNameBusName$$", getContactName(capContacts[i]));
-                sendEmail("no-reply@sanleandro.org", capContacts[i].getPeople().getEmail()+"", "", "BLD_WTUA_EXT_APPROVED", params, null, capId);
+                sendEmail("no-reply@sanleandro.org", runEmailThroughSLEmailFilter(capContacts[i].getPeople().getEmail()+""), "", "BLD_WTUA_EXT_APPROVED", params, null, capId);
             //}
         }
     }
