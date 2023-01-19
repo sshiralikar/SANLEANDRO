@@ -258,8 +258,8 @@ function isDistrictValid()
                     logDebug("parcelAttrObj[z].getB1AttributeName(): "+ parcelAttrObj[z].getB1AttributeName()+" --> "+ parcelAttrObj[z].getB1AttributeValue());
             }
 
-            if(value == "Y")
-                return true;
+            /*if(value == "Y")
+                return true;*/
         }
     }
 
