@@ -245,13 +245,8 @@ function isDistrictValid()
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
 
-                var parcelAttrObj = parcel.getParcelAttribute().toArray();
-                for (var z in parcelAttrObj)
-                    logDebug("parcelAttrObj[z].getB1AttributeName(): "+ parcelAttrObj[z].getB1AttributeName()+" --> "+ parcelAttrObj[z].getB1AttributeValue());
-
-
-            if(value == "Y")
-                return true;
+            for(var i in parcel)
+                aa.print(i);
         }
     }
 
