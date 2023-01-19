@@ -12,6 +12,7 @@ if(publicUser)
         aa.cap.copyCapWorkDesInfo(vParentId,capId);
         editAppName(getAppName(vParentId),capId);
         copyLicensedProf(vParentId, capId);
+        editAppSpecific("Parent Permit Number",vParentId.getCustomID()+"");
         aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
     }
 }
