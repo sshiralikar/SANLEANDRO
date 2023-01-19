@@ -244,8 +244,7 @@ function isDistrictValid()
         //explore(parcel)
         if (parcel.parcelNo) {
             ParcelValidatedNumber = String(parcel.parcelNo);
-            logDebug("ParcelAttribute.SEWERDISTRICT: "+AInfo["ParcelAttribute.SEWERDISTRICT"]);
-            var value =  getGISInfo("SANLEANDRO", "Parcels", "SEWERDISTRICT");
+            var value =  getGISInfo2ASB("SANLEANDRO", "Parcels", "Sewer District");
             logDebug("Val: "+ value);
 
             if(value == "Y")
@@ -255,7 +254,7 @@ function isDistrictValid()
 
     return false;
 }
-function getGISInfo(svc,layer,attributename) // optional: numDistance, distanceType
+function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, distanceType
 {
     // use buffer info to get info on the current object by using distance 0
     // usage:
@@ -301,9 +300,7 @@ function getGISInfo(svc,layer,attributename) // optional: numDistance, distanceT
             var proxObj = proxArr[a2].getGISObjects();  // if there are GIS Objects here, we're done
             for (z1 in proxObj)
             {
-                var v = proxObj[z1].getAttributeValues();
-                for(var jj in v)
-                    logDebug(v[jj]);
+                var v = proxObj[z1].getAttributeValues()
                 retString = v[0];
             }
         }
