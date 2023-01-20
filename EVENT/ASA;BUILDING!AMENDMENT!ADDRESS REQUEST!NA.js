@@ -2,7 +2,7 @@ var vParentId = getParent();
 if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
-    copyOwnersByParcel();
+    copyOwner(vParentId, capId);
     copyAddresses(vParentId, capId);
     //updateWorkDesc(vParentId,capId);
     copyAdditionalInfo(vParentId,capId);
