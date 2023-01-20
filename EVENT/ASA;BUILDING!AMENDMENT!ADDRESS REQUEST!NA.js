@@ -3,13 +3,30 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
     copyAddresses(vParentId, capId);
-    copyOwner(vParentId, capId);
+    copyOwnerX(vParentId, capId);
     //updateWorkDesc(vParentId,capId);
     copyAdditionalInfo(vParentId,capId);
     aa.cap.copyCapDetailInfo(vParentId,capId);
     aa.cap.copyCapWorkDesInfo(vParentId,capId);
     editAppName(getAppName(vParentId),capId);
 }
+function copyOwnerX(sCapID, tCapID)
+{
+    var ownrReq = aa.owner.getOwnerByCapId(sCapID);
+/*    if(ownrReq.getSuccess())
+    {*/
+        var ownrObj = ownrReq.getOutput();
+        for (xx in ownrObj)
+        {
+            ownrObj[xx].setCapID(tCapID);
+            aa.owner.createCapOwnerWithAPOAttribute(ownrObj[xx]);
+            logDebug("Copied Owner: " + ownrObj[xx].getOwnerFullName())
+        }
+/*    }
+    else
+        logDebug("Error Copying Owner : " + ownrObj.getErrorType() + " : " + ownrObj.getErrorMessage());*/
+}
+
 function getAppName() {
     var itemCap = capId;
     if (arguments.length == 1) itemCap = arguments[0]; // use cap ID specified in args
