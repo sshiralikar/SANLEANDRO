@@ -2,8 +2,8 @@ var vParentId = getParent();
 if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
-    copyOwner(vParentId, capId);
     copyAddresses(vParentId, capId);
+    copyOwner(vParentId, capId);
     //updateWorkDesc(vParentId,capId);
     copyAdditionalInfo(vParentId,capId);
     aa.cap.copyCapDetailInfo(vParentId,capId);
