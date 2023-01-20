@@ -1197,7 +1197,9 @@ function validateFromCSLB(licNum, itemCap) {
         aa.print(result);
 		
         var lpStatus = XMLTagValue(result, "Status");
-        logDebug(licNum + " status from CSLB: " + lpStatus);
+        var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
+        var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
+        logDebug(licUrl + " status from CSLB: " + lpStatus);
 
         if(!lpStatus || lpStatus == "") {
             logDebug("CSLB did not return an LP Status for " + licNum);
@@ -1205,17 +1207,16 @@ function validateFromCSLB(licNum, itemCap) {
         }
 
         if (lpStatus && lpStatus != "CLEAR") {
-            logDebug("Status not clear for " + licNum + " status: " + licNum);
-            expiredLPs.push("Status not clear for " + licNum + " status: " + licNum);
-        }
-        
-       
+            //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
+            logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
+            expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
+        }       
 
         var ExpirationDate = XMLTagValue(result, "ExpirationDate");
         if (ExpirationDate) {            
             var cslbExpDate = new Date(ExpirationDate);
             if(cslbExpDate <= checkDate) {
-                expiredLPs.push("LP " + licNum + " License date has expired in CSLB: " + ExpirationDate);
+                expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
             }
         }
         
@@ -1223,9 +1224,17 @@ function validateFromCSLB(licNum, itemCap) {
         if (PolicyExpirationDate) {            
             var workersCompExpDate = new Date(PolicyExpirationDate);
             if(workersCompExpDate <= checkDate) {
-                expiredLPs.push("LP " + licNum + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
+                expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
             }
         }
+
+        // var BondExpirationDate = XMLTagValue(result, "BondEffectiveDate");
+        // if(BondExpirationDate) {
+        //     var bondExpDate = new Date(BondExpirationDate);
+        //     if(bondExpDate <= checkDate) {
+        //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
+        //     }
+        // }
          
     } // for each license
     return expiredLPs;
