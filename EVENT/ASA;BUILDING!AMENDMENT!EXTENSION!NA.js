@@ -3,7 +3,7 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
     //copyOwnersByParcel();
-    copyOwner(vParentId, capId);
+    copyOwnerX(vParentId, capId);
     copyAddresses(vParentId, capId);
     //updateWorkDesc(vParentId,capId);
     copyAdditionalInfo(vParentId,capId);
@@ -16,7 +16,22 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
 if(!publicUser) {
   aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
 }
-
+function copyOwnerX(sCapID, tCapID)
+{
+    var ownrReq = aa.owner.getOwnerByCapId(sCapID);
+    /*    if(ownrReq.getSuccess())
+        {*/
+    var ownrObj = ownrReq.getOutput();
+    for (xx in ownrObj)
+    {
+        ownrObj[xx].setCapID(tCapID);
+        aa.owner.createCapOwnerWithAPOAttribute(ownrObj[xx]);
+        logDebug("Copied Owner: " + ownrObj[xx].getOwnerFullName())
+    }
+    /*    }
+        else
+            logDebug("Error Copying Owner : " + ownrObj.getErrorType() + " : " + ownrObj.getErrorMessage());*/
+}
 
 function getAppName() {
     var itemCap = capId;
