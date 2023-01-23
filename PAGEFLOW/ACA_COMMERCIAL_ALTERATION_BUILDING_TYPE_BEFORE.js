@@ -147,7 +147,7 @@ try {
     {
         cancel = true;
         showMessage = true;
-        comment("Please add atleast <b>One</b> row in the table 'Building Types'");
+        comment("Please add at least <b>one</b> row in the table 'Building Types'");
     }
 /*    if (typeof (BUILDINGTYPES) == "object" && BUILDINGTYPES.length == 0)
     {
