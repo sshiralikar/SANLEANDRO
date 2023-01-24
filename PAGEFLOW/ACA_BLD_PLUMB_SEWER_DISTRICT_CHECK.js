@@ -187,6 +187,6 @@ function isDistrictValid()
     }
 
     if( AInfo["Type of Work"] == "Sewer" && val && val.toUpperCase().indexOf("SAN LEANDRO SANITARY DISTRICT")==-1 && val.toUpperCase().indexOf("WATER POLLUTION CONTROL PLANT")==-1)
-        return true;
-    return false;
+        return false;
+    return true;
 }
