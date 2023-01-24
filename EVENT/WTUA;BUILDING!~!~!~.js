@@ -1,5 +1,5 @@
 //CASANLEAN-1393
-if(wfTask == "Plans Distribution" && wfStatus == "Fees Due") {
+if(wfTask == "Plans Distribution" && wfStatus == "Fees Due" && !appMatch("Building/Commercial/Solar/NA")) {
     addFee("PLNC  ","B_COMBO","FINAL",1,"Y");
 
     var params = aa.util.newHashtable();
