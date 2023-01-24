@@ -173,6 +173,7 @@ function copy() {
         copyAdditionalInfo(parentCapId, targetCapId);
         copyCapDetailInfo(parentCapId, targetCapId);
         copyCapWorkDesInfo(parentCapId, targetCapId);
+        editAppName(getAppName(vParentId),capId);
         var amendCapModel = aa.cap.getCapViewBySingle4ACA(targetCapId);
         amendCapModel.getCapType().setSpecInfoCode(capModel.getCapType().getSpecInfoCode());
         aa.env.setValue("CapModel", amendCapModel);
@@ -202,7 +203,19 @@ if (debug.indexOf("**ERROR") > 0) {
         if (showDebug) aa.env.setValue("ErrorMessage", debug);
     }
 }
+function getAppName() {
+    var itemCap = capId;
+    if (arguments.length == 1) itemCap = arguments[0]; // use cap ID specified in args
 
+    capResult = aa.cap.getCap(itemCap)
+
+    if (!capResult.getSuccess())
+    { logDebug("**WARNING: error getting cap : " + capResult.getErrorMessage()); return false }
+
+    capModel = capResult.getOutput().getCapModel()
+
+    return capModel.getSpecialText()
+}
 function copyLicenseProfessionalX(srcCapId, targetCapId) {
     aa.print("In copyLicenseProfessional");
     message += "In copyLicenseProfessional" + br;
