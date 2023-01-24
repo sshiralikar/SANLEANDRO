@@ -173,7 +173,7 @@ function copy() {
         copyAdditionalInfo(parentCapId, targetCapId);
         copyCapDetailInfo(parentCapId, targetCapId);
         copyCapWorkDesInfo(parentCapId, targetCapId);
-        editAppName(getAppName(vParentId),capId);
+        editAppName(getAppName(parentCapId),targetCapId);
         var amendCapModel = aa.cap.getCapViewBySingle4ACA(targetCapId);
         amendCapModel.getCapType().setSpecInfoCode(capModel.getCapType().getSpecInfoCode());
         aa.env.setValue("CapModel", amendCapModel);
