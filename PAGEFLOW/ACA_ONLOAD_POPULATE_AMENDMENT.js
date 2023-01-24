@@ -133,10 +133,10 @@ logDebug("sysDateMMDDYYYY = " + sysDateMMDDYYYY);
 | <===========Main=Loop================>
 |
 /-----------------------------------------------------------------------------------------------------*/
-var capModelInited = aa.env.getValue("CAP_MODEL_INITED");
-if (capModelInited != "TRUE") {
+/*var capModelInited = aa.env.getValue("CAP_MODEL_INITED");
+if (capModelInited != "TRUE") {*/
     copy();
-}
+/*}*/
 /*------------------------------------------------------------------------------------------------------/
  | <===========Functions (used by copy)
  /------------------------------------------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ function copy() {
         var amendCapModel = aa.cap.getCapViewBySingle4ACA(targetCapId);
         amendCapModel.getCapType().setSpecInfoCode(capModel.getCapType().getSpecInfoCode());
         aa.env.setValue("CapModel", amendCapModel);
-        aa.env.setValue("CAP_MODEL_INITED", "TRUE");
+        /*aa.env.setValue("CAP_MODEL_INITED", "TRUE");*/
         /*cancel = true;
         showMessage = true;
         showDebug = true;*/
