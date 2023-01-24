@@ -23,7 +23,7 @@ function isDistrictValid()
             val = attArray[att].getB1AttributeValue()+"";
     }
 
-    if( AInfo["Type of Work"] == "Sewer" && val && (val.toUpperCase().indexOf("SANITARY DISTRICT"))>-1 || (val.toUpperCase().indexOf("POLLUTION CONTROL PLANT"))>-1)
+    if( AInfo["Type of Work"] == "Sewer" && val && val.toUpperCase().indexOf("SAN LEANDRO SANITARY DISTRICT")==-1 && val.toUpperCase().indexOf("WATER POLLUTION CONTROL PLANT")==-1)
         return true;
     return false;
 }
