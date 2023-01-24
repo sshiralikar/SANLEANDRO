@@ -1,4 +1,4 @@
-var vParentId = getParent();
+/*var vParentId = getParent();
 if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
@@ -9,7 +9,7 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
     aa.cap.copyCapDetailInfo(vParentId,capId);
     aa.cap.copyCapWorkDesInfo(vParentId,capId);
     editAppName(getAppName(vParentId),capId);
-}
+}*/
 function copyOwnerX(sCapID, tCapID)
 {
     var ownrReq = aa.owner.getOwnerByCapId(sCapID);
