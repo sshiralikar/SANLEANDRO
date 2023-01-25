@@ -1294,3 +1294,75 @@ function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, dista
 	
 	return retString
 }
+
+function validateCSLBClassifications(licNum, recordType) {
+    // Make the call to the California State License Board
+
+    var returnObj = {
+        validated: false,
+        message: "",
+    };
+    var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+    var method = "http://CSLB.Ca.gov/GetLicense";
+    var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+    //var licNum = "9";
+    var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+    if (!token || token == "") {
+        returnObj.message = "GRAYQUARTER CSLB TOKEN not configured";
+        returnObj.validated = false;
+        return returnObj;
+    }
+
+    xmlout = xmlout.replace("%%LICNUM%%", licNum);
+    xmlout = xmlout.replace("%%TOKEN%%", token);
+
+    var headers = aa.util.newHashMap();
+    headers.put("Content-Type", "text/xml");
+    headers.put("SOAPAction", method);
+
+    var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+    // check the results
+    var result;    
+    if (!res.getSuccess()) {
+        returnObj.message = "CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum;
+        returnObj.validated = false;
+        return returnObj;   
+    }
+    result = String(res.getOutput());
+    aa.print(result);
+
+    var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
+    if(!validClasses) {
+        logDebug(capType + " not configured so any LP goes");
+        returnObj.validated = true;
+        return returnObj;
+    }
+
+    var classTypeMap = {};
+    validClasses = validClasses.split(",");
+    for(var validClassIndex in validClasses) {
+        var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+        if(!classTypeMap[stdClass]) {
+            classTypeMap[stdClass] = true;
+        }
+    }
+
+    var Classifications = XMLTagValue(result, "Classifications");
+    var ClassificationList = Classifications.split("|");
+
+    for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
+        var classification = String(ClassificationList[classificationIndex]).toUpperCase();
+        logDebug(classification);
+        if(classTypeMap[classification]) {
+            returnObj.validated = true;
+            break;
+        }
+    }
+        
+    if(!returnObj.validated) {
+        returnObj.message = licNum + " is not valid, " + recordType + " requires "  + validClasses.join(", ") + " found: " + ClassificationList.join(", ");
+    }
+    return returnObj;
+}
