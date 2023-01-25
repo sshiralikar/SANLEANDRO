@@ -1,4 +1,5 @@
 //CASANLEAN-1540
+showDebug = false;
 var vBalanceDue = 0.0;
 var capDetailObjResult = aa.cap.getCapDetail(capId);
 if (capDetailObjResult.getSuccess())
