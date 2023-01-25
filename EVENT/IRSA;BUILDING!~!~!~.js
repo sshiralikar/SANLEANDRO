@@ -72,7 +72,7 @@ if (contactResult.getSuccess()) {
             var rParams = aa.util.newHashMap();
             rParams.put("RecordID", capId.getCustomID()+"");
             rParamss.push(rParams);
-
+            var reportUser = "ADMIN";
             for(var i in reportNames)
             {
                 var reportName = reportNames[i];
