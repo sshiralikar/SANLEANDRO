@@ -122,7 +122,7 @@ if (contactResult.getSuccess()) {
         addParameter(params, "$$FullNameBusName$$", conName);
         addParameter(params, "$$InspectionType$$", inspType);
         addParameter(params, "$$InspectionResultComment$$", inspComment);
-        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, rFiles, capId);
+        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
     }
 }
 
