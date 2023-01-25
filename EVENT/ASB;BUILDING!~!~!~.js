@@ -18,4 +18,5 @@ if(errors.length > 0) {
     cancel = true;
     showMessage = true;
     message += errors.join("<br>");
+    logDebug(errors.join("<br>"));
 }
