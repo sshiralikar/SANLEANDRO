@@ -118,7 +118,9 @@ if (contactResult.getSuccess()) {
         }
         addParameter(params, "$$InspectorOfRecord$$", inspectorName);
         addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone(inspId));
+        aa.print("getInspectorPhone(inspId): "+ getInspectorPhone(inspId));
         addParameter(params, "$$InspectorEmail$$", getInspectorEmail(inspId));
+        aa.print("getInspectorEmail(inspId): "+ getInspectorEmail(inspId));
         addParameter(params, "$$altId$$", capId.getCustomID()+"");
         addParameter(params, "$$InspectionStatus$$", inspResult);
         addParameter(params, "$$FullNameBusName$$", conName);
@@ -134,10 +136,8 @@ function getInspectorName(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
     if (inspResultObj.getSuccess()) {
         iObj = inspResultObj.getOutput();
-        // have to re-grab the user since the id won't show up in this object.
         inspUserObj = aa.person.getUser(iObj.getInspector().getFirstName(), iObj.getInspector().getMiddleName(), iObj.getInspector().getLastName()).getOutput();
         return iObj.getInspector().getFirstName()  +" " + iObj.getInspector().getLastName();
-        //return inspUserObj.getUserID();
     }
     return false;
 }
@@ -145,10 +145,8 @@ function getInspectorEmail(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
     if (inspResultObj.getSuccess()) {
         iObj = inspResultObj.getOutput();
-        // have to re-grab the user since the id won't show up in this object.
         inspUserObj = aa.person.getUser(iObj.getInspector().getFirstName(), iObj.getInspector().getMiddleName(), iObj.getInspector().getLastName()).getOutput();
         return iObj.getInspector().getEmail();
-        //return inspUserObj.getUserID();
     }
     return false;
 }
@@ -156,10 +154,8 @@ function getInspectorPhone(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
     if (inspResultObj.getSuccess()) {
         iObj = inspResultObj.getOutput();
-        // have to re-grab the user since the id won't show up in this object.
         inspUserObj = aa.person.getUser(iObj.getInspector().getFirstName(), iObj.getInspector().getMiddleName(), iObj.getInspector().getLastName()).getOutput();
         return iObj.getInspector().phoneNumber;
-        //return inspUserObj.getUserID();
     }
     return false;
 }
