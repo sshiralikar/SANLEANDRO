@@ -161,7 +161,7 @@ if(appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit
     appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")
     && inspResult == "Pass" && vBalanceDue <= 0)
 {
-    updateTask("Inspection"," Final Inspection Complete","","");
+    updateTask("Inspection","Final Inspection Complete","","");
     aa.workflow.adjustTask(capId, "Inspection", "N", "Y", null, null);
     updateAppStatus("Finaled","Updated through script");
 }
