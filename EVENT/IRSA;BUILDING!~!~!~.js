@@ -42,24 +42,86 @@ if(inspType == "2030 Final Electrical" &&
 var params = aa.util.newHashtable();
 var applicantEmail = "";
 var conName = "";
+var vBalanceDue = 0.0;
+var capDetailObjResult = aa.cap.getCapDetail(capId);
+if (capDetailObjResult.getSuccess())
+{
+    capDetail = capDetailObjResult.getOutput();
+    vBalanceDue = parseFloat(capDetail.getBalance());
+}
 var contactResult = aa.people.getCapContactByCapID(capId);
 if (contactResult.getSuccess()) {
     var capContacts = contactResult.getOutput();
     for (var i in capContacts) {
-
+        var VRFiles = null;
         var conName = getContactName(capContacts[i]);
         var applicantEmail = capContacts[i].getPeople().getEmail()+"";
         var inspectorName = getInspectorName(inspId);
         if(!inspectorName)
             inspectorName = "Inspector";
+
+        if(inspType == "3000 Final Building Permit" && (appMatch("Building/Combo/NA/NA")
+            ||appMatch("Building/Commercial/Alteration/NA")||appMatch("Building/Commercial/New Construction/NA")
+        ||appMatch("Building/Commercial/Accessory/NA")||appMatch("Building/Commercial/Addition/NA")
+        ||appMatch("Building/Commercial/Pool/NA")||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
+         && vBalanceDue <= 0 && inspResult == "Pass")
+        {
+            var reportNames = new Array();
+            var rParamss = new Array();
+            reportNames.push("Certificate of Occupancy - SSRS");
+            var rParams = aa.util.newHashMap();
+            rParams.put("RecordID", capId.getCustomID()+"");
+            rParamss.push(rParams);
+
+            for(var i in reportNames)
+            {
+                var reportName = reportNames[i];
+                var rParams = rParamss[i];
+                var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+                if(reportInfoResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not found this report " + reportName);
+                }
+
+                report = reportInfoResult.getOutput();
+                report.setModule("Building");
+                report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+                report.setReportParameters(rParams);
+
+                var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+                if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+                }
+
+                var reportResult = aa.reportManager.getReportResult(report);
+                if(reportResult.getSuccess() == false){
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+                }
+
+                reportResult = reportResult.getOutput();
+                var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+                if(reportFileResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+                }
+
+                var reportFile = reportFileResult.getOutput();
+                rFiles.push(reportFile);
+
+            }
+            //var capIDScriptModel =  aa.cap.createCapIDScriptModel(capId.getID1(), capId.getID2(), capId.getID3());
+            //var result = aa.document.sendEmailAndSaveAsDocument("", email, "", emailTemplate, params, capIDScriptModel, rFiles);
+            VRFiles = rFiles;
+        }
         addParameter(params, "$$InspectorOfRecord$$", inspectorName);
         addParameter(params, "$$altId$$", capId.getCustomID()+"");
         addParameter(params, "$$InspectionStatus$$", inspResult);
         addParameter(params, "$$FullNameBusName$$", conName);
         addParameter(params, "$$InspectionType$$", inspType);
         addParameter(params, "$$InspectionResultComment$$", inspComment);
-        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, null, capId);
-
+        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, rFiles, capId);
     }
 }
 
