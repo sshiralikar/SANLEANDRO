@@ -173,7 +173,7 @@ if(inspResult == "Pass" || inspResult == "Fail")
     var date = new Date();
     date.setFullYear(date.getFullYear() + 1);
     var newDate = date.getMonth()+1+"/"+date.getDate()+"/"+date.getFullYear();
-    editAppSpecific("Permit New Expiration Date", newDate);
+    editAppSpecific("Permit Expiration Date", newDate);
 }
 //CASANLEAN-1496
 
