@@ -166,7 +166,7 @@ if(appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit
 //CASANLEAN-1537
 
 //CASANLEAN-1496
-if(inspResult == "Pass" || inspResult == "Fail")
+if(appMatch("Building/Residential/*/*") && (inspResult == "Pass" || inspResult == "Fail"))
 {
     var date = new Date();
     date.setFullYear(date.getFullYear() + 1);
