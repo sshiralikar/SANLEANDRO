@@ -158,7 +158,7 @@ function getInspectorPhone(pInspId) {
         iObj = inspResultObj.getOutput();
         // have to re-grab the user since the id won't show up in this object.
         inspUserObj = aa.person.getUser(iObj.getInspector().getFirstName(), iObj.getInspector().getMiddleName(), iObj.getInspector().getLastName()).getOutput();
-        return iObj.getInspector().getPhone();
+        return iObj.getInspector().getPhone1();
         //return inspUserObj.getUserID();
     }
     return false;
