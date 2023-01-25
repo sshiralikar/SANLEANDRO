@@ -60,10 +60,8 @@ if (contactResult.getSuccess()) {
         if(!inspectorName)
             inspectorName = "Inspector";
 
-        if(inspType == "3000 Final Building Permit" && (appMatch("Building/Combo/NA/NA")
-            ||appMatch("Building/Commercial/Alteration/NA")||appMatch("Building/Commercial/New Construction/NA")
-        ||appMatch("Building/Commercial/Accessory/NA")||appMatch("Building/Commercial/Addition/NA")
-        ||appMatch("Building/Commercial/Pool/NA")||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
+        if(inspType == "3000 Final Building Permit" && (appMatch("Building/Commercial/New Construction/NA")
+        ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
          && vBalanceDue <= 0 && inspResult == "Pass")
         {
             var reportNames = new Array();
