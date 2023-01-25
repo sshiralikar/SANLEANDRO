@@ -15,8 +15,8 @@ for(var lpIndex in lpList) {
     }    
 }
 if(errors.length > 0) {
-    cancel = true;
     showMessage = true;
-    message += errors.join("<br>");
+    comment(errors.join("<br>"));
+    cancel = true;
     logDebug(errors.join("<br>"));
 }
