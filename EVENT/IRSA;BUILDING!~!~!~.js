@@ -167,6 +167,15 @@ if(appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit
 }
 //CASANLEAN-1537
 
+//CASANLEAN-1496
+if(inspResult == "Pass" || inspResult == "Fail")
+{
+    var date = new Date();
+    date.setFullYear(date.getFullYear() + 1);
+    var newDate = date.getMonth()+1+"/"+date.getDate()+"/"+date.getFullYear();
+    editAppSpecific("Permit New Expiration Date", newDate);
+}
+//CASANLEAN-1496
 
 function getInspectorName(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
