@@ -116,11 +116,10 @@ if (contactResult.getSuccess()) {
             //var result = aa.document.sendEmailAndSaveAsDocument("", email, "", emailTemplate, params, capIDScriptModel, rFiles);
             VRFiles = rFiles;
         }
-        addParameter(params, "$$InspectorOfRecord$$", inspectorName);
+        addParameter(params, "$$InspectorOfRecord1$$", inspectorName);
+        addParameter(params, "$$InspectorOfRecord2$$", inspectorName);
         addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone(inspId));
-        aa.print("getInspectorPhone(inspId): "+ getInspectorPhone(inspId));
         addParameter(params, "$$InspectorEmail$$", getInspectorEmail(inspId));
-        aa.print("getInspectorEmail(inspId): "+ getInspectorEmail(inspId));
         addParameter(params, "$$altId$$", capId.getCustomID()+"");
         addParameter(params, "$$InspectionStatus$$", inspResult);
         addParameter(params, "$$FullNameBusName$$", conName);
