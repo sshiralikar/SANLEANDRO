@@ -1335,7 +1335,7 @@ function validateCSLBClassifications(licNum, recordType) {
 
     var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
     if(!validClasses) {
-        logDebug(capType + " not configured so any LP goes");
+        logDebug(recordType + " not configured so any LP goes");
         returnObj.validated = true;
         return returnObj;
     }
