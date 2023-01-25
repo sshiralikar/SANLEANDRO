@@ -73,6 +73,7 @@ if (contactResult.getSuccess()) {
             rParams.put("RecordID", capId.getCustomID()+"");
             rParamss.push(rParams);
             var reportUser = "ADMIN";
+            var rFiles = [];
             for(var i in reportNames)
             {
                 var reportName = reportNames[i];
