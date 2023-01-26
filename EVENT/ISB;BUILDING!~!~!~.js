@@ -7,6 +7,7 @@ if (capDetailObjResult.getSuccess())
     capDetail = capDetailObjResult.getOutput();
     vBalanceDue = parseFloat(capDetail.getBalance());
 }
+aa.print("vBalanceDue: "+ vBalanceDue);
 if(appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit")||
     appMatch("Building/Commercial/Accessory/NA") && (inspType =="3000 Final Building Permit")||
     appMatch("Building/Commercial/Addition/NA") && (inspType =="3000 Final Building Permit")||
