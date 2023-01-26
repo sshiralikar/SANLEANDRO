@@ -49,6 +49,7 @@ if (capDetailObjResult.getSuccess())
     capDetail = capDetailObjResult.getOutput();
     vBalanceDue = parseFloat(capDetail.getBalance());
 }
+logDebug("vBalanceDue: "+ vBalanceDue);
 var contactResult = aa.people.getCapContactByCapID(capId);
 if (contactResult.getSuccess()) {
     var capContacts = contactResult.getOutput();
