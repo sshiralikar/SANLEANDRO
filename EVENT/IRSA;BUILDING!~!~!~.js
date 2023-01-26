@@ -64,7 +64,7 @@ if (contactResult.getSuccess()) {
         reportNames.push("Inspection Report");
         var rParams = aa.util.newHashMap();
         rParams.put("RecordID", capId.getCustomID()+"");
-        rParams.put("InspID", parseInt(inspId));
+        rParams.put("InspID", inspId);
         rParamss.push(rParams);
 
         var reportUser = "ADMIN";
