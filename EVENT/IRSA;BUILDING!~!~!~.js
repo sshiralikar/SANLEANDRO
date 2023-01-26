@@ -59,61 +59,65 @@ if (contactResult.getSuccess()) {
         var inspectorName = getInspectorName(inspId);
         if(!inspectorName)
             inspectorName = "Inspector";
+        var reportNames = new Array();
+        var rParamss = new Array();
+        reportNames.push("Inspection Report");
+        var rParams = aa.util.newHashMap();
+        rParams.put("RecordID", capId.getCustomID()+"");
+        rParams.put("InspID", inspId);
+        rParamss.push(rParams);
+
+        var reportUser = "ADMIN";
+        var rFiles = [];
 
         if(inspType == "3000 Final Building Permit" && (appMatch("Building/Commercial/New Construction/NA")
-        ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
-         && vBalanceDue <= 0 && inspResult == "Pass")
+                ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
+            && vBalanceDue <= 0 && inspResult == "Pass")
         {
-            var reportNames = new Array();
-            var rParamss = new Array();
             reportNames.push("Certificate of Occupancy - SSRS");
             var rParams = aa.util.newHashMap();
             rParams.put("RecordID", capId.getCustomID()+"");
             rParamss.push(rParams);
-            var reportUser = "ADMIN";
-            var rFiles = [];
-            for(var i in reportNames)
-            {
-                var reportName = reportNames[i];
-                var rParams = rParamss[i];
-                var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
-                if(reportInfoResult.getSuccess() == false) {
-                    // Notify adimistrator via Email, for example
-                    aa.print("Could not found this report " + reportName);
-                }
-
-                report = reportInfoResult.getOutput();
-                report.setModule("Building");
-                report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
-                report.setReportParameters(rParams);
-
-                var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
-                if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
-                    // Notify adimistrator via Email, for example
-                    aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
-                }
-
-                var reportResult = aa.reportManager.getReportResult(report);
-                if(reportResult.getSuccess() == false){
-                    // Notify adimistrator via Email, for example
-                    aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
-                }
-
-                reportResult = reportResult.getOutput();
-                var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
-                if(reportFileResult.getSuccess() == false) {
-                    // Notify adimistrator via Email, for example
-                    aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
-                }
-
-                var reportFile = reportFileResult.getOutput();
-                rFiles.push(reportFile);
-
-            }
-            //var capIDScriptModel =  aa.cap.createCapIDScriptModel(capId.getID1(), capId.getID2(), capId.getID3());
-            //var result = aa.document.sendEmailAndSaveAsDocument("", email, "", emailTemplate, params, capIDScriptModel, rFiles);
-            VRFiles = rFiles;
         }
+
+        for(var i in reportNames)
+        {
+            var reportName = reportNames[i];
+            var rParams = rParamss[i];
+            var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+            if(reportInfoResult.getSuccess() == false) {
+                // Notify adimistrator via Email, for example
+                aa.print("Could not found this report " + reportName);
+            }
+
+            report = reportInfoResult.getOutput();
+            report.setModule("Building");
+            report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+            report.setReportParameters(rParams);
+
+            var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+            if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                // Notify adimistrator via Email, for example
+                aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+            }
+
+            var reportResult = aa.reportManager.getReportResult(report);
+            if(reportResult.getSuccess() == false){
+                // Notify adimistrator via Email, for example
+                aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+            }
+
+            reportResult = reportResult.getOutput();
+            var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+            if(reportFileResult.getSuccess() == false) {
+                // Notify adimistrator via Email, for example
+                aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+            }
+
+            var reportFile = reportFileResult.getOutput();
+            rFiles.push(reportFile);
+        }
+        VRFiles = rFiles;
         addParameter(params, "$$InspectorOfRecord1$$", inspectorName);
         addParameter(params, "$$InspectorOfRecord2$$", inspectorName);
         addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone(inspId));
