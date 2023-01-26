@@ -162,6 +162,7 @@ if(appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit
     updateTask("Inspection","Final Inspection Complete","","");
     aa.workflow.adjustTask(capId, "Inspection", "N", "Y", null, null);
     updateAppStatus("Finaled","Updated through script");
+    addStdCondition("General", "Balance Due", capId);
 }
 //CASANLEAN-1537
 
