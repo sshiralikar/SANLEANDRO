@@ -164,7 +164,7 @@ function copy() {
         copyLicenseProfessionalX(parentCapId, targetCapId);
         //copyAppSpecificTable(parentCapId, targetCapId);
         //copyAppSpecificInfo(parentCapId, targetCapId);
-        copyLicenseProfessional(parentCapId, targetCapId);
+        //copyLicenseProfessional(parentCapId, targetCapId);
         copyAddress(parentCapId, targetCapId);
         copyParcel(parentCapId, targetCapId);
         copyPeople(parentCapId, targetCapId);
@@ -235,32 +235,7 @@ function copyLicenseProfessionalX(srcCapId, targetCapId) {
         aa.print("servProvCode: " + aa.getServiceProviderCode());
         sourcelicProfModel.setAgencyCode(aa.getServiceProviderCode());
         sourcelicProfModel.setCapID(targetCapId);
-        targetLicProfModel = null;
-        if (targetLicenses != null && targetLicenses.length > 0) {
-            for (loop2 in targetLicenses) {
-                if (isMatchLicenseProfessional(sourcelicProfModel, targetLicenses[loop2])) {
-                    targetLicProfModel = targetLicenses[loop2];
-                    aa.print("Is matches is true");
-                    break;
-                }
-            }
-        }
-        aa.print("targetLicProfModel: " + targetLicProfModel);
-        if (targetLicProfModel != null) {
-            aa.print("****** NOT NULL targetLicProfModel: " + targetLicProfModel);
-            aa.print("****** getCapID: " + sourcelicProfModel.getCapID());
-            aa.licenseProfessional.copyLicenseProfessionalScriptModel(sourcelicProfModel, targetLicProfModel);
-            aa.licenseProfessional.editLicensedProfessional(targetLicProfModel);
-        } else {
-            aa.print(">>>>>>>>>>>>> getCapID: " + sourcelicProfModel.getCapID());
-            aa.print(">>>>>> NULL targetLicProfModel: " + targetLicProfModel);
-            aa.licenseProfessional.createLicensedProfessional(sourcelicProfModel);
-        }
-        var newtargetLicenses = getLicenseProfessional(targetCapId);
-        for (loopk in newtargetLicenses) {
-            profModel = newtargetLicenses[loopk];
-            aa.print("profModel: " + profModel.getContactFirstName());
-        }
+        aa.licenseProfessional.createLicensedProfessional(sourcelicProfModel);
     }
 }
 
