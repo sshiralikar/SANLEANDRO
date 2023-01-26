@@ -356,6 +356,51 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
             }
         }
     }
+    var reportNames = new Array();
+    var rParamss = new Array();
+    reportNames.push("Ready Letter");
+    var rParams = aa.util.newHashMap();
+    rParams.put("RecordID", capId.getCustomID()+"");
+    rParamss.push(rParams);
+    var reportUser = "ADMIN";
+    var rFiles = [];
+    for(var i in reportNames) {
+        var reportName = reportNames[i];
+        var rParams = rParamss[i];
+        var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+        if (reportInfoResult.getSuccess() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("Could not found this report " + reportName);
+        }
+
+        report = reportInfoResult.getOutput();
+        report.setModule("Building");
+        report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+        report.setReportParameters(rParams);
+
+        var permissionResult = aa.reportManager.hasPermission(reportName, reportUser);
+        if (permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+        }
+
+        var reportResult = aa.reportManager.getReportResult(report);
+        if (reportResult.getSuccess() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+        }
+
+        reportResult = reportResult.getOutput();
+        var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+        if (reportFileResult.getSuccess() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+        }
+
+        var reportFile = reportFileResult.getOutput();
+        rFiles.push(reportFile);
+    }
+    VRFiles = rFiles;
     addParameter(params, "$$applicantName$$", conName);
     addParameter(params, "$$altID$$", capId.getCustomID()+"");
     addParameter(params, "$$projectDescription$$", cap.getSpecialText());
@@ -363,7 +408,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, null, capId);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, VRFiles, capId);
 }
 //CASANLEAN-930
 function runEmailThroughSLEmailFilter(vEmail)
