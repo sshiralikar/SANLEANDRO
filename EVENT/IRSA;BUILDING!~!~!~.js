@@ -78,6 +78,10 @@ if (contactResult.getSuccess()) {
             var rParams = aa.util.newHashMap();
             rParams.put("RecordID", capId.getCustomID()+"");
             rParamss.push(rParams);
+
+            var startDate = new Date();
+            var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+            editAppSpecific("COO Date", todayDate);
         }
 
         for(var i in reportNames)
