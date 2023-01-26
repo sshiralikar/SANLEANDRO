@@ -16,7 +16,7 @@ if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Perm
     (appMatch("Building/Commercial/Cell/NA") && (inspType =="2030 Final Electrical"))||
     (appMatch("Building/Commercial/Demolition/NA") && (inspType =="3000 Final Building Permit"))||
     (appMatch("Building/Commercial/Electric/NA") && (inspType =="2030 Final Electrical"))||
-    (appMatch("Building/Commercial/Mechanic/NA") && (inspType =="2020 Final Mechanical"))||
+    (appMatch("Building/Commercial/Mechanical/NA") && (inspType =="2020 Final Mechanical"))||
     (appMatch("Building/Commercial/New Construction/NA") && (inspType =="3000 Final Building Permit"))||
     (appMatch("Building/Commercial/Plumbing/NA") && (inspType =="2010 Final Plumbing"))||
     (appMatch("Building/Commercial/Pool/NA") && (inspType =="3000 Final Building Permit"))||
