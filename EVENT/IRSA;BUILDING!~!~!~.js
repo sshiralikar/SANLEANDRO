@@ -49,7 +49,6 @@ if (capDetailObjResult.getSuccess())
     capDetail = capDetailObjResult.getOutput();
     vBalanceDue = parseFloat(capDetail.getBalance());
 }
-logDebug("vBalanceDue: "+ vBalanceDue);
 var contactResult = aa.people.getCapContactByCapID(capId);
 if (contactResult.getSuccess()) {
     var capContacts = contactResult.getOutput();
@@ -175,7 +174,7 @@ if(appMatch("Building/Residential/*/*") && (inspResult == "Pass" || inspResult =
     editAppSpecific("Permit Expiration Date", newDate);
 }
 //CASANLEAN-1496
-
+showDebug = false;
 function getInspectorName(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
     if (inspResultObj.getSuccess()) {
