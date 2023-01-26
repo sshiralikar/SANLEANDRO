@@ -8,7 +8,8 @@ if (capDetailObjResult.getSuccess())
     vBalanceDue = parseFloat(capDetail.getBalance());
 }
 aa.print("vBalanceDue: "+ vBalanceDue);
-if((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit"))||
+aa.print("vBalanceDue > 0: "+ (vBalanceDue > 0))
+if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit"))||
     (appMatch("Building/Commercial/Accessory/NA") && (inspType =="3000 Final Building Permit"))||
     (appMatch("Building/Commercial/Addition/NA") && (inspType =="3000 Final Building Permit"))||
     (appMatch("Building/Commercial/Alteration/NA") && (inspType =="3000 Final Building Permit"))||
@@ -33,7 +34,7 @@ if((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permi
     (appMatch("Building/Residential/Plumbing/NA") && (inspType =="2010 Final Plumbing"))||
     (appMatch("Building/Residential/Pool/NA") && (inspType =="3000 Final Building Permit"))||
     (appMatch("Building/Residential/Roofing/NA") && (inspType =="1540 Final Re-Roof"))||
-    (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical"))
+    (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")))
     && vBalanceDue > 0)
 {
     cancel = true;
