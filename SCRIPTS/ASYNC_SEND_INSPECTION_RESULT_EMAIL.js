@@ -29,11 +29,12 @@ inspType = aa.env.getValue("InspType");
 inspResult = aa.env.getValue("InspResult");
 inspComment = aa.env.getValue("InspComment");
 currentUserID = aa.env.getValue("CurrentUserID");
+appTypeArray = aa.env.getValue("AppTypeArray");
 
 
 try
 {
-    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", aa.env.getValue("RecordID"));
+    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", recordID);
     var params = aa.util.newHashtable();
     var vBalanceDue = 0.0;
     var capDetailObjResult = aa.cap.getCapDetail(capId);
@@ -65,8 +66,9 @@ try
             var reportUser = "ADMIN";
             var rFiles = [];
 
-            if(inspType == "3000 Final Building Permit" && (appMatch("Building/Commercial/New Construction/NA")
-                    ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
+            if(inspType == "3000 Final Building Permit" && (appTypeArray == "Building/Commercial/New Construction/NA"
+                    ||appTypeArray == "Building/Residential/ADU/NA"
+                    ||appTypeArray == "Building/Residential/New Construction/NA")
                 && vBalanceDue <= 0 && inspResult == "Pass")
             {
                 reportNames.push("Certificate of Occupancy - SSRS");
