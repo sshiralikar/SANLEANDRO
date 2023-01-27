@@ -1,6 +1,6 @@
 //CASANLEAN-1519
 var lpList = aa.env.getValue("LicProfList");
-if(lpList) {
+if(lpList && lpList.toArray) {
     lpList = lpList.toArray();
     logDebug("LPs: " + lpList.length);
     var errors = [];
