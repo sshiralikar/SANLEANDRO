@@ -21,7 +21,7 @@ eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
 eval(getScriptText("INCLUDES_CUSTOM", null, true));
 
-var recordID = aa.env.getValue("RecordID").getOutput();
+var recordID = aa.env.getValue("RecordID");
 
 capId = aa.cap.getCapID(recordID).getOutput();
 inspId = aa.env.getValue("InspID")+"";
