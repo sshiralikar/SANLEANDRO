@@ -260,23 +260,18 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 //CASANLEAN-938
 if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
 {
-    var d = new Date();
-    var year = d.getFullYear();
-    var month = d.getMonth();
-    var day = d.getDate();
-    var c = new Date(year, month+7, day);
-    var newDate = c.getMonth()+"/"+c.getDate()+"/"+c.getFullYear();
+    var c = new Date();
+    c.setFullYear(c.getFullYear() + 1);
+    var newDate = c.getMonth()+1+"/"+c.getDate()+"/"+c.getFullYear();
     editAppSpecific("Application Expiration Date", newDate);
 }
 if(wfTask == "Permit Issuance" && wfStatus == "Issued")
 {
-    var d = new Date();
-    var year = d.getFullYear();
-    var month = d.getMonth();
-    var day = d.getDate();
-    var c = new Date(year, month+7, day);
-    var newDate = c.getMonth()+"/"+c.getDate()+"/"+c.getFullYear();
+    var c = new Date();
+    c.setFullYear(c.getFullYear() + 1);
+    var newDate = c.getMonth()+1+"/"+c.getDate()+"/"+c.getFullYear();
     editAppSpecific("Permit Expiration Date", newDate);
+    var d = new Date();
     editAppSpecific("Permit Issued Date", (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear());
 }
 //CASANLEAN-1142
