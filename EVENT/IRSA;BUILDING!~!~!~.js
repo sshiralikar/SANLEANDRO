@@ -118,7 +118,7 @@ aa.runAsyncScript(vAsyncScript, envParameters);
 //CASANLEAN-1499
 
 
-showDebug = false;
+//showDebug = false;
 function getInspectorName(pInspId) {
     var inspResultObj = aa.inspection.getInspection(capId, pInspId);
     if (inspResultObj.getSuccess()) {
