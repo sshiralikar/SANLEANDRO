@@ -1,10 +1,10 @@
 //CASANLEAN-1499
 var recordID = aa.env.getValue("RecordID").getOutput();
-var inspId = aa.env.getValue("InspID");
-var inspType = aa.env.getValue("InspType");
-var inspResult = aa.env.getValue("InspResult");
-var inspComment = aa.env.getValue("InspComment");
-var currentUserID = aa.env.getValue("CurrentUserID");
+inspId = aa.env.getValue("InspID");
+inspType = aa.env.getValue("InspType");
+inspResult = aa.env.getValue("InspResult");
+inspComment = aa.env.getValue("InspComment");
+currentUserID = aa.env.getValue("CurrentUserID");
 
 function getScriptText(vScriptName, servProvCode, useProductScripts) {
     if (!servProvCode)
@@ -27,7 +27,8 @@ eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
 eval(getScriptText("INCLUDES_CUSTOM", null, true));
 
-var capId = aa.cap.getCapID(recordID).getOutput();
+capId = aa.cap.getCapID(recordID).getOutput();
+
 try
 {
     aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", aa.env.getValue("RecordID"));
@@ -46,7 +47,7 @@ try
             var VRFiles = null;
             var conName = getContactName(capContacts[i]);
             var applicantEmail = capContacts[i].getPeople().getEmail()+"";
-            var inspectorName = getInspectorName(inspId);
+            var inspectorName = getInspectorName();
             if(!inspectorName)
                 inspectorName = "Inspector";
 
@@ -112,8 +113,8 @@ try
             VRFiles = rFiles;
             addParameter(params, "$$InspectorOfRecord1$$", inspectorName);
             addParameter(params, "$$InspectorOfRecord2$$", inspectorName);
-            addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone(inspId));
-            addParameter(params, "$$InspectorEmail$$", getInspectorEmail(inspId));
+            addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone());
+            addParameter(params, "$$InspectorEmail$$", getInspectorEmail());
             addParameter(params, "$$altId$$", capId.getCustomID()+"");
             addParameter(params, "$$InspectionStatus$$", inspResult);
             addParameter(params, "$$FullNameBusName$$", conName);
@@ -129,32 +130,17 @@ catch (err)
 }
 //CASANLEAN-1499
 
-function getInspectorName(pInspId) {
-    var inspResultObj = aa.inspection.getInspection(capId, pInspId);
-    if (inspResultObj.getSuccess()) {
-        iObj = inspResultObj.getOutput();
-        inspUserObj = aa.person.getUser(currentUserID).getOutput();
-        return inspUserObj.getFirstName()  +" " + inspUserObj.getLastName();
-    }
-    return false;
+function getInspectorName() {
+    inspUserObj = aa.person.getUser(currentUserID).getOutput();
+    return inspUserObj.getFirstName()  +" " + inspUserObj.getLastName();
 }
-function getInspectorEmail(pInspId) {
-    var inspResultObj = aa.inspection.getInspection(capId, pInspId);
-    if (inspResultObj.getSuccess()) {
-        iObj = inspResultObj.getOutput();
-        inspUserObj = aa.person.getUser(currentUserID).getOutput();
-        return inspUserObj.getEmail();
-    }
-    return false;
+function getInspectorEmail() {
+    inspUserObj = aa.person.getUser(currentUserID).getOutput();
+    return inspUserObj.getEmail();
 }
-function getInspectorPhone(pInspId) {
-    var inspResultObj = aa.inspection.getInspection(capId, pInspId);
-    if (inspResultObj.getSuccess()) {
-        iObj = inspResultObj.getOutput();
+function getInspectorPhone() {
         inspUserObj = aa.person.getUser(currentUserID).getOutput();
         return inspUserObj.phoneNumber;
-    }
-    return false;
 }
 function isAllConditionsMet(vCapId)
 {
