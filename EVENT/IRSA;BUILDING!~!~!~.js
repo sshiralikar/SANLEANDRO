@@ -125,7 +125,7 @@ aa.print("CurrentUserID: "+ currentUserID);
 aa.print("appTypeString: "+ appTypeString);
 
 
-aa.runAsyncScript(vAsyncScript, envParameters);
+aa.print(aa.runAsyncScript(vAsyncScript, envParameters));
 aa.print("KICKED OFF ASYNC SCRIPT");
 //CASANLEAN-1499
 

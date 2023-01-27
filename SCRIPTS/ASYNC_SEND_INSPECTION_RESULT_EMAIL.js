@@ -34,7 +34,7 @@ appTypeArray = aa.env.getValue("AppTypeArray");
 
 try
 {
-    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", recordID);
+    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", "HELLO");
     var params = aa.util.newHashtable();
     var vBalanceDue = 0.0;
     var capDetailObjResult = aa.cap.getCapDetail(capId);
