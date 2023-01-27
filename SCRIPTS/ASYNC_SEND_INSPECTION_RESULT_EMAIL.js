@@ -1,7 +1,5 @@
 //CASANLEAN-1499
-aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC ERROR - IN", aa.env.getValue("RecordID"));
-
-var capId = aa.cap.getCapID(aa.env.getValue("RecordID")).getOutput();
+var recordID = aa.env.getValue("RecordID").getOutput();
 var inspId = aa.env.getValue("InspID");
 var inspType = aa.env.getValue("InspType");
 var inspResult = aa.env.getValue("InspResult");
@@ -29,9 +27,10 @@ eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
 eval(getScriptText("INCLUDES_CUSTOM", null, true));
 
-
+var capId = aa.cap.getCapID(recordID).getOutput();
 try
 {
+    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", aa.env.getValue("RecordID"));
     var params = aa.util.newHashtable();
     var vBalanceDue = 0.0;
     var capDetailObjResult = aa.cap.getCapDetail(capId);

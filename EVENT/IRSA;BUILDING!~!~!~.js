@@ -115,6 +115,7 @@ envParameters.put("InspResult", inspResult);
 envParameters.put("InspComment", inspComment);
 envParameters.put("CurrentUserID", currentUserID);
 aa.runAsyncScript(vAsyncScript, envParameters);
+aa.print("KICKED OFF ASYNC SCRIPT");
 //CASANLEAN-1499
 
 
