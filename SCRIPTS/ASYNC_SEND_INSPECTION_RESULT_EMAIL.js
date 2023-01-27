@@ -1,5 +1,4 @@
 //CASANLEAN-1499
-
 function getScriptText(vScriptName, servProvCode, useProductScripts) {
     if (!servProvCode)
         servProvCode = aa.getServiceProviderCode();
@@ -16,25 +15,24 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
         return "";
     }
 }
-var SCRIPT_VERSION = 3.0;
-eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
-eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
-eval(getScriptText("INCLUDES_CUSTOM", null, true));
-
-var recordID = aa.env.getValue("RecordID");
-
-capId = aa.cap.getCapID(recordID).getOutput();
-inspId = aa.env.getValue("InspID")+"";
-inspType = aa.env.getValue("InspType");
-inspResult = aa.env.getValue("InspResult");
-inspComment = aa.env.getValue("InspComment");
-currentUserID = aa.env.getValue("CurrentUserID");
-appTypeArray = aa.env.getValue("AppTypeArray");
-
-
 try
 {
-    aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC - IN", "HELLO");
+    var SCRIPT_VERSION = 3.0;
+    eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
+    eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
+    eval(getScriptText("INCLUDES_CUSTOM", null, true));
+
+    var recordID = aa.env.getValue("RecordID");
+
+    capId = aa.cap.getCapID(recordID).getOutput();
+    inspId = aa.env.getValue("InspID")+"";
+    inspType = aa.env.getValue("InspType");
+    inspResult = aa.env.getValue("InspResult");
+    inspComment = aa.env.getValue("InspComment");
+    currentUserID = aa.env.getValue("CurrentUserID");
+    appTypeArray = aa.env.getValue("AppTypeArray");
+
+    aa.sendMail("noreply@accela.com", "sshiralikar@trustvip.com", "", "ASYNC - IN", "HELLO");
     var params = aa.util.newHashtable();
     var vBalanceDue = 0.0;
     var capDetailObjResult = aa.cap.getCapDetail(capId);
