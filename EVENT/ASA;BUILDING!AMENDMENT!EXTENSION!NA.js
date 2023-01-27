@@ -1,4 +1,4 @@
-var vParentId = getParent();
+/*var vParentId = getParent();
 if (vParentId != null && vParentId != false && vParentId != "undefined") {
     copyContacts(vParentId, capId);
     copyParcels(vParentId,capId);
@@ -12,7 +12,7 @@ if (vParentId != null && vParentId != false && vParentId != "undefined") {
     editAppName(getAppName(vParentId),capId);
     copyLicensedProf(vParentId, capId);
     editAppSpecific("Parent Permit Number",vParentId.getCustomID()+"");
-}
+}*/
 if(!publicUser) {
   aa.sendMail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"), "", capId.getCustomID()+" has been submitted please process.", "Hello "+ lookup("REPORT_VARIABLES","ChiefBuildingOfficialName")+", "+capId.getCustomID()+" has been submitted please process.");
 }
