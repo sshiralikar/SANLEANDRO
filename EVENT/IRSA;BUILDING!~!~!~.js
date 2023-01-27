@@ -1,13 +1,13 @@
 showDebug = true;
 assignInspection(inspId, currentUserID, capId);
-if(inspType == "2030 Final Electrical" &&
+/*if(inspType == "2030 Final Electrical" &&
     isTaskActive("Inspection") &&
     (inspResult == "Finaled" || inspResult == "Pass") &&
     isAllConditionsMet(capId) &&
     balanceDue <= 0)
 {
     var flag = true;
-    var relChildren = getChildren("Building/*/*/*", capId);
+    var relChildren = getChildren("Building/!*!/!*!/!*", capId);
     if (!matches(relChildren, null, false)) {
         for (var r in relChildren) {
             var capDetailObjResult = aa.cap.getCapDetail(relChildren[r]);            // Detail
@@ -26,7 +26,7 @@ if(inspType == "2030 Final Electrical" &&
         aa.workflow.adjustTask(capId, "Inspection", "N", "Y", null, null);
         updateAppStatus("Finaled","Updated through script");
 
-        var relChildren = getChildren("Building/*/*/*", capId);
+        var relChildren = getChildren("Building/!*!/!*!/!*", capId);
         if (!matches(relChildren, null, false)) {
             for (var r in relChildren) {
                 updateAppStatus("Finaled","Updated through script",relChildren[r]);
@@ -35,7 +35,7 @@ if(inspType == "2030 Final Electrical" &&
             }
         }
     }
-}
+}*/
 
 
 //CASANLEAN-1499
