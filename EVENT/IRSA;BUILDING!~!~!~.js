@@ -114,7 +114,7 @@ envParameters.put("InspType", inspType);
 envParameters.put("InspResult", inspResult);
 envParameters.put("InspComment", inspComment);
 envParameters.put("CurrentUserID", currentUserID);
-envParameters.put("AppTypeArray", appTypeArray);
+envParameters.put("AppTypeArray", appTypeString);
 
 aa.print("RecordID: "+ capId.getCustomID()+"");
 aa.print("InspID: "+ String(inspId));
@@ -122,7 +122,7 @@ aa.print("InspType: "+ inspType);
 aa.print("InspResult: "+ inspResult);
 aa.print("InspComment: "+ inspComment);
 aa.print("CurrentUserID: "+ currentUserID);
-aa.print("AppTypeArray: "+ appTypeArray);
+aa.print("appTypeString: "+ appTypeString);
 
 
 aa.runAsyncScript(vAsyncScript, envParameters);
