@@ -1,4 +1,3 @@
-showDebug = true;
 assignInspection(inspId, currentUserID, capId);
 /*if(inspType == "2030 Final Electrical" &&
     isTaskActive("Inspection") &&
