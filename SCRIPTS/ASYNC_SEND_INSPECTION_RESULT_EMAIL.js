@@ -1,10 +1,4 @@
 //CASANLEAN-1499
-var recordID = aa.env.getValue("RecordID").getOutput();
-inspId = aa.env.getValue("InspID");
-inspType = aa.env.getValue("InspType");
-inspResult = aa.env.getValue("InspResult");
-inspComment = aa.env.getValue("InspComment");
-currentUserID = aa.env.getValue("CurrentUserID");
 
 function getScriptText(vScriptName, servProvCode, useProductScripts) {
     if (!servProvCode)
@@ -27,7 +21,15 @@ eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS", null, true));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS", null, true));
 eval(getScriptText("INCLUDES_CUSTOM", null, true));
 
+var recordID = aa.env.getValue("RecordID").getOutput();
+
 capId = aa.cap.getCapID(recordID).getOutput();
+inspId = aa.env.getValue("InspID")+"";
+inspType = aa.env.getValue("InspType");
+inspResult = aa.env.getValue("InspResult");
+inspComment = aa.env.getValue("InspComment");
+currentUserID = aa.env.getValue("CurrentUserID");
+
 
 try
 {
