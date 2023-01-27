@@ -115,6 +115,16 @@ envParameters.put("InspResult", inspResult);
 envParameters.put("InspComment", inspComment);
 envParameters.put("CurrentUserID", currentUserID);
 envParameters.put("AppTypeArray", appTypeArray);
+
+aa.print("RecordID: "+ capId.getCustomID()+"");
+aa.print("InspID: "+ String(inspId));
+aa.print("InspType: "+ inspType);
+aa.print("InspResult: "+ inspResult);
+aa.print("InspComment: "+ inspComment);
+aa.print("CurrentUserID: "+ currentUserID);
+aa.print("AppTypeArray: "+ appTypeArray);
+
+
 aa.runAsyncScript(vAsyncScript, envParameters);
 aa.print("KICKED OFF ASYNC SCRIPT");
 //CASANLEAN-1499
