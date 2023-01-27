@@ -148,10 +148,8 @@ if(wfTask == "Public Works Review" && (wfStatus == "Approved" || wfStatus == "Ap
 }
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
 
-//CASANLEAN-1449
-if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req")) {
-    checkLP(capId);
-}
+//CASANLEAN-1449, CASANLEAN-1542 - Updated create reference lp at every step of workflow.
+checkLP(capId);
 
 //CASANLEAN-1429
 if(wfTask == "Application Intake")
