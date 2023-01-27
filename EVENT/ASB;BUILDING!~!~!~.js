@@ -10,6 +10,11 @@ if(lpList) {
         var licenseNumber = lpObj.licenseNbr;
         if(lpType == "Contractor") {
             var cslbObj = validateCSLBClassifications(licenseNumber, appTypeString);
+            if(cslbObj.validated) {
+                //one valid LP was provided
+                errors = [];
+                break;
+            }
             if(!cslbObj.validated) {
                 errors.push("<font size=small color=red>" + cslbObj.message + "</font>");
             }
@@ -17,6 +22,9 @@ if(lpList) {
     }
     if(errors.length > 0) {
         showMessage = true;
+        if(publicUser) {
+            showDebug = false;
+        }
         comment(errors.join("<br>"));
         cancel = true;
         logDebug(errors.join("<br>"));

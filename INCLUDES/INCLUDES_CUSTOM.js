@@ -1235,6 +1235,41 @@ function validateFromCSLB(licNum, itemCap) {
         //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
         //     }
         // }
+
+        var classErrors = [];
+        var recordCap = aa.cap.getCapID(itemCap).getOutput();
+        var recordType = String(recordCap.getCapType());
+        var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
+        if(validClasses) {
+            logDebug(recordType + " not configured so any LP goes");
+            var classTypeMap = {};
+            validClasses = validClasses.split(",");
+            for(var validClassIndex in validClasses) {
+                var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+                if(!classTypeMap[stdClass]) {
+                    classTypeMap[stdClass] = true;
+                }
+            }
+    
+            var Classifications = XMLTagValue(result, "Classifications");
+            var ClassificationList = Classifications.split("|");
+    
+            for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase();
+                logDebug(classification);
+                if(classTypeMap[classification]) {
+                    classErrors = [];
+                    break;
+                }
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");                                    
+            }
+        }    
+        if(classErrors.length > 0) {
+            logDebug("Adding: " + classErrors.length + " to errored list");
+            logDebug("Prior error list length: " + expiredLPs.length);
+            expiredLPs = expiredLPs.concat(classErrors);
+            logDebug("New error list length: " + expiredLPs.length);
+        }
          
     } // for each license
     return expiredLPs;
@@ -1362,7 +1397,7 @@ function validateCSLBClassifications(licNum, recordType) {
     }
         
     if(!returnObj.validated) {
-        returnObj.message = licNum + " is not valid, " + recordType + " requires "  + validClasses.join(", ") + " found: " + ClassificationList.join(", ");
+        returnObj.message = "License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".";
     }
     return returnObj;
 }
