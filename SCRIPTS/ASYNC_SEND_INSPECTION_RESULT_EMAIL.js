@@ -1,4 +1,6 @@
 //CASANLEAN-1499
+aa.sendMail("", "sshiralikar@trustvip.com", "", "ASYNC ERROR - IN", aa.env.getValue("RecordID"));
+
 var capId = aa.cap.getCapID(aa.env.getValue("RecordID")).getOutput();
 var inspId = aa.env.getValue("InspID");
 var inspType = aa.env.getValue("InspType");
