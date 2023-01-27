@@ -109,7 +109,7 @@ if( inspResult == "Pass" || inspResult == "Fail")
 var vAsyncScript = "ASYNC_SEND_INSPECTION_RESULT_EMAIL";
 var envParameters = aa.util.newHashMap();
 envParameters.put("RecordID", capId.getCustomID()+"");
-envParameters.put("InspID", inspId);
+envParameters.put("InspID", String(inspId));
 envParameters.put("InspType", inspType);
 envParameters.put("InspResult", inspResult);
 envParameters.put("InspComment", inspComment);
