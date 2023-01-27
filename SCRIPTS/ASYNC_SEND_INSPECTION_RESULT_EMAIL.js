@@ -1,5 +1,5 @@
 //CASANLEAN-1499
-var capId = aa.env.getValue("RecordID");
+var capId = aa.cap.getCapID(aa.env.getValue("RecordID")).getOutput();
 var inspId = aa.env.getValue("InspID");
 var inspType = aa.env.getValue("InspType");
 var inspResult = aa.env.getValue("InspResult");
