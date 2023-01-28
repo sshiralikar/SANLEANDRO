@@ -43,6 +43,7 @@ var applicantEmail = "";
 var conName = "";
 var vBalanceDue = 0.0;
 var capDetailObjResult = aa.cap.getCapDetail(capId);
+var hm = new Array();
 if (capDetailObjResult.getSuccess())
 {
     capDetail = capDetailObjResult.getOutput();
@@ -130,7 +131,11 @@ if (contactResult.getSuccess()) {
         addParameter(params, "$$FullNameBusName$$", conName);
         addParameter(params, "$$InspectionType$$", inspType);
         addParameter(params, "$$InspectionResultComment$$", inspComment);
-        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
+        if(hm[applicantEmail+""] != 1)
+        {
+            sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
+            hm[applicantEmail+""] = 1;
+        }
     }
 }
 
