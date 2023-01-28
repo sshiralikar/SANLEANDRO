@@ -138,7 +138,97 @@ if (contactResult.getSuccess()) {
         }
     }
 }
+var capLps = getLicenseProfessional(capId);
+for (var thisCapLpNum in capLps) {
+    var thisCapLp = capLps[thisCapLpNum];
+    var conName = thisCapLp.getContactFirstName()+" "+ thisCapLp.getContactLastName();
+    if(thisCapLp.getContactFirstName() == null || thisCapLp.getContactFirstName() == "")
+        conName = thisCapLp.getBusinessName();
+    var applicantEmail = thisCapLp.getEmail()+"";
+    var VRFiles = null;
+    //var conName = getContactName(capContacts[i]);
+    //var applicantEmail = capContacts[i].getPeople().getEmail()+"";
+    var inspectorName = getInspectorName(inspId);
+    if(!inspectorName)
+        inspectorName = "Inspector";
+    var reportNames = new Array();
+    var rParamss = new Array();
+    reportNames.push("Inspection Report");
+    var rParams = aa.util.newHashMap();
+    rParams.put("RecordID", capId.getCustomID()+"");
+    rParams.put("InspID", inspId);
+    rParamss.push(rParams);
 
+    var reportUser = "ADMIN";
+    var rFiles = [];
+
+    if(inspType == "3000 Final Building Permit" && (appMatch("Building/Commercial/New Construction/NA")
+            ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
+        && vBalanceDue <= 0 && inspResult == "Pass")
+    {
+        reportNames.push("Certificate of Occupancy - SSRS");
+        var rParams = aa.util.newHashMap();
+        rParams.put("RecordID", capId.getCustomID()+"");
+        rParamss.push(rParams);
+
+        var startDate = new Date();
+        var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+        editAppSpecific("COO Date", todayDate);
+    }
+
+    for(var i in reportNames)
+    {
+        var reportName = reportNames[i];
+        var rParams = rParamss[i];
+        var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+        if(reportInfoResult.getSuccess() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("Could not found this report " + reportName);
+        }
+
+        report = reportInfoResult.getOutput();
+        report.setModule("Building");
+        report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+        report.setReportParameters(rParams);
+
+        var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+        if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+        }
+
+        var reportResult = aa.reportManager.getReportResult(report);
+        if(reportResult.getSuccess() == false){
+            // Notify adimistrator via Email, for example
+            aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+        }
+
+        reportResult = reportResult.getOutput();
+        var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+        if(reportFileResult.getSuccess() == false) {
+            // Notify adimistrator via Email, for example
+            aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+        }
+
+        var reportFile = reportFileResult.getOutput();
+        rFiles.push(reportFile);
+    }
+    VRFiles = rFiles;
+    addParameter(params, "$$InspectorOfRecord1$$", inspectorName);
+    addParameter(params, "$$InspectorOfRecord2$$", inspectorName);
+    addParameter(params, "$$InspectorPhoneNumber$$", getInspectorPhone(inspId));
+    addParameter(params, "$$InspectorEmail$$", getInspectorEmail(inspId));
+    addParameter(params, "$$altId$$", capId.getCustomID()+"");
+    addParameter(params, "$$InspectionStatus$$", inspResult);
+    addParameter(params, "$$FullNameBusName$$", conName);
+    addParameter(params, "$$InspectionType$$", inspType);
+    addParameter(params, "$$InspectionResultComment$$", inspComment);
+    if(hm[applicantEmail+""] != 1)
+    {
+        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
+        hm[applicantEmail+""] = 1;
+    }
+}
 //CASANLEAN-1499
 
 
