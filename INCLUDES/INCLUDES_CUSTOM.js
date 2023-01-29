@@ -1255,7 +1255,7 @@ function validateFromCSLB(licNum, itemCap) {
             var ClassificationList = Classifications.split("|");
     
             for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
-                var classification = String(ClassificationList[classificationIndex]).toUpperCase();
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
                 logDebug(classification);
                 if(classTypeMap[classification]) {
                     classErrors = [];
