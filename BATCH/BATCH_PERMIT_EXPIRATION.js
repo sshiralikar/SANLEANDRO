@@ -282,6 +282,7 @@ function mainProcess() {
             var recArray = recordListResult.getOutput();
             logMessage("Looping through " + recArray.length + " records");
             for (var j in recArray) {
+                var hm = new Array();
                 capId = aa.cap.getCapID(recArray[j].getID1(), recArray[j].getID2(), recArray[j].getID3()).getOutput();
                 capIDString = capId.getCustomID();
                 logMessage(capIDString);
@@ -320,7 +321,10 @@ function mainProcess() {
                         addParameter(params, "$$PermitExpirationDate$$", getAppSpecific("Permit Expiration Date",capId));
                         var acaUrl = String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0];
                         addParameter(params, "$$ACAURL$$", acaUrl);
-                        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_PERMIT_EXPIRED", params, null, capId);
+                        if(hm[applicantEmail+""] != 1) {
+                            sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_PERMIT_EXPIRED", params, null, capId);
+                            hm[applicantEmail+""] = 1;
+                        }
                     }
                 }
                 var capLps = getLicenseProfessional(capId);
@@ -338,7 +342,10 @@ function mainProcess() {
                     addParameter(params, "$$PermitExpirationDate$$", getAppSpecific("Permit Expiration Date",capId));
                     var acaUrl = String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0];
                     addParameter(params, "$$ACAURL$$", acaUrl);
-                    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_ABOUT_TO_EXPIRE", params, null, capId);
+                    if(hm[applicantEmail+""] != 1) {
+                        sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_ABOUT_TO_EXPIRE", params, null, capId);
+                        hm[applicantEmail+""] = 1;
+                    }
                 }
             }
         }
