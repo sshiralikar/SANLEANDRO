@@ -322,7 +322,7 @@ function mainProcess() {
                         var acaUrl = String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0];
                         addParameter(params, "$$ACAURL$$", acaUrl);
                         if(hm[applicantEmail+""] != 1) {
-                            sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_PERMIT_EXPIRED", params, null, capId);
+                            sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_BATCH_ABOUT_TO_EXPIRE", params, null, capId);
                             hm[applicantEmail+""] = 1;
                         }
                     }
