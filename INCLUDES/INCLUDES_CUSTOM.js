@@ -1123,7 +1123,7 @@ function populateFromRefLP(licSeqNbr, transLPList, itemCap, licNum, licenseType)
     }
 }
 
-function validateFromCSLB(licNum, itemCap) {
+function validateFromCSLB(licNum, itemCap, recordType) {
     
 
     var expiredLPs = [];
@@ -1237,8 +1237,12 @@ function validateFromCSLB(licNum, itemCap) {
         // }
 
         var classErrors = [];
-        var recordCap = aa.cap.getCapID(itemCap).getOutput();
-        var recordType = String(recordCap.getCapType());
+        if(!recordType) {
+            var recordCap = aa.cap.getCapID(itemCap).getOutput();
+            if(recordCap) {
+                recordType = String(recordCap.getCapType());
+            }
+        }
         var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
         if(validClasses) {
             logDebug(recordType + " not configured so any LP goes");
@@ -1255,7 +1259,7 @@ function validateFromCSLB(licNum, itemCap) {
             var ClassificationList = Classifications.split("|");
     
             for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
-                var classification = String(ClassificationList[classificationIndex]).toUpperCase();
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
                 logDebug(classification);
                 if(classTypeMap[classification]) {
                     classErrors = [];
