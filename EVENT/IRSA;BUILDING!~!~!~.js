@@ -84,7 +84,7 @@ if (contactResult.getSuccess()) {
             var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
             editAppSpecific("COO Date", todayDate);
         }
-        sleep(20);
+        //sleep(20);
         for(var i in reportNames)
         {
             var reportName = reportNames[i];
