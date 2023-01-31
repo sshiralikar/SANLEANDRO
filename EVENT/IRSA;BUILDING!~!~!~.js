@@ -38,6 +38,7 @@ assignInspection(inspId, currentUserID, capId);
 
 
 //CASANLEAN-1499
+
 var params = aa.util.newHashtable();
 var applicantEmail = "";
 var conName = "";
@@ -83,7 +84,7 @@ if (contactResult.getSuccess()) {
             var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
             editAppSpecific("COO Date", todayDate);
         }
-
+        sleep(5);
         for(var i in reportNames)
         {
             var reportName = reportNames[i];
@@ -384,4 +385,9 @@ function getContactName(vConObj) {
 
         return vConObj.people.getBusinessName2();
     }
+}
+function sleep(seconds)
+{
+    var e = new Date().getTime() + (seconds * 1000);
+    while (new Date().getTime() <= e) {}
 }
