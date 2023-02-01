@@ -66,10 +66,10 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 
 //TESTING
 // var testingCap = aa.cap.getCapID("22TMP-000600").getOutput();
-// var testingCap = aa.cap.getCapID("BRPOOL-22-0005").getOutput();
-// var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
-// var capTest = aa.env.setValue("CapModel", capModel);
-// aa.env.setValue("CurrentUserID", "ADMIN");
+var testingCap = aa.cap.getCapID("BCACC-23-0009").getOutput();
+var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
+var capTest = aa.env.setValue("CapModel", capModel);
+aa.env.setValue("CurrentUserID", "ADMIN");
 //
 
 var cap = aa.env.getValue("CapModel");
@@ -187,6 +187,11 @@ try {
         }
     })();
 
+    var enforceStdChoice = lookup("GIS_ACA_VALIDATE_ADDRESS", "ENFORCE CITY LIMITS");
+    if(enforceStdChoice && enforceStdChoice == "N") {
+        logDebug("Standard choice set to ignore script");
+        block = false;
+    }
     if(block) {
         showMessage = true;
         cancel = true;
@@ -212,7 +217,7 @@ if (debug.indexOf("**ERROR") > 0) {
         if (showMessage)
             aa.env.setValue("ErrorMessage", message);
         if (showDebug)
-            aa.env.setValue("ErrorMessage", debug);
+            aa.env.setValue("ScriptReturnMessage", debug);
     } else {        
         aa.env.setValue("ScriptReturnCode", "0");
         if (showMessage) {
