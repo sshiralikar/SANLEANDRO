@@ -66,10 +66,10 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 
 //TESTING
 // var testingCap = aa.cap.getCapID("22TMP-000600").getOutput();
-var testingCap = aa.cap.getCapID("BCACC-23-0009").getOutput();
-var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
-var capTest = aa.env.setValue("CapModel", capModel);
-aa.env.setValue("CurrentUserID", "ADMIN");
+// var testingCap = aa.cap.getCapID("BCACC-23-0009").getOutput();
+// var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
+// var capTest = aa.env.setValue("CapModel", capModel);
+// aa.env.setValue("CurrentUserID", "ADMIN");
 //
 
 var cap = aa.env.getValue("CapModel");
