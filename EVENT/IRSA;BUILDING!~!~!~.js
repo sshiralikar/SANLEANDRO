@@ -158,6 +158,8 @@ for (var thisCapLpNum in capLps) {
     var rParams = aa.util.newHashMap();
     rParams.put("RecordID", capId.getCustomID()+"");
     rParams.put("InspID", inspId);
+    rParams.put("Inspector", inspectorName);
+
     rParamss.push(rParams);
 
     var reportUser = "ADMIN";
@@ -167,14 +169,15 @@ for (var thisCapLpNum in capLps) {
             ||appMatch("Building/Residential/ADU/NA") ||appMatch("Building/Residential/New Construction/NA"))
         && vBalanceDue <= 0 && inspResult == "Pass")
     {
-        reportNames.push("Certificate of Occupancy - SSRS");
-        var rParams = aa.util.newHashMap();
-        rParams.put("RecordID", capId.getCustomID()+"");
-        rParamss.push(rParams);
-
         var startDate = new Date();
         var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
         editAppSpecific("COO Date", todayDate);
+
+        reportNames.push("Certificate of Occupancy - SSRS");
+        var rParams = aa.util.newHashMap();
+        rParams.put("RecordID", capId.getCustomID()+"");
+        rParams.put("COODate", todayDate);
+        rParamss.push(rParams);
     }
 
     for(var i in reportNames)
