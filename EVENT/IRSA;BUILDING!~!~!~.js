@@ -65,7 +65,7 @@ if (contactResult.getSuccess()) {
         reportNames.push("Inspection Report");
         var rParams = aa.util.newHashMap();
         rParams.put("RecordID", capId.getCustomID()+"");
-       // rParams.put("InspID", inspId);
+        rParams.put("InspID", inspId);
         rParams.put("Inspector", inspectorName);
         rParamss.push(rParams);
 
@@ -159,7 +159,7 @@ for (var thisCapLpNum in capLps) {
     reportNames.push("Inspection Report");
     var rParams = aa.util.newHashMap();
     rParams.put("RecordID", capId.getCustomID()+"");
-    //rParams.put("InspID", inspId);
+    rParams.put("InspID", inspId);
     rParams.put("Inspector", inspectorName);
 
     rParamss.push(rParams);
