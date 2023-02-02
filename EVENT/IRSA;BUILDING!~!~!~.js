@@ -66,7 +66,7 @@ try
             reportNames.push("Inspection Report");
             var rParams = aa.util.newHashMap();
             rParams.put("RecordID", capId.getCustomID()+"");
-            //rParams.put("InspID", inspId);
+            rParams.put("InspID", inspId);
             rParams.put("Inspector", inspectorName);
             rParamss.push(rParams);
 
@@ -160,7 +160,7 @@ try
         reportNames.push("Inspection Report");
         var rParams = aa.util.newHashMap();
         rParams.put("RecordID", capId.getCustomID()+"");
-        //rParams.put("InspID", inspId);
+        rParams.put("InspID", inspId);
         rParams.put("Inspector", inspectorName);
 
         rParamss.push(rParams);
