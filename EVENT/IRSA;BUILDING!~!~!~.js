@@ -245,15 +245,452 @@ catch(err)
 
 //CASANLEAN-1554
 if(inspType == "2050 Electrical Service Release" && inspResult == "Pass") {
+    try
+    {
+        var flag = false;
+        var params = aa.util.newHashtable();
+        var applicantEmail = "";
+        var conName = "";
+        var vBalanceDue = 0.0;
+        var capDetailObjResult = aa.cap.getCapDetail(capId);
+        var hm = new Array();
+        if (capDetailObjResult.getSuccess())
+        {
+            capDetail = capDetailObjResult.getOutput();
+            vBalanceDue = parseFloat(capDetail.getBalance());
+        }
+        var contactResult = aa.people.getCapContactByCapID(capId);
+        if (contactResult.getSuccess()) {
+            var capContacts = contactResult.getOutput();
+            for (var i in capContacts) {
+                var VRFiles = null;
+                var conName = getContactName(capContacts[i]);
+                var applicantEmail = capContacts[i].getPeople().getEmail()+"";
+                var inspectorName = getInspectorName(inspId);
+                if(!inspectorName)
+                    inspectorName = "Inspector";
+                var reportNames = new Array();
+                var rParamss = new Array();
+                reportNames.push("PG&E Electric Service Release");
+                var rParams = aa.util.newHashMap();
+                rParams.put("RecordID", capId.getCustomID()+"");
+                rParams.put("InspID", inspId);
+                rParams.put("Inspector", inspectorName);
+                var startDate = new Date();
+                var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+                rParams.put("InspectionDate", todayDate);
+                rParamss.push(rParams);
 
+                var reportUser = "ADMIN";
+                var rFiles = [];
+
+                for(var i in reportNames)
+                {
+                    var reportName = reportNames[i];
+                    var rParams = rParamss[i];
+                    var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+                    if(reportInfoResult.getSuccess() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("Could not found this report " + reportName);
+                    }
+
+                    report = reportInfoResult.getOutput();
+                    report.setModule("Building");
+                    report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+                    report.setReportParameters(rParams);
+
+                    var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+                    if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+                    }
+
+                    var reportResult = aa.reportManager.getReportResult(report);
+                    if(reportResult.getSuccess() == false){
+                        // Notify adimistrator via Email, for example
+                        aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+                    }
+
+                    reportResult = reportResult.getOutput();
+                    var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+                    if(reportFileResult.getSuccess() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+                    }
+
+                    var reportFile = reportFileResult.getOutput();
+                    rFiles.push(reportFile);
+                }
+                VRFiles = rFiles;
+
+                var vAddress = "";
+                var vCity = "";
+                var capAddressResult1 = aa.address.getAddressByCapId(capId);
+                if (capAddressResult1.getSuccess())
+                {
+                    var Address = capAddressResult1.getOutput();
+                    for (yy in Address)
+                    {
+                        vAddress = Address[yy].getHouseNumberStart();
+                        if (Address[yy].getStreetDirection())
+                            vAddress += " " + Address[yy].getStreetDirection();
+                        vAddress += " " + Address[yy].getStreetName();
+                        if (Address[yy].getStreetSuffix())
+                            vAddress += " " + Address[yy].getStreetSuffix();
+                        if (Address[yy].getUnitStart())
+                            vAddress += " " + Address[yy].getUnitStart();
+                        if(Address[yy].getCity())
+                            vCity = Address[yy].getCity()+"";
+                    }
+                }
+                addParameter(params, "$$altID$$", capId.getCustomID()+"");
+                addParameter(params, "$$address$$", vAddress);
+                addParameter(params, "$$city$$", vCity);
+                addParameter(params, "$$ChiefBuildingOfficialPhone$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialPhone"));
+                //addParameter(params, "$$ChiefBuildingOfficialEmail$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"));
+                addParameter(params, "$$ChiefBuildingOfficialName$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialName"));
+                addParameter(params, "$$ChiefBuildingOfficialTitle$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialTitle"));
+                if(hm[applicantEmail+""] != 1)
+                {
+                    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                    hm[applicantEmail+""] = 1;
+                }
+                if(!flag)
+                {
+                    sendEmail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","PGE_Email"), "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                }
+            }
+        }
+        var capLps = getLicenseProfessional(capId);
+        for (var thisCapLpNum in capLps) {
+            var thisCapLp = capLps[thisCapLpNum];
+            var conName = thisCapLp.getContactFirstName()+" "+ thisCapLp.getContactLastName();
+            if(thisCapLp.getContactFirstName() == null || thisCapLp.getContactFirstName() == "")
+                conName = thisCapLp.getBusinessName();
+            var applicantEmail = thisCapLp.getEmail()+"";
+            var VRFiles = null;
+            //var conName = getContactName(capContacts[i]);
+            //var applicantEmail = capContacts[i].getPeople().getEmail()+"";
+            var inspectorName = getInspectorName(inspId);
+            if(!inspectorName)
+                inspectorName = "Inspector";
+            var reportNames = new Array();
+            var rParamss = new Array();
+
+            reportNames.push("PG&E Electric Service Release");
+            var rParams = aa.util.newHashMap();
+            rParams.put("RecordID", capId.getCustomID()+"");
+            rParams.put("InspID", inspId);
+            rParams.put("Inspector", inspectorName);
+            var startDate = new Date();
+            var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+            rParams.put("InspectionDate", todayDate);
+            rParamss.push(rParams);
+
+            var reportUser = "ADMIN";
+            var rFiles = [];
+
+            for(var i in reportNames)
+            {
+                var reportName = reportNames[i];
+                var rParams = rParamss[i];
+                var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+                if(reportInfoResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not found this report " + reportName);
+                }
+
+                report = reportInfoResult.getOutput();
+                report.setModule("Building");
+                report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+                report.setReportParameters(rParams);
+
+                var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+                if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+                }
+
+                var reportResult = aa.reportManager.getReportResult(report);
+                if(reportResult.getSuccess() == false){
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+                }
+
+                reportResult = reportResult.getOutput();
+                var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+                if(reportFileResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+                }
+
+                var reportFile = reportFileResult.getOutput();
+                rFiles.push(reportFile);
+            }
+            VRFiles = rFiles;
+            var vAddress = "";
+            var vCity = "";
+            var capAddressResult1 = aa.address.getAddressByCapId(capId);
+            if (capAddressResult1.getSuccess())
+            {
+                var Address = capAddressResult1.getOutput();
+                for (yy in Address)
+                {
+                    vAddress = Address[yy].getHouseNumberStart();
+                    if (Address[yy].getStreetDirection())
+                        vAddress += " " + Address[yy].getStreetDirection();
+                    vAddress += " " + Address[yy].getStreetName();
+                    if (Address[yy].getStreetSuffix())
+                        vAddress += " " + Address[yy].getStreetSuffix();
+                    if (Address[yy].getUnitStart())
+                        vAddress += " " + Address[yy].getUnitStart();
+                    if(Address[yy].getCity())
+                        vCity = Address[yy].getCity()+"";
+                }
+            }
+            addParameter(params, "$$altID$$", capId.getCustomID()+"");
+            addParameter(params, "$$address$$", vAddress);
+            addParameter(params, "$$city$$", vCity);
+            addParameter(params, "$$ChiefBuildingOfficialPhone$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialPhone"));
+            //addParameter(params, "$$ChiefBuildingOfficialEmail$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"));
+            addParameter(params, "$$ChiefBuildingOfficialName$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialName"));
+            addParameter(params, "$$ChiefBuildingOfficialTitle$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialTitle"));
+            if(hm[applicantEmail+""] != 1)
+            {
+                sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                hm[applicantEmail+""] = 1;
+            }
+        }
+    }
+    catch(err)
+    {
+        logDebug(err);
+    }
 }
 if(inspType == "2060 Gas Service Release" && inspResult == "Pass") {
+    try
+    {
+        var flag = false;
+        var params = aa.util.newHashtable();
+        var applicantEmail = "";
+        var conName = "";
+        var vBalanceDue = 0.0;
+        var capDetailObjResult = aa.cap.getCapDetail(capId);
+        var hm = new Array();
+        if (capDetailObjResult.getSuccess())
+        {
+            capDetail = capDetailObjResult.getOutput();
+            vBalanceDue = parseFloat(capDetail.getBalance());
+        }
+        var contactResult = aa.people.getCapContactByCapID(capId);
+        if (contactResult.getSuccess()) {
+            var capContacts = contactResult.getOutput();
+            for (var i in capContacts) {
+                var VRFiles = null;
+                var conName = getContactName(capContacts[i]);
+                var applicantEmail = capContacts[i].getPeople().getEmail()+"";
+                var inspectorName = getInspectorName(inspId);
+                if(!inspectorName)
+                    inspectorName = "Inspector";
+                var reportNames = new Array();
+                var rParamss = new Array();
+                reportNames.push("PG&E Gas Service Release");
+                var rParams = aa.util.newHashMap();
+                rParams.put("RecordID", capId.getCustomID()+"");
+                rParams.put("InspID", inspId);
+                rParams.put("Inspector", inspectorName);
+                var startDate = new Date();
+                var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+                rParams.put("InspectionDate", todayDate);
+                rParamss.push(rParams);
 
+                var reportUser = "ADMIN";
+                var rFiles = [];
+
+                for(var i in reportNames)
+                {
+                    var reportName = reportNames[i];
+                    var rParams = rParamss[i];
+                    var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+                    if(reportInfoResult.getSuccess() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("Could not found this report " + reportName);
+                    }
+
+                    report = reportInfoResult.getOutput();
+                    report.setModule("Building");
+                    report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+                    report.setReportParameters(rParams);
+
+                    var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+                    if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+                    }
+
+                    var reportResult = aa.reportManager.getReportResult(report);
+                    if(reportResult.getSuccess() == false){
+                        // Notify adimistrator via Email, for example
+                        aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+                    }
+
+                    reportResult = reportResult.getOutput();
+                    var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+                    if(reportFileResult.getSuccess() == false) {
+                        // Notify adimistrator via Email, for example
+                        aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+                    }
+
+                    var reportFile = reportFileResult.getOutput();
+                    rFiles.push(reportFile);
+                }
+                VRFiles = rFiles;
+
+                var vAddress = "";
+                var vCity = "";
+                var capAddressResult1 = aa.address.getAddressByCapId(capId);
+                if (capAddressResult1.getSuccess())
+                {
+                    var Address = capAddressResult1.getOutput();
+                    for (yy in Address)
+                    {
+                        vAddress = Address[yy].getHouseNumberStart();
+                        if (Address[yy].getStreetDirection())
+                            vAddress += " " + Address[yy].getStreetDirection();
+                        vAddress += " " + Address[yy].getStreetName();
+                        if (Address[yy].getStreetSuffix())
+                            vAddress += " " + Address[yy].getStreetSuffix();
+                        if (Address[yy].getUnitStart())
+                            vAddress += " " + Address[yy].getUnitStart();
+                        if(Address[yy].getCity())
+                            vCity = Address[yy].getCity()+"";
+                    }
+                }
+                addParameter(params, "$$altID$$", capId.getCustomID()+"");
+                addParameter(params, "$$address$$", vAddress);
+                addParameter(params, "$$city$$", vCity);
+                addParameter(params, "$$ChiefBuildingOfficialPhone$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialPhone"));
+                //addParameter(params, "$$ChiefBuildingOfficialEmail$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"));
+                addParameter(params, "$$ChiefBuildingOfficialName$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialName"));
+                addParameter(params, "$$ChiefBuildingOfficialTitle$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialTitle"));
+                if(hm[applicantEmail+""] != 1)
+                {
+                    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                    hm[applicantEmail+""] = 1;
+                }
+                if(!flag)
+                {
+                    sendEmail("no-reply@sanleandro.org", lookup("REPORT_VARIABLES","PGE_Email"), "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                }
+            }
+        }
+        var capLps = getLicenseProfessional(capId);
+        for (var thisCapLpNum in capLps) {
+            var thisCapLp = capLps[thisCapLpNum];
+            var conName = thisCapLp.getContactFirstName()+" "+ thisCapLp.getContactLastName();
+            if(thisCapLp.getContactFirstName() == null || thisCapLp.getContactFirstName() == "")
+                conName = thisCapLp.getBusinessName();
+            var applicantEmail = thisCapLp.getEmail()+"";
+            var VRFiles = null;
+            //var conName = getContactName(capContacts[i]);
+            //var applicantEmail = capContacts[i].getPeople().getEmail()+"";
+            var inspectorName = getInspectorName(inspId);
+            if(!inspectorName)
+                inspectorName = "Inspector";
+            var reportNames = new Array();
+            var rParamss = new Array();
+
+            reportNames.push("PG&E Gas Service Release");
+            var rParams = aa.util.newHashMap();
+            rParams.put("RecordID", capId.getCustomID()+"");
+            rParams.put("InspID", inspId);
+            rParams.put("Inspector", inspectorName);
+            var startDate = new Date();
+            var todayDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+            rParams.put("InspectionDate", todayDate);
+            rParamss.push(rParams);
+
+            var reportUser = "ADMIN";
+            var rFiles = [];
+
+            for(var i in reportNames)
+            {
+                var reportName = reportNames[i];
+                var rParams = rParamss[i];
+                var reportInfoResult = aa.reportManager.getReportInfoModelByName(reportName);
+                if(reportInfoResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not found this report " + reportName);
+                }
+
+                report = reportInfoResult.getOutput();
+                report.setModule("Building");
+                report.setCapId(capId.getID1() + "-" + capId.getID2() + "-" + capId.getID3());
+                report.setReportParameters(rParams);
+
+                var permissionResult = aa.reportManager.hasPermission(reportName,reportUser);
+                if(permissionResult.getSuccess() == false || permissionResult.getOutput().booleanValue() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The user " + reportUser + " does not have perssion on this report " + reportName);
+                }
+
+                var reportResult = aa.reportManager.getReportResult(report);
+                if(reportResult.getSuccess() == false){
+                    // Notify adimistrator via Email, for example
+                    aa.print("Could not get report from report manager normally, error message please refer to (): " + reportResult.getErrorType() + ":" + reportResult.getErrorMessage());
+                }
+
+                reportResult = reportResult.getOutput();
+                var reportFileResult = aa.reportManager.storeReportToDisk(reportResult);
+                if(reportFileResult.getSuccess() == false) {
+                    // Notify adimistrator via Email, for example
+                    aa.print("The appliation does not have permission to store this temporary report " + reportName + ", error message please refer to:" + reportResult.getErrorMessage());
+                }
+
+                var reportFile = reportFileResult.getOutput();
+                rFiles.push(reportFile);
+            }
+            VRFiles = rFiles;
+            var vAddress = "";
+            var vCity = "";
+            var capAddressResult1 = aa.address.getAddressByCapId(capId);
+            if (capAddressResult1.getSuccess())
+            {
+                var Address = capAddressResult1.getOutput();
+                for (yy in Address)
+                {
+                    vAddress = Address[yy].getHouseNumberStart();
+                    if (Address[yy].getStreetDirection())
+                        vAddress += " " + Address[yy].getStreetDirection();
+                    vAddress += " " + Address[yy].getStreetName();
+                    if (Address[yy].getStreetSuffix())
+                        vAddress += " " + Address[yy].getStreetSuffix();
+                    if (Address[yy].getUnitStart())
+                        vAddress += " " + Address[yy].getUnitStart();
+                    if(Address[yy].getCity())
+                        vCity = Address[yy].getCity()+"";
+                }
+            }
+            addParameter(params, "$$altID$$", capId.getCustomID()+"");
+            addParameter(params, "$$address$$", vAddress);
+            addParameter(params, "$$city$$", vCity);
+            addParameter(params, "$$ChiefBuildingOfficialPhone$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialPhone"));
+            //addParameter(params, "$$ChiefBuildingOfficialEmail$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"));
+            addParameter(params, "$$ChiefBuildingOfficialName$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialName"));
+            addParameter(params, "$$ChiefBuildingOfficialTitle$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialTitle"));
+            if(hm[applicantEmail+""] != 1)
+            {
+                sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_IRSA_SERVICE_RELEASE", params, VRFiles, capId);
+                hm[applicantEmail+""] = 1;
+            }
+        }
+    }
+    catch(err)
+    {
+        logDebug(err);
+    }
 }
 //CASANLEAN-1554
-
-
-
 
 //CASANLEAN-1537
 if((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Permit"))||
