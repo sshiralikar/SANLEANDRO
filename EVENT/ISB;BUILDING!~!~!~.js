@@ -57,6 +57,7 @@ loadAppSpecific(AInfo);
 if(!publicUser && inspType == "2050 Electrical Service Release")
 {
     var fields = "";
+    aa.print(AInfo["ELECTRIC SERVICE RELEASE.Service Status"]);
     if(AInfo["ELECTRIC SERVICE RELEASE.Service Status"] == null || AInfo["Service Status"] == "")
         fields +="<br>  "+"Service Status";
     if(AInfo["ELECTRIC SERVICE RELEASE.Supply Service"] == null || AInfo["Supply Service"] == "")
