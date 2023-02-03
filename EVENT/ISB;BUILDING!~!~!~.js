@@ -52,6 +52,7 @@ if(publicUser && getAppStatus(capId) != "Ready for Inspection")
 
 //CASANLEAN-1554
 var useAppSpecificGroupName = true;
+var AInfo = new Array();
 loadAppSpecific(AInfo);
 
 if(!publicUser && inspType == "2050 Electrical Service Release")
@@ -94,6 +95,7 @@ if(!publicUser && inspType == "2060 Gas Service Release")
     }
 }
 var useAppSpecificGroupName = false;
+var AInfo = new Array();
 loadAppSpecific(AInfo);
 //CASANLEAN-1554
 
