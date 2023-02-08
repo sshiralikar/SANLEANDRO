@@ -229,17 +229,17 @@ function getProComplRequiredDocuments()
 {
     var requirementArray = [];
 
-    if((String(AInfo["Insulation?"]).toUpperCase() == "YES" || String(AInfo["Insulation?"]).toUpperCase() == "Y")
+    /*if((String(AInfo["Insulation?"]).toUpperCase() == "YES" || String(AInfo["Insulation?"]).toUpperCase() == "Y")
         ||(String(AInfo["Plumbing?"]).toUpperCase() == "YES" || String(AInfo["Plumbing?"]).toUpperCase() == "Y")
         ||(String(AInfo["Mechanical?"]).toUpperCase() == "YES" || String(AInfo["Mechanical?"]).toUpperCase() == "Y")
         ||(String(AInfo["Electrical?"]).toUpperCase() == "YES" || String(AInfo["Electrical?"]).toUpperCase() == "Y"))
-        requirementArray.push("Title 24");
+        requirementArray.push("Title 24");*/
 
     if((String(AInfo["Retain Wall?"]).toUpperCase() == "YES" || String(AInfo["Retain Wall?"]).toUpperCase() == "Y")
         ||(String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
     {
         requirementArray.push("Structural Calculations");
-        requirementArray.push("Structural Plans");
+        //requirementArray.push("Structural Plans");
     }
     if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
         requirementArray.push("WELO");

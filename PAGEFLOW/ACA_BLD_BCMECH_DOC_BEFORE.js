@@ -231,7 +231,7 @@ function getProComplRequiredDocuments()
     if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
     {
         requirementArray.push("Structural Calculations");
-        requirementArray.push("Structural Plans");
+        //requirementArray.push("Structural Plans");
     }
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");

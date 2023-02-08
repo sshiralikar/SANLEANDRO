@@ -229,13 +229,13 @@ function getProComplRequiredDocuments()
 {
     var requirementArray = [];
 
-    if((String(AInfo["Electrical?"]).toUpperCase() == "YES" || String(AInfo["Electrical?"]).toUpperCase() == "Y"))
-        requirementArray.push("Title 24");
+    /*if((String(AInfo["Electrical?"]).toUpperCase() == "YES" || String(AInfo["Electrical?"]).toUpperCase() == "Y"))
+        requirementArray.push("Title 24");*/
 
     if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
     {
         requirementArray.push("Structural Calculations");
-        requirementArray.push("Structural Plans");
+        //requirementArray.push("Structural Plans");
     }
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
