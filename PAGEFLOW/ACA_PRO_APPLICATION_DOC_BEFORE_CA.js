@@ -241,8 +241,8 @@ function getProComplRequiredDocuments()
         requirementArray.push("Structural Calculations");
         //requirementArray.push("Structural Plans");
     }
-    if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
-        requirementArray.push("WELO");
+    /*if((String(AInfo["Landscape?"]).toUpperCase() == "YES" || String(AInfo["Landscape?"]).toUpperCase() == "Y"))
+        requirementArray.push("WELO");*/
     if((String(AInfo["Accessibility Upgrades?"]).toUpperCase() == "YES" || String(AInfo["Accessibility Upgrades?"]).toUpperCase() == "Y"))
         requirementArray.push("ADA Document");
     if((String(AInfo["Tenant improvement?"]).toUpperCase() == "YES" || String(AInfo["Tenant improvement?"]).toUpperCase() == "Y"))
