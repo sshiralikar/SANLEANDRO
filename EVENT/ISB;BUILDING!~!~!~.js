@@ -42,7 +42,8 @@ if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Perm
     comment("Balance Due, Final inspection cannot be scheduled.");
 }
 //CASANLEAN-1504
-if(publicUser && getAppStatus(capId) != "Ready for Inspection")
+var vAppStatus = getAppStatus(capId);
+if(publicUser && vAppStatus != "Ready for Inspection" && vAppStatus != "Issued")
 {
     cancel = true;
     showMessage = true;
