@@ -232,9 +232,12 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 //CASANLEAN-938
 if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
 {
-    var c = new Date();
-    c.setFullYear(c.getFullYear() + 1);
-    var newDate = c.getMonth()+1+"/"+c.getDate()+"/"+c.getFullYear();
+    var d = new Date();
+    var year = d.getFullYear();
+    var month = d.getMonth();
+    var day = d.getDate();
+    var c = new Date(year, month+7, day);
+    var newDate = c.getMonth()+"/"+c.getDate()+"/"+c.getFullYear();
     editAppSpecific("Application Expiration Date", newDate);
 }
 if(wfTask == "Permit Issuance" && wfStatus == "Issued")
