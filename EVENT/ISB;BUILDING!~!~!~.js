@@ -58,13 +58,13 @@ loadAppSpecific(AInfo);
 if(!publicUser && inspType == "2050 Electrical Service Release")
 {
     var fields = "";
-    if(AInfo["ELECTRIC SERVICE RELEASE.Service Status"] == null || AInfo["Service Status"] == "")
+    if(AInfo["ELECTRIC SERVICE RELEASE.Service Status"] == null || AInfo["ELECTRIC SERVICE RELEASE.Service Status"] == "")
         fields +="<br>  "+"Service Status";
-    if(AInfo["ELECTRIC SERVICE RELEASE.Supply Service"] == null || AInfo["Supply Service"] == "")
+    if(AInfo["ELECTRIC SERVICE RELEASE.Supply Service"] == null || AInfo["ELECTRIC SERVICE RELEASE.Supply Service"] == "")
         fields +="<br>  "+"Supply Service";
-    if(AInfo["ELECTRIC SERVICE RELEASE.Meter Socket"] == null || AInfo["Meter Socket"] == "")
+    if(AInfo["ELECTRIC SERVICE RELEASE.Meter Socket"] == null || AInfo["ELECTRIC SERVICE RELEASE.Meter Socket"] == "")
         fields +="<br>  "+"Meter Socket";
-    if(AInfo["ELECTRIC SERVICE RELEASE.Amps"] == null || AInfo["Amps"] == "")
+    if(AInfo["ELECTRIC SERVICE RELEASE.Amps"] == null || AInfo["ELECTRIC SERVICE RELEASE.Amps"] == "")
         fields +="<br>  "+"Amps";
     if(fields!="")
     {
@@ -77,11 +77,11 @@ if(!publicUser && inspType == "2050 Electrical Service Release")
 if(!publicUser && inspType == "2060 Gas Service Release")
 {
     var fields = "";
-    if(AInfo["GAS SERVICE RELEASE.Service Status"] == null || AInfo["Service Status"] == "")
+    if(AInfo["GAS SERVICE RELEASE.Service Status"] == null || AInfo["GAS SERVICE RELEASE.Service Status"] == "")
         fields +="<br>  "+"Service Status";
-    if(AInfo["GAS SERVICE RELEASE.Supply Service"] == null || AInfo["Supply Service"] == "")
+    if(AInfo["GAS SERVICE RELEASE.Supply Service"] == null || AInfo["GAS SERVICE RELEASE.Supply Service"] == "")
         fields +="<br>  "+"Supply Service";
-    if(AInfo["GAS SERVICE RELEASE.BTU"] == null || AInfo["BTU"] == "")
+    if(AInfo["GAS SERVICE RELEASE.BTU"] == null || AInfo["GAS SERVICE RELEASE.BTU"] == "")
         fields +="<br>  "+"Amps";
     if(fields!="")
     {
