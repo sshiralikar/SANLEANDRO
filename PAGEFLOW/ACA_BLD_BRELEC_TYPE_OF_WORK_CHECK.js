@@ -141,13 +141,13 @@ logDebug("balanceDue = " + balanceDue);
 
 // page flow custom code begin
 try {
-    if((AInfo["Backup Generator"] == "UNCHECKED" || AInfo["Backup Generator"] == null)
-        &&(AInfo["Electric Repair"] == "UNCHECKED" || AInfo["Electric Repair"] == null)
-        &&(AInfo["EV Charger"] == "UNCHECKED" || AInfo["EV Charger"] == null)
-        &&(AInfo["Lighting"] == "UNCHECKED" || AInfo["Lighting"] == null)
-        &&(AInfo["New Equipment Electrical Supply"] == "UNCHECKED" || AInfo["New Equipment Electrical Supply"] == null)
-        &&(AInfo["Main Panel"] == "UNCHECKED" || AInfo["Main Panel"] == null)
-        &&(AInfo["Rewire"] == "UNCHECKED" || AInfo["Rewire"] == null))
+    if((AInfo["EV"] == "UNCHECKED" || AInfo["EV"] == null)
+        &&(AInfo["Generator"] == "UNCHECKED" || AInfo["Generator"] == null)
+        &&(AInfo["MPU"] == "UNCHECKED" || AInfo["MPU"] == null)
+        &&(AInfo["New Lights or Outlets"] == "UNCHECKED" || AInfo["New Lights or Outlets"] == null)
+        &&(AInfo["Rewire"] == "UNCHECKED" || AInfo["Rewire"] == null)
+        &&(AInfo["Subpanel"] == "UNCHECKED" || AInfo["Subpanel"] == null)
+        &&(AInfo["Temp. Power"] == "UNCHECKED" || AInfo["Temp. Power"] == null))
     {
         cancel = true;
         showMessage = true;
