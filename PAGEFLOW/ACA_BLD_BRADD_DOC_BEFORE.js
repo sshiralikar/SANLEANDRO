@@ -240,6 +240,12 @@ function getProComplRequiredDocuments()
     if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
         requirementArray.push("BAAQMD - J number");
 
+    if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
+    {
+        requirementArray.push("Structural Calculations");
+        //requirementArray.push("Structural Plans");
+    }
+
     return requirementArray;
 }
 function isFloodZone()
