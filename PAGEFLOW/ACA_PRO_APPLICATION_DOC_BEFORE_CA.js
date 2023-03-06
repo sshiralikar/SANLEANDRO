@@ -249,8 +249,8 @@ function getProComplRequiredDocuments()
         requirementArray.push("Owner Approval Letter");
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
-    if((String(AInfo["Health Department?"]).toUpperCase() == "YES" || String(AInfo["Health Department?"]).toUpperCase() == "Y"))
-        requirementArray.push("Health Department Approval");
+/*    if((String(AInfo["Health Department?"]).toUpperCase() == "YES" || String(AInfo["Health Department?"]).toUpperCase() == "Y"))
+        requirementArray.push("Health Department Approval");*/
     if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
         requirementArray.push("BAAQMD - J number");
     return requirementArray;
