@@ -161,7 +161,7 @@ function copy() {
     try {
         logDebug("parentCapId: " + parentCapId);
         logDebug("targetCapId: " + targetCapId);
-        copyLicenseProfessionalX(parentCapId, targetCapId);
+        //copyLicenseProfessionalX(parentCapId, targetCapId);
         //copyAppSpecificTable(parentCapId, targetCapId);
         //copyAppSpecificInfo(parentCapId, targetCapId);
         //copyLicenseProfessional(parentCapId, targetCapId);
@@ -174,10 +174,13 @@ function copy() {
         copyCapDetailInfo(parentCapId, targetCapId);
         copyCapWorkDesInfo(parentCapId, targetCapId);
         editAppName(getAppName(parentCapId),targetCapId);
+
         var amendCapModel = aa.cap.getCapViewBySingle4ACA(targetCapId);
         amendCapModel.getCapType().setSpecInfoCode(capModel.getCapType().getSpecInfoCode());
+        copyLPFromParent4ACA(amendCapModel, parentCapId);
         aa.env.setValue("CapModel", amendCapModel);
-        /*aa.env.setValue("CAP_MODEL_INITED", "TRUE");*/
+        //aa.env.setValue("CapModel", capModel);
+        aa.env.setValue("CAP_MODEL_INITED", "TRUE");
         /*cancel = true;
         showMessage = true;
         showDebug = true;*/
@@ -235,7 +238,36 @@ function copyLicenseProfessionalX(srcCapId, targetCapId) {
         aa.print("servProvCode: " + aa.getServiceProviderCode());
         sourcelicProfModel.setAgencyCode(aa.getServiceProviderCode());
         sourcelicProfModel.setCapID(targetCapId);
+        sourcelicProfModel.getLicenseProfessionalModel().setComponentName("Licensed Professional List");
         aa.licenseProfessional.createLicensedProfessional(sourcelicProfModel);
+    }
+}
+function copyLPFromParent4ACA(currentRecordCapModel, parentCapId)
+{
+
+    if (currentRecordCapModel.getLicenseProfessionalList() == null)
+    {
+        currentRecordCapModel.setLicenseProfessionalList(aa.util.newArrayList());
+    }
+    if (currentRecordCapModel.getLicenseProfessionalList().size() > 0)
+    {
+        return;
+    }
+
+    var t = aa.licenseProfessional.getLicenseProf(parentCapId);
+    if (t.getSuccess())
+    {
+        t = t.getOutput();
+
+        for (lp in t)
+        {
+            var newLicenseModel = t[lp].getLicenseProfessionalModel();
+            newLicenseModel.setComponentName(null);
+            newLicenseModel.setCapID(null);
+            newLicenseModel.setAgencyCode(aa.getServiceProviderCode());
+            newLicenseModel.setAuditID(aa.getAuditID());
+            currentRecordCapModel.getLicenseProfessionalList().add(newLicenseModel);
+        }
     }
 }
 
