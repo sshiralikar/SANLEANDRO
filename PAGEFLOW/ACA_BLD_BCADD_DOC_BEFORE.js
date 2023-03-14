@@ -241,7 +241,7 @@ function getProComplRequiredDocuments()
     }
     if((String(AInfo["New Equipment?"]).toUpperCase() == "YES" || String(AInfo["New Equipment?"]).toUpperCase() == "Y"))
         requirementArray.push("Manufacturer Specifications");
-    if(isFloodZone())
+    if(!appMatch("Building/Commercial/Cell/NA") && isFloodZone())
         requirementArray.push("FEMA Documents");
     if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
         requirementArray.push("BAAQMD - J number");
