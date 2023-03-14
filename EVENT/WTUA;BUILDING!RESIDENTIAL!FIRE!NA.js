@@ -280,7 +280,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 }
 //CASANLEAN-938
 //CASANLEAN-938
-if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
+if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req" || wfStatus == "Accepted"))
 {
     var c = new Date();
     c.setFullYear(c.getFullYear() + 1);

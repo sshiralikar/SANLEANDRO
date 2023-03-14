@@ -279,7 +279,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-938
-if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
+if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req" || wfStatus == "Accepted"))
 {
     var d = new Date();
     var year = d.getFullYear();
