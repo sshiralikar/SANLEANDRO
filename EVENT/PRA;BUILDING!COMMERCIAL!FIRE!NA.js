@@ -6,6 +6,9 @@ if(isTaskActive("Plans Distribution") && balanceDue == 0)
 else if(isTaskActive("Fire Plan Review") && balanceDue == 0)
 {
     updateTask("Fire Plan Review","Fees Paid","","");
+    activateTask("Permit Issuance");
+    deactivateTask("Fire Plan Review");
+    aa.workflow.adjustTask(capId, "Fire Plan Review", "N", "Y", null, null);
     updateAppStatus("In Review","Updated through script");
 }
 else if(isTaskActive("Plans Coordination") && balanceDue == 0)
