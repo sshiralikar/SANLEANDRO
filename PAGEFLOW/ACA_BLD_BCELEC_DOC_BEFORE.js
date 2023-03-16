@@ -236,7 +236,7 @@ function getProComplRequiredDocuments()
     )
         requirementArray.push("Title 24");*/
 
-    if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
+    /*if((String(AInfo["Structural?"]).toUpperCase() == "YES" || String(AInfo["Structural?"]).toUpperCase() == "Y"))
     {
         requirementArray.push("Structural Calculations");
         //requirementArray.push("Structural Plans");
@@ -254,6 +254,8 @@ function getProComplRequiredDocuments()
         requirementArray.push("Electric Load Calculations");
 
     if(AInfo["BAAQMD J#"]!="" && AInfo["BAAQMD J#"]!=null)
-        requirementArray.push("BAAQMD - J number");
+        requirementArray.push("BAAQMD - J number");*/
+
+    requirementArray.push("Plans");
     return requirementArray;
 }
