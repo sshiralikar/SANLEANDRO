@@ -114,10 +114,16 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
 //CASANLEAN-1393
 
 //CASANLEAN-1420
-if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review" && !feeExists("BPMT","NEW","INVOICED") && !appMatch("Building/Commercial/Solar/NA"))
+if(wfTask == "Plans Distribution" && wfStatus == "Routed for Review" && !feeExists("BPMT","NEW","INVOICED"))
 {
-    addFee("BPMT","B_COMBO","FINAL",1,"N");
+    if(appMatch("Building/Commercial/Mechanical/NA") || appMatch("Building/Residential/Mechanical/NA"))
+        addFee("MPMT","B_COMBO","FINAL",1,"N");
+    else if(appMatch("Building/Commercial/Plumbing/NA") || appMatch("Building/Residential/Plumbing/NA"))
+        addFee("PPMT","B_COMBO","FINAL",1,"N");
+    else if(!appMatch("Building/Commercial/Solar/NA"))
+        addFee("BPMT","B_COMBO","FINAL",1,"N");
 }
+else
 //CASANLEAN-1420
 
 //CASANLEAN-806, CASANLEAN-831, CASANLEAN-863, CASANLEAN-967, CASANLEAN-989, CASANLEAN-1019
