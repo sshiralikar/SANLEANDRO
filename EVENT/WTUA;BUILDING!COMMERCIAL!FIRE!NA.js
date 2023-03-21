@@ -306,7 +306,7 @@ if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approv
 }
 //CASANLEAN-945
 //CASANLEAN-948
-if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
+if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fees Due")
 {
     var params = aa.util.newHashtable();
 
