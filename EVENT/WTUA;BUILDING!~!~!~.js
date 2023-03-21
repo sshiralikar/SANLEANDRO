@@ -52,6 +52,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due" && !appMatch("Buildi
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+    addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
@@ -109,6 +110,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due with cc Fees") {
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+    addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-1393
