@@ -67,6 +67,65 @@ if(wfTask == "Extension" && wfStatus == "Approved")
     }
 }
 
+//CASANLEAN-2536
+if(wfTask == "Extension" && wfStatus == "Denied")
+{
+    var params = aa.util.newHashtable();
+
+    var vStaffId = "";
+    var title = "";
+    var vEmail = "";
+    var wfUserName = "";
+    var currentUsrVar = aa.person.getUser(wfStaffUserID).getOutput();
+    if (currentUsrVar != null) {
+        vStaffId = currentUsrVar.getGaUserID();
+        title = currentUsrVar.title;
+        vEmail = currentUsrVar.email;
+        wfUserName = currentUsrVar.firstName + " "+ currentUsrVar.middleName+ " "+ currentUsrVar.lastName;
+    }
+
+    var vAddress = "";
+    var capAddressResult1 = aa.address.getAddressByCapId(capId);
+    if (capAddressResult1.getSuccess())
+    {
+        var Address = capAddressResult1.getOutput();
+        for (yy in Address)
+        {
+            vAddress = Address[yy].getHouseNumberStart();
+            if (Address[yy].getStreetDirection())
+                vAddress += " " + Address[yy].getStreetDirection();
+            vAddress += " " + Address[yy].getStreetName();
+            if (Address[yy].getStreetSuffix())
+                vAddress += " " + Address[yy].getStreetSuffix();
+            if (Address[yy].getUnitStart())
+                vAddress += " " + Address[yy].getUnitStart();
+        }
+    }
+
+    addParameter(params, "$$wfStatus$$", wfStatus);
+    addParameter(params, "$$altID$$", capId.getCustomID()+"");
+    addParameter(params, "$$wfStatusDate$$", sysDateMMDDYYYY);
+    addParameter(params, "$$wfComment$$", wfComment);
+    addParameter(params, "$$ChiefBuildingOfficialPhone$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialPhone"));
+    addParameter(params, "$$ChiefBuildingOfficialEmail$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialEmail"));
+    addParameter(params, "$$ChiefBuildingOfficialName$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialName"));
+    addParameter(params, "$$ChiefBuildingOfficialTitle$$", lookup("REPORT_VARIABLES","ChiefBuildingOfficialTitle"));
+
+    var applicantEmail = "";
+    var conName = "";
+    var contactResult = aa.people.getCapContactByCapID(capId);
+    if (contactResult.getSuccess()) {
+        var capContacts = contactResult.getOutput();
+        for (var i in capContacts) {
+            //if (capContacts[i].getPeople().getContactType() == "Applicant") {
+            addParameter(params, "$$FullNameBusName$$", getContactName(capContacts[i]));
+            sendEmail("no-reply@sanleandro.org", capContacts[i].getPeople().getEmail()+"", "", "BLD_WTUA_EXT_DENIED", params, null, capId);
+            //}
+        }
+    }
+}
+
+
 
 
 function runEmailThroughSLEmailFilter(vEmail)
