@@ -49,7 +49,7 @@ if(publicUser && vAppStatus != "Ready for Inspection" && vAppStatus != "Issued")
 {
     cancel = true;
     showMessage = true;
-    comment("Inspections can only be scheduled when the permit is in the status: <b>'Ready for Inspection'</b>.");
+    comment("Inspections can only be scheduled when the permit is in the status: <b>'Ready for Inspection' or 'Issued'</b>.");
 }
 //CASANLEAN-1504
 
