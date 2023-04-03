@@ -7,7 +7,7 @@ if(wfStatus == "Issued" && !appHasCondition("General", "Met", "CSLB Expired", nu
         comment(expiredLPData.join("<br>"));
         aa.env.setValue("capId", String(capId.getCustomID()));
         var result = aa.runScriptInNewTransaction("BLD_APPLY_CSLB_CONDITION");
-        comment(result);
+        //comment(result);
     }
 } else {
     logDebug("Condition for CSLB Expired met...");
