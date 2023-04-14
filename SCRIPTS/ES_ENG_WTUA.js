@@ -78,6 +78,26 @@ if(wfHours > 0 && wfStaffUserID == "PTOSTE")
     logDebug("adding Fee: StaffUserID is PTOSTE");
     addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
 }
+if(wfHours > 0 && wfStaffUserID == "RCHEE")
+{
+    logDebug("adding Fee: StaffUserID is RCHEE");
+    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+}
+if(wfHours > 0 && wfStaffUserID == "MCHAUDHARY")
+{
+    logDebug("adding Fee: StaffUserID is MCHAUDHARY");
+    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+}
+if(wfHours > 0 && wfStaffUserID == "ATOSCANO")
+{
+    logDebug("adding Fee: StaffUserID is ATOSCANO");
+    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+}
+if(wfHours > 0 && wfStaffUserID == "MZOOBI")
+{
+    logDebug("adding Fee: StaffUserID is MZOOBI");
+    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+}
 if(wfHours > 0 && wfStaffUserID == "RGONZALES")
 {
     addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
@@ -105,4 +125,3 @@ if(wfHours > 0 && wfStaffUserID == "RLEYVA")
 if(wfTimeOT  == "Y")
     email("myoung@youngconsultingllc.com","noreply@accela.com","OVERTIME","A overtime has been triggered" + capIDString + ", " + capName + ".");
 include("WTUA_EXECUTE_DIGEPLAN_SCRIPTS_ENG");
-//CHANGE
