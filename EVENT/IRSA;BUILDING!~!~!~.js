@@ -746,6 +746,7 @@ if( inspResult == "Pass" || inspResult == "Fail")
     date.setFullYear(date.getFullYear() + 1);
     var newDate = date.getMonth()+1+"/"+date.getDate()+"/"+date.getFullYear();
     editAppSpecific("Permit Expiration Date", newDate);
+    setLicExpirationDate(capId,"",newDate);
 }
 //CASANLEAN-1496
 showDebug = false;

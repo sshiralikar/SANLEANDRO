@@ -44,6 +44,7 @@ if(wfTask == "Permit Issuance" && wfStatus == "Issued")
     c.setFullYear(c.getFullYear() + 1);
     var newDate = c.getMonth()+1+"/"+c.getDate()+"/"+c.getFullYear();
     editAppSpecific("Permit Expiration Date", newDate);
+    setLicExpirationDate(capId,"",newDate);
     var d = new Date();
     editAppSpecific("Permit Issued Date", (d.getMonth()+1)+"/"+d.getDate()+"/"+d.getFullYear());
 }
