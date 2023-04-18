@@ -392,13 +392,13 @@ if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approv
 //CASANLEAN-860
 
 //CASANLEAN-868
-if(wfTask == "Water Pollution Plant Control Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
+/*if(wfTask == "Water Pollution Plant Control Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
     if(wfHours == null || wfHours == "")
         addFee("XWPC","B_COMBO","FINAL",1,"N");
     else
         addFee("XWPC","B_COMBO","FINAL",parseInt(wfHours),"N");
-}
+}*/
 //CASANLEAN-868
 
 //CASANLEAN-865
