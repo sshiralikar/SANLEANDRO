@@ -29,7 +29,7 @@ if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"|
                 // Check for generally required fields
                 vGSObj.loadInfo();
                 logDebug("vGSObj.text: " + vGSObj.text + " vGSObj.status " + vGSObj.status + "vGSObj.comment: " + vGSObj.comment);
-                if (matches(vGSObj.status, "No") && matches(vGSObj.comment, null, '', undefined, " "))
+                if (matches(vGSObj.status, "No"))//&& matches(vGSObj.comment, null, '', undefined, " "))
                 {
                     wasThereANo = true;
                     pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
