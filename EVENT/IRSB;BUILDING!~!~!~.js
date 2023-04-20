@@ -10,7 +10,6 @@ if((!inspComment || inspComment == "")
 }
 
 //CASANLEAN-1554
-
 //CASANLEAN-2666
 if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"||inspResult == "Partial-Revised"))
 {
@@ -19,22 +18,34 @@ if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"|
     var vRequiredItem = "";
     var wasThereANo = false;
     var pleaseEnterComment = "";
-    var gs = inspObj.getInspection().getGuideSheets();
-    if (gs) {
-        gsArray = gs.toArray();
-        for (var loopk in gsArray) {
-            var vGSItems = gsArray[loopk].getItems().toArray();
-            for (x in vGSItems) {
-                vGSObj = new guideSheetObject(gsArray[loopk], vGSItems[x]);
-                // Check for generally required fields
-                vGSObj.loadInfo();
-                logDebug("vGSObj.text: " + vGSObj.text + " vGSObj.status " + vGSObj.status + "vGSObj.comment: " + vGSObj.comment);
-                if (matches(vGSObj.status, "No"))//&& matches(vGSObj.comment, null, '', undefined, " "))
-                {
-                    wasThereANo = true;
-                    pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
-                    vRequiredItem += "-" + vGSObj.text;
-                    vRequiredItem += "<br>";
+    var r = aa.inspection.getInspections(capId);
+    if (r.getSuccess()) {
+        var inspArray = r.getOutput();
+        for (i in inspArray) {
+            if (inspArray[i].getIdNumber() == inspId) {
+                var inspModel = inspArray[i].getInspection();
+                var gs = inspModel.getGuideSheets()
+                aa.print(gs);
+                if (gs) {
+                    gsArray = gs.toArray();
+                    aa.print(gsArray.length);
+                    for (var loopk in gsArray) {
+                        var vGSItems = gsArray[loopk].getItems().toArray();
+                        for (x in vGSItems) {
+                            vGSObj = new guideSheetObject(gsArray[loopk], vGSItems[x]);
+                            // Check for generally required fields
+                            vGSObj.loadInfo();
+                            logDebug("vGSObj.text: " + vGSObj.text + " vGSObj.status " + vGSObj.status + "vGSObj.comment: " + vGSObj.comment);
+                            if (matches(vGSObj.status, "No"))//&& matches(vGSObj.comment, null, '', undefined, " "))
+                            {
+                                wasThereANo = true;
+                                //pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
+                                pleaseEnterComment = "You cannot result this inspection with failed guidesheet item(s), please either correct guidesheet item(s) or fail the inspection. <br>";
+                                vRequiredItem += "-" + vGSObj.text;
+                                vRequiredItem += "<br>";
+                            }
+                        }
+                    }
                 }
             }
         }
