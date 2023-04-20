@@ -135,7 +135,7 @@ try
             addParameter(params, "$$FullNameBusName$$", conName);
             addParameter(params, "$$InspectionType$$", inspType);
             addParameter(params, "$$InspectionResultComment$$", inspComment);
-            if(hm[applicantEmail+""] != 1)
+            if(hm[applicantEmail+""] != 1 && inspType!="Courtesy" && inspType!="After Hours/Weekend/Holidays")
             {
                 sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
                 hm[applicantEmail+""] = 1;
@@ -230,7 +230,7 @@ try
         addParameter(params, "$$FullNameBusName$$", conName);
         addParameter(params, "$$InspectionType$$", inspType);
         addParameter(params, "$$InspectionResultComment$$", inspComment);
-        if(hm[applicantEmail+""] != 1)
+        if(hm[applicantEmail+""] != 1 && inspType!="Courtesy" && inspType!="After Hours/Weekend/Holidays")
         {
             sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_INSPECTION_RESULT_EMAIL", params, VRFiles, capId);
             hm[applicantEmail+""] = 1;
