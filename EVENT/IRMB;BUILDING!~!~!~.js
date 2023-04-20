@@ -1,21 +1,18 @@
 //CASANLEAN-1525
-showDebug = false;
 if((!inspComment || inspComment == "")
-    && (inspResult == "Canceled"||inspResult == "Cancelled"||inspResult == "Partial"||inspResult == "Fail"))
+    && (inspResult == "Canceled"||inspResult == "Cancelled"||inspResult == "Partial-Revised"||inspResult == "Partial-Revised"))
 {
     cancel = true;
     showMessage = true;
-    showDebug = false;
     comment("Enter a result comment.");
 }
 
 //CASANLEAN-1554
 
-if(inspResult == "Pass-Revised"||inspResult == "Fail-Revised"||inspResult == "Partial-Revised")
+if(inspResult == "Pass"||inspResult == "Fail"||inspResult == "Partial")
 {
     showMessage = true;
-    cancel = true;
-    comment("You can only can select these statuses when Updating an inspection.");
+    comment("You are selecting a status that will NOT generate an email or report to the customer");
 }
 //CASANLEAN-2666
 if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"||inspResult == "Partial-Revised"))
