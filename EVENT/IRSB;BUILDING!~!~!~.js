@@ -12,36 +12,39 @@ if((!inspComment || inspComment == "")
 //CASANLEAN-1554
 
 //CASANLEAN-2666
-var vGSObj;
-var x = 0;
-var vRequiredItem = "";
-var wasThereANo = false;
-var pleaseEnterComment = "";
-var gs = inspObj.getInspection().getGuideSheets();
-if (gs) {
-    gsArray = gs.toArray();
-    for (var loopk in gsArray) {
-        var vGSItems = gsArray[loopk].getItems().toArray();
-        for (x in vGSItems) {
-            vGSObj = new guideSheetObject(gsArray[loopk], vGSItems[x]);
-            // Check for generally required fields
-            vGSObj.loadInfo();
-            logDebug("vGSObj.text: " + vGSObj.text + " vGSObj.status " + vGSObj.status + "vGSObj.comment: " + vGSObj.comment);
-            if (matches(vGSObj.status, "No") && matches(vGSObj.comment, null, '', undefined, " "))
-            {
-                wasThereANo = true;
-                pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
-                vRequiredItem += "-" + vGSObj.text;
-                vRequiredItem += "<br>";
+if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"||inspResult == "Partial-Revised"))
+{
+    var vGSObj;
+    var x = 0;
+    var vRequiredItem = "";
+    var wasThereANo = false;
+    var pleaseEnterComment = "";
+    var gs = inspObj.getInspection().getGuideSheets();
+    if (gs) {
+        gsArray = gs.toArray();
+        for (var loopk in gsArray) {
+            var vGSItems = gsArray[loopk].getItems().toArray();
+            for (x in vGSItems) {
+                vGSObj = new guideSheetObject(gsArray[loopk], vGSItems[x]);
+                // Check for generally required fields
+                vGSObj.loadInfo();
+                logDebug("vGSObj.text: " + vGSObj.text + " vGSObj.status " + vGSObj.status + "vGSObj.comment: " + vGSObj.comment);
+                if (matches(vGSObj.status, "No") && matches(vGSObj.comment, null, '', undefined, " "))
+                {
+                    wasThereANo = true;
+                    pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
+                    vRequiredItem += "-" + vGSObj.text;
+                    vRequiredItem += "<br>";
+                }
             }
         }
     }
-}
-if (wasThereANo)
-{
-    cancel = true;
-    showMessage = true;
-    comment( pleaseEnterComment + vRequiredItem);
+    if (wasThereANo)
+    {
+        cancel = true;
+        showMessage = true;
+        comment( pleaseEnterComment + vRequiredItem);
+    }
 }
 //CASANLEAN-2666
 
