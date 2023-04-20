@@ -1,5 +1,5 @@
 //CASANLEAN-1525
-if((!inspComment || inspComment == "")
+if((!inspResultComment  || inspResultComment  == "")
     && (inspResult == "Canceled"||inspResult == "Cancelled"||inspResult == "Partial-Revised"||inspResult == "Partial-Revised"))
 {
     cancel = true;
