@@ -25,10 +25,8 @@ if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"|
             if (inspArray[i].getIdNumber() == inspId) {
                 var inspModel = inspArray[i].getInspection();
                 var gs = inspModel.getGuideSheets()
-                aa.print(gs);
                 if (gs) {
                     gsArray = gs.toArray();
-                    aa.print(gsArray.length);
                     for (var loopk in gsArray) {
                         var vGSItems = gsArray[loopk].getItems().toArray();
                         for (x in vGSItems) {
@@ -41,7 +39,7 @@ if((inspResult == "Pass"||inspResult == "Pass-Revised"||inspResult == "Partial"|
                                 wasThereANo = true;
                                 //pleaseEnterComment = "Please enter a comment for the below items marked as 'No'. <br>";
                                 pleaseEnterComment = "You cannot result this inspection with failed guidesheet item(s), please either correct guidesheet item(s) or fail the inspection. <br>";
-                                vRequiredItem += "-" + vGSObj.text;
+                                vRequiredItem += "-> " + vGSObj.text;
                                 vRequiredItem += "<br>";
                             }
                         }
