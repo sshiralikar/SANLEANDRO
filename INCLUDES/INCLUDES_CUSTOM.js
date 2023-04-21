@@ -1365,7 +1365,9 @@ function validateCSLBClassifications(licNum, recordType) {
     // check the results
     var result;    
     if (!res.getSuccess()) {
-        returnObj.message = "CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum;
+        logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+        returnObj.message = "The California Contractor State License Board website is temporarily down, please save the permit application you were creating so you can resume once the CSLB website is back up.";
+        //returnObj.message = "CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum;
         returnObj.validated = false;
         return returnObj;   
     }
