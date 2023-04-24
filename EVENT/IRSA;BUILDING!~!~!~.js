@@ -752,7 +752,7 @@ if( inspResult == "Pass" || inspResult == "Fail")
 //CASANLEAN-2665
 if((inspResult == "Pass"||inspResult == "Partial"||inspResult == "Fail"))
 {
-    if(inspType == "Courtesy" && !feeExists("XCTY","NEW","INVOICED"))
+    if(inspType == "Courtesy" )//&& !feeExists("XCTY","NEW","INVOICED"))
     {
         var hm = new Array();
         addFeeWithExtraData("XCTY","B_COMBO","FINAL",1,"Y",capId,inspId,null,null);
@@ -835,7 +835,7 @@ if((inspResult == "Pass"||inspResult == "Partial"||inspResult == "Fail"))
             }
         }
     }
-    if(inspType == "After Hours/Weekend/Holidays" && !feeExists("XANH","NEW","INVOICED"))
+    if(inspType == "After Hours/Weekend/Holidays" )//&& !feeExists("XANH","NEW","INVOICED"))
     {
         var hm = new Array();
         addFeeWithExtraData("XANH","B_COMBO","FINAL",1,"Y",capId,inspId,null,null);
