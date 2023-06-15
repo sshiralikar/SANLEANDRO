@@ -23,5 +23,6 @@ for (var i in wfhistoryresult) {
         break;
     }
 }
+/*
 updateTask("Plans Coordination","In Progress","","");
-updateTask("Plans Distribution","In Progress","","");
+updateTask("Plans Distribution","In Progress","","");*/
