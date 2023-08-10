@@ -685,7 +685,7 @@ if(inspResult!="Pass" && inspResult!="Fail" && inspResult!="Partial")
             (appMatch("Building/Commercial/Fire/NA") && (inspType =="System Final"))||
             (appMatch("Building/Residential/Fire/NA") && (inspType =="System Final"))||
             (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")))
-        && inspResult == "Pass-Revised")
+        && (inspResult == "Pass-Revised" || inspResult == "Finaled" || inspResult == "Finaled-Revised"))
     {
         if(vBalanceDue <= 0)
         {

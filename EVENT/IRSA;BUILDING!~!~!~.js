@@ -721,7 +721,7 @@ if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Perm
     (appMatch("Building/Commercial/Fire/NA") && (inspType =="System Final"))||
     (appMatch("Building/Residential/Fire/NA") && (inspType =="System Final"))||
     (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")))
-    && inspResult == "Pass")
+    && (inspResult == "Pass" || inspResult == "Finaled"))
 {
     if(vBalanceDue <= 0)
     {
