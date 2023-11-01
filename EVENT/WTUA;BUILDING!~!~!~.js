@@ -1,4 +1,10 @@
+//Added global workflow comments as per Lisa's request.
+var params = aa.util.newHashtable();
+addParameter(params, "$$wfTaskComments$$", wfComment);
+
 //CASANLEAN-1393
+
+
 if(wfTask == "Plans Distribution" && wfStatus == "Fees Due" && !appMatch("Building/Commercial/Solar/NA")) {
     addFee("PLNC  ","B_COMBO","FINAL",1,"Y");
 
@@ -52,6 +58,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Fees Due" && !appMatch("Buildi
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+    addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
