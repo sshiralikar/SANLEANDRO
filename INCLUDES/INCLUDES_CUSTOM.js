@@ -1407,3 +1407,431 @@ function validateCSLBClassifications(licNum, recordType) {
     }
     return returnObj;
 }
+
+/* 
+GQ_DOCU_SIGN_LIBRARY.js
+Author: Gray Quarter Inc. (c)2023
+Usage: Used with Gray Quarter Sign UI with Adobe Sign.  See help.grayquarter.com for documentation.
+Version: 1.0
+Ticket: CASANLEAN-2965
+*/
+function adobeSignerObj(FullName, Email) {
+    this.FullName = FullName || "";
+    this.Email = Email || "";
+
+    this.SignHere = [];
+    this.DateHere = [];
+    this.FullNameHere = [];
+    this.InitialHere = [];
+
+    /**
+     * Load from Primary Contact Type
+     * @param {capIdModel} pCapId 
+     */
+    this.SignerFromPrimary = function (pCapId) {
+        this.FullName = "";
+        this.Email = "";
+        //Get primary contact and fill full name and email
+        var conArr = new Array();
+        var capContResult = aa.people.getCapContactByCapID(pCapId);
+        if (capContResult.getSuccess()) {
+            conArr = capContResult.getOutput();
+            for (contact in conArr) {
+                if (conArr[contact].getPeople().getFlag() == "Y") {
+                    var fullName = conArr[contact].getPeople().getFullName() || "";
+                    var fName = conArr[contact].getPeople().getFirstName() || "";
+                    var lName = conArr[contact].getPeople().getLastName() || "";
+                    var busName = String(conArr[contact].getPeople().getBusinessName())
+                    var email = String(conArr[contact].getPeople().getEmail());
+                    if (fName != "" || lName != "") {
+                        this.FullName = String(fName + " " + lName).trim();
+                    }
+                    else if (fullName != "") {
+                        this.FullName = String(fullName);
+                    }
+                    else {
+                        this.FullName = String(busName);
+                    }
+                    if (email.indexOf("@") > 0) {
+                        this.Email = String(email);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Load a signer from contact type, if multiple of same type grabs first one
+     * @param {capIdModel} pCapId 
+     * @param {string} contactType
+     */
+    this.SignerFromContactType = function (pCapId, contacType) {
+        //TODO: lookup primary contact and them
+        this.FullName = "";
+        this.Email = "";
+        //Get primary contact and fill full name and email
+        var conArr = new Array();
+        var capContResult = aa.people.getCapContactByCapID(pCapId);
+        if (capContResult.getSuccess()) {
+            conArr = capContResult.getOutput();
+            for (contact in conArr) {
+                if (String(conArr[contact].getPeople().getContactType()).toLowerCase() == String(contacType).toLowerCase()) {
+                    var fullName = conArr[contact].getPeople().getFullName() || "";
+                    var fName = conArr[contact].getPeople().getFirstName() || "";
+                    var lName = conArr[contact].getPeople().getLastName() || "";
+                    var busName = String(conArr[contact].getPeople().getBusinessName())
+                    var email = String(conArr[contact].getPeople().getEmail());
+                    if (fName != "" || lName != "") {
+                        this.FullName = String(fName + " " + lName).trim();
+                    }
+                    else if (fullName != "") {
+                        this.FullName = String(fullName);
+                    }
+                    else {
+                        this.FullName = busName;
+                    }
+                    if (email.indexOf("@") > 0) {
+                        this.Email = email;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Pulls just object members out for sending envelope
+     */
+    this.BuildSignerObj = function () {
+
+        var obj = {
+            FullName: this.FullName,
+            Email: this.Email,
+            SignHere: this.SignHere,
+            DateHere: this.DateHere,
+            FullNameHere: this.FullNameHere
+        }
+        return obj;
+    }
+
+    /**
+     * Adds a new token for signing
+     * @param {string} token 
+     * @param {int} offx defaults 20 if null
+     * @param {int} offy defualts 5 if null
+     */
+    this.AddSignHere = function (token, offx, offy) {
+        var tmp = {
+            token: token,
+            offX: (offx == null ? "20" : offx),
+            offY: (offy == null ? "5" : offy),
+            XPosition: ""
+        }
+        this.SignHere.push(tmp);
+    }
+    /**
+     * Adds new token replacement for where date should go
+     * @param {string} token 
+     * @param {int} offx defaults to 0
+     * @param {int} offy defaults to 0
+     */
+    this.AddDateHere = function (token, offx, offy) {
+        var tmp = {
+            token: token,
+            offX: (offx == null ? "0" : offx),
+            offY: (offy == null ? "0" : offy),
+            XPosition: ""
+        }
+        this.DateHere.push(tmp);
+    }
+    /**
+     * Adds a new token where full name of signer should be pushed to
+     * @param {string} token 
+     * @param {int} offx defaults to 0
+     * @param {int} offy defaults to 0
+     */
+    this.AddFullNameHere = function (token, offx, offy) {
+        var tmp = {
+            token: token,
+            offX: (offx == null ? "0" : offx),
+            offY: (offy == null ? "0" : offy),
+            XPosition: ""
+        }
+        this.FullNameHere.push(tmp);
+    }
+
+    this.signatureAnchor = function (xPos, yPos, docId, pageNumber, pageWidth, pageHeight) {
+        var tmp = {
+            "Token": null,
+            "offX": null,
+            "offY": null,
+            "XPosition": xPos,
+            "YPosition": yPos,
+            "StampType": "signature",
+            "DocumentId": docId,
+            "PageNumber": pageNumber,
+            "RecipientId": 0,
+            "Name": "SignHere",
+            "Height": pageHeight,
+            "Width": pageWidth
+        }
+        this.SignHere.push(tmp);
+    }
+
+    this.dateAnchor = function (xPos, yPos, docId, pageNumber, pageWidth, pageHeight) {
+        var tmp = {
+            "Token": null,
+            "offX": null,
+            "offY": null,
+            "XPosition": xPos,
+            "YPosition": yPos,
+            "StampType": null,
+            "DocumentId": docId,
+            "PageNumber": pageNumber,
+            "RecipientId": 0,
+            "Name": "Date",
+            "Height": pageHeight,
+            "Width": pageWidth
+        }
+        this.DateHere.push(tmp);
+    }
+}
+
+function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers, Documents, message) {
+    this.URL = String(lookup("INTERFACE_ADOBESIGN", "REST_URL"));
+    this.APIKEY = String(lookup("INTERFACE_ADOBESIGN", "API_KEY"));
+    this.Organization = Organization;
+    this.pCapId = itemCap;
+    this.Alias = aa.cap.getCap(itemCap).getOutput().getCapType().getAlias();
+    this.RecordId = String(itemCap.getCustomID());
+    this.RecordKey = aa.getServiceProviderCode() + "-" + itemCap.getID1() + "-" + itemCap.getID2() + "-" + itemCap.getID3();
+    this.ReturnDocType = ReturnDocType || "";
+    this.Message = message;
+    this.EmailSubject = EmailSubject || (Organization + " eSignature for record " + itemCap.getCustomID());
+    this.Signers = Signers || [];
+    this.CCs = [];
+    if (this.Signers.length == null) {
+        this.Signers = [this.Signers]; //cast it to an array if not an array already.
+    }
+    this.Documents = Documents || [];
+    if (this.Documents.length == null) {
+        this.Documents = [this.Documents]; //cast it to an array if not an array already.
+    }
+
+    /**
+     * Adds a new Signer
+     * @param {AdobeSignerObj} dsObj 
+     */
+    this.AddSigner = function (dsObj) {
+        this.Signers.push(dsObj);
+    }
+
+    this.AddCC = function (FullName, Email) {
+        var o = {};
+        o.FullName = FullName;
+        o.Email = Email;
+        this.CCs.push(o);
+    }
+
+    /**
+     * Adds a new doc to the signing array
+     * @param {int} docId 
+     */
+    this.AddDocument = function (docId, pageNum) {
+        var docObj = {};
+        docObj.DocumentType = 1;
+        docObj.docLong = String(docId);
+        docObj.docurl = "";
+        docObj.order = String(this.Documents.length + 1);
+        //TODO pageCount
+        docObj.pageCount = String(pageNum);
+        this.Documents.push(docObj);
+    }
+
+    /**
+     * Adds document from envelop record by type, if multiple grabs first occurance
+     * @param {string} docType 
+     */
+    this.AddDocumentType = function (docType, pages) {
+        //TODO: LOOKUP DOCUMENT ID AND TO ARRAY
+        var docList = aa.document.getDocumentListByEntity(this.pCapId, "CAP").getOutput().toArray();
+        if (docList.length > 0) {
+            //Convert list to upper case  
+            for (docItem in docList) {
+                if (String(docList[docItem].getDocCategory()).toLowerCase() == String(docType).toLowerCase()) {
+                    var dsDocObj = {};
+                    dsDocObj.DocumentType = 1;
+                    dsDocObj.docLong = String(docList[docItem].getDocumentNo(), 10);
+                    dsDocObj.docurl = "";
+                    dsDocObj.order = String(this.Documents.length + 1);
+                    dsDocObj.pageCount = pages;
+                    this.Documents.push(dsDocObj);
+                    logDebug("Added Doc #" + docList[docItem].getDocumentNo());
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Posts the object to the REST endpoint for signing should only be invoked once after everything loaded
+     */
+    this.Send = function () {
+        var tmpSigners = [];
+        if (this.Documents) {
+            if (this.Documents.length) {
+                if (this.Documents.length == 0) {
+                    return { success: false, message: "One or more documents required for signing" };
+                }
+            }
+            else {
+                return { success: false, message: "One or more documents required for signing" };
+            }
+        }
+        else {
+            return { success: false, message: "Documents must be a numeric array of document ids to be signed" };
+        }
+        if (this.Signers.length) {
+            if (this.Signers.length > 0) {
+                for (var i = 0; i < this.Signers.length; i++) {
+                    if (this.Signers[i]) {                        
+                        if (this.Signers[i].Email == "" || this.Signers[i].Email == null) {
+                            return { success: false, message: "Email address is required for all signers" };
+                        }
+                        /*if (this.Signers[i].SignHere.length == 0) {
+                            this.Signers[i].AddSignHere("/sn" + (i + 1) + "/");
+                        }
+                        if (this.Signers[i].DateHere.length == 0) {
+                            this.Signers[i].AddDateHere("/dt" + (i + 1) + "/");
+                        }
+                        if (this.Signers[i].FullNameHere.length == 0) {
+                            this.Signers[i].AddFullNameHere("/fn" + (i + 1) + "/");
+                        }*/
+                    }
+                    tmpSigners.push(this.Signers[i].BuildSignerObj());
+                }
+            }
+            else {
+                return { success: false, message: "1 or more signers required" };
+            }
+        }
+        else {
+            return { success: false, message: "Signers must be an Array" };
+        }
+        var Envelope = {
+            Organization: this.Organization,
+            RecordId: this.RecordId,
+            RecordKey: this.RecordKey,
+            ReturnDocType: this.ReturnDocType,
+            EmailSubject: this.EmailSubject,
+            Message: this.Message,
+            Signers: tmpSigners,
+            Documents: this.Documents,
+            CCs: this.CCs
+        };
+
+        return httpPostJsonToService(this.URL, Envelope, this.APIKEY);
+    }
+
+}
+
+function httpPostJsonToService(url, postObj, apikey) {
+    if(!apikey) {
+        apikey = "";
+    }
+    var map = aa.httpClient.initPostParameters();
+    resp = {};
+    map.put("Content-Type", "application/json");
+    if(apikey != ""){
+        map.put("X-API-Key", apikey);
+    }
+    var contents = JSON.stringify(postObj);
+
+    logDebug("******************");
+    logDebug("POST: " + url);
+    logDebug("Contents: " + contents);
+    logDebug("******************");
+
+    //return { success: true, message:"TEST MODE" }; 
+    var resp = aa.httpClient.post(url, map, contents);
+    if (resp.getSuccess()) {
+        respString = String(resp.getOutput());
+        logDebug("Response: " + respString);
+        try {
+            resp = JSON.parse(respString);
+        }
+        catch (err) {
+            logDebug("Failed to parse JSON " + err.message);
+            return { success: false, message: "Failed to parse JSON " + err.message };
+        }
+    }
+    else {
+        logDebug("Failed to post " + resp.getErrorMessage());
+        return { success: false, message: "Failed to post " + resp.getErrorMessage() };
+    }
+    return { success: true, message: String(resp) };
+
+}
+
+/**
+ * Uses script tester and executs the script in the code section
+ * requires EVENT_FOR_ASYNC.js
+ * @param {*} pScriptName 
+ * @param {*} pRecordId 
+ * @param {*} pCurrentUserId 
+ */
+function runAsyncEvent(pScriptName,pRecordId,pCurrentUserId){
+    var parameters = aa.util.newHashMap();       
+    if(pCurrentUserId==null){
+        pCurrentUserId=currentUserID;
+    }
+    parameters.put("recordId",pRecordId); 
+    parameters.put("AsyncScriptName",pScriptName); 
+    parameters.put("currentUserID",pCurrentUserId);         
+    
+    aa.runAsyncScript("EVENT_FOR_ASYNC", parameters);
+}
+
+function generateReportSavetoEDMS(itemCap, reportName, rModule, parameters) {
+	// Specific to MIS	
+	var capIdStr = String(itemCap.getID1() + "-" + itemCap.getID2() + "-" + itemCap.getID3());
+	// var capIdStr = "";
+      
+    report = aa.reportManager.getReportInfoModelByName(reportName);
+    report = report.getOutput();
+  
+    report.setModule(rModule);
+    report.setCapId(capIdStr);
+
+	  // specific to MIS
+      report.setReportParameters(parameters);
+      var ed1 = report.getEDMSEntityIdModel();
+      ed1.setCapId(capIdStr);
+      // Needed to determine which record the document is attached
+      ed1.setAltId(itemCap.getCustomID());
+      // Needed to determine which record the document is attached
+      report.setEDMSEntityIdModel(ed1);	
+
+    var permit = aa.reportManager.hasPermission(reportName,currentUserID);
+
+    if(permit.getOutput().booleanValue()) {
+       var reportResult = aa.reportManager.getReportResult(report);
+     
+       if(reportResult) {
+	       reportResult = reportResult.getOutput();
+	       var reportFile = aa.reportManager.storeReportToDisk(reportResult);
+			logMessage("Report Result: "+ reportResult);
+	       reportFile = reportFile.getOutput();
+	       return reportFile
+       } else {
+       		logMessage("Unable to run report: "+ reportName + " for Admin" + systemUserObj);
+       		return false;
+       }
+    } else {
+         logMessage("No permission to report: "+ reportName + " for Admin" + systemUserObj);
+         return false;
+    }
+}
