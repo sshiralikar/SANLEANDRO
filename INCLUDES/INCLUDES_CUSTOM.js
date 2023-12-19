@@ -1603,7 +1603,7 @@ function adobeSignerObj(FullName, Email) {
 function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers, Documents, message) {
     this.URL = String(lookup("INTERFACE_ADOBESIGN", "REST_URL"));
     this.APIKEY = String(lookup("INTERFACE_ADOBESIGN", "API_KEY"));
-    this.Organization = Organization;
+    this.Organization = String(lookup("INTERFACE_ADOBESIGN", "ORGANIZATION"));
     this.pCapId = itemCap;
     this.Alias = aa.cap.getCap(itemCap).getOutput().getCapType().getAlias();
     this.RecordId = String(itemCap.getCustomID());
