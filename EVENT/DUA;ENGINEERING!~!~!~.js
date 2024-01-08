@@ -11,7 +11,26 @@ if(documentModelArray) {
         var docCategory = documentModel.getDocCategory();
         var docDescription = documentModel.docDescription;
         var cap = aa.cap.getCap(capId).getOutput();
-        if("Signed Issued Permit".equals(docCategory) && String(docDescription).indexOf("AdobeSign Agreement") > -1) {            
+        if("Permit (Signed)".equals(docCategory) && String(docDescription).indexOf("AdobeSign Agreement") > -1) {
+            var existingDocuments = aa.document.getCapDocumentList(capId, "ADMIN").getOutput();
+            if(existingDocuments) {
+                for(var docIndex in existingDocuments) {
+                    var existingDoc = existingDocuments[docIndex];
+                    var existingDocCategory = existingDoc.getDocCategory();
+                    var existingDocId = existingDoc.getDocumentNo();
+                    if(existingDocCategory == "Permit Template" && existingDocId) {
+                        var recordTypeArray = String(cap.getCapType()).split("/");
+                        var recordModule = recordTypeArray[0];
+                        var removeDocResult = aa.document.removeDocumentByPK(String(existingDocId), null, null, recordModule); 
+                        if(removeDocResult.getSuccess()) {
+                            logDebug("Successfully removed " + existingDocCategory);
+                        } else {
+                            logDebug("Failed to remove " + existingDocCategory + " " + removeDocResult.getErrorType() + " " + removeDocResult.getErrorMessage());
+                        }
+                        break;
+                    }
+                }
+            }
             var capDetail = aa.cap.getCapDetail(capId).getOutput();
             var capBalance = capDetail.getBalance();                
             if(capBalance <= 0) {
@@ -22,3 +41,6 @@ if(documentModelArray) {
         }
     }    
 }
+// Execute Engineering DUA logic ***DO NOT REMOVE ***
+include("ES_ENG_DUA");
+//

@@ -5,7 +5,7 @@ if (docList.length > 0) {
         var docModel = docList[docIndex];								
         var docCategory = docModel.getDocCategory();
         var id = docModel.getDocumentNo();
-        if("Issued Permit".equals(docCategory)) {
+        if("Permit Template".equals(docCategory)) {
             logDebug("Found Doc #" + id);
             docId = String(id);
             break;
@@ -45,12 +45,47 @@ if(docId) {
     //             Thank you,";
     var message = "";        
     var subject = capId.getCustomID() + " " + alias + " Requires Signature";
-    var envelope = new doAdobeSign("SANLEANDRO-SUPP", capId, "Signed Issued Permit", subject, null, null, message);//Replace Organization
+    var envelope = new doAdobeSign("SANLEANDRO-SUPP", capId, "Permit (Signed)", subject, null, null, message);//Replace Organization
     envelope.AddDocument(docId, "");
     envelope.AddSigner(signer);
     envelope.AddSigner(staffSigner);
     // props(envelope);
     if(staffEmail && primaryEmail) {
-        envelope.Send();
+        var result = envelope.Send();
+        if(result.success) {
+            //CASANLEAN-2980/CASANLEAN-2981
+            var currentEnvelopes = lookup("INTERFACE_ADOBESIGN", "ENVELOPE_USAGE");
+            var envelopeLimit = lookup("INTERFACE_ADOBESIGN", "ENVELOPE_LIMIT");
+            if(currentEnvelopes && envelopeLimit) {
+                currentEnvelopes = parseInt(currentEnvelopes, 10);
+                envelopeLimit = parseInt(envelopeLimit, 10);
+                currentEnvelopes++;
+                editLookup("INTERFACE_ADOBESIGN", "ENVELOPE_USAGE", String(currentEnvelopes));
+                var currentTreshold = (currentEnvelopes/envelopeLimit).toFixed(0) * 100;
+                var sendEmail = false;
+                if(currentEnvelopes == 750) {
+                    sendEmail = true;
+                } else if(currentEnvelopes == 1500) {
+                    sendEmail = true;
+                } else if (currentEnvelopes == 2250) {
+                    sendEmail = true;
+                } else if (currentEnvelopes >= envelopeLimit) {
+                    sendEmail = true;
+                }
+                logDebug("Current threshold: " + currentTreshold);
+                if(sendEmail) {
+                    var emailParams = aa.util.newHashtable();
+                    emailParams.put("$$limit$$", String(currentTreshold));
+                    emailParams.put("$$total$$", String(envelopeLimit));
+                    emailParams.put("$$current$$", String(currentEnvelopes));
+                    var emailResult = aa.document.sendEmailByTemplateName("", "", "", "ENG_ADOBE_SIGN_ENVELOPE_USAGE_LIMIT", emailParams, []);
+                    if(emailResult.getSuccess()) {
+                        logDebug("Sent email successfully!");                    
+                    } else {
+                        logDebug("Failed to send mail. - " + emailResult.getErrorType());                    
+                    }
+                }
+            }
+        }
     }
 }
