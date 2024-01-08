@@ -61,7 +61,7 @@ if(docId) {
                 envelopeLimit = parseInt(envelopeLimit, 10);
                 currentEnvelopes++;
                 editLookup("INTERFACE_ADOBESIGN", "ENVELOPE_USAGE", String(currentEnvelopes));
-                var currentTreshold = (currentEnvelopes/envelopeLimit).toFixed(0) * 100;
+                var currentTreshold = ((currentEnvelopes/envelopeLimit) * 100).toFixed(0);
                 var sendEmail = false;
                 if(currentEnvelopes == 750) {
                     sendEmail = true;
