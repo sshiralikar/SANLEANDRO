@@ -2021,7 +2021,7 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
             //check for condition if not condition apply condition;
             //CASANLEAN-3004
             if(!checkLPHasCondition(licNum, "Contractor CSLB Information Expired")) {
-                addLicenseCondition("Engineering", "Not Met", "Contractor CSLB Information Expired", lpCSLBErrors.join("\n"), "Notice", licNum);
+                addLicenseCondition("Engineering", "Not Met", "Contractor CSLB Information Expired", emailErrors.join("\n"), "Notice", licNum);
                 if(licObj) {
                     var lpEmail = licObj.email;
                     var capDetail = aa.cap.getCapDetail(capId).getOutput();
