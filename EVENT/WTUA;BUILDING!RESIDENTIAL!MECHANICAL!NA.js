@@ -310,6 +310,8 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
+    addParameter(params, "$$wfTaskComments$$", wfComment);
+
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
 }
 //CASANLEAN-931

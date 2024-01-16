@@ -109,6 +109,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
 }
@@ -166,6 +167,7 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
 }
@@ -225,6 +227,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-938
@@ -353,6 +356,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, VRFiles, capId);
 }
@@ -410,6 +414,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
 }

@@ -1,9 +1,7 @@
-//Added global workflow comments as per Lisa's request.
-var params = aa.util.newHashtable();
-addParameter(params, "$$wfTaskComments$$", wfComment);
 
 
-if(wfStatus == "Additional Info Required" || wfStatus == "Additional Information Required")
+
+if((wfTask == "Plans Coordination" || wfTask == "Plans Distribution") && (wfStatus == "Additional Info Required" || wfStatus == "Additional Information Required"))
 {
     var params = aa.util.newHashtable();
 

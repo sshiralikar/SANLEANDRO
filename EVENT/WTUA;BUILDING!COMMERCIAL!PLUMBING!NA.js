@@ -1,10 +1,3 @@
-if(wfTask == "Environmental Services Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
-{
-    if(wfHours == null || wfHours == "")
-        addFee("XECX","ENVI","FINAL",1,"N");
-    else
-        addFee("XECX","ENVI","FINAL",wfHours,"N");
-}
 if(wfTask == "Fire Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
     var feeAmt = 0.0;
@@ -138,6 +131,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLANCHECKCOMMENTS", params, null, capId);
 }
@@ -254,20 +248,21 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
 }
 //CASANLEAN-938
+//CASANLEAN-938
 if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Not Req" || wfStatus == "Accepted - Plan Review Req"))
 {
-    var d = new Date();
-    var year = d.getFullYear();
-    var month = d.getMonth();
-    var day = d.getDate();
-    var c = new Date(year, month+7, day);
-    var newDate = c.getMonth()+"/"+c.getDate()+"/"+c.getFullYear();
+    var c = new Date();
+    c.setFullYear(c.getFullYear() + 1);
+    var newDate = c.getMonth()+1+"/"+c.getDate()+"/"+c.getFullYear();
     editAppSpecific("Application Expiration Date", newDate);
 }
+//CASANLEAN-1194
+//CASANLEAN-1193
 if(wfTask == "Permit Issuance" && wfStatus == "Issued")
 {
     var c = new Date();
@@ -282,7 +277,7 @@ if(wfTask == "Permit Issuance" && wfStatus == "Issued")
 //CASANLEAN-945
 if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
 {
-    addFee("PLNNRR","P_PLN","FINAL",1,"N");
+    addFee("PLNAAR","P_PLN","FINAL",1,"N");
 }
 //CASANLEAN-945
 //CASANLEAN-948
@@ -383,6 +378,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fee Due")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_APPROVED_FEES_DUE", params, VRFiles, capId);
 }
@@ -440,10 +436,12 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Hard Copies")
     addParameter(params, "$$assignedToStaff$$", wfUserName);
     addParameter(params, "$$assignedUserTitle$$", title);
     addParameter(params, "$$assignedUserEmail$$", vEmail);
+addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_HOLD_FOR_HARD_COPIES", params, null, capId);
 }
 //CASANLEAN-949
+
 
 
 
@@ -467,7 +465,6 @@ function runEmailThroughSLEmailFilter(vEmail)
     }
     return vEmail;
 }
-
 function sendEmail(fromEmail, toEmail, CC, template, eParams, files) { // optional: itemCap
     var itemCap = capId;
     if (arguments.length == 7)
