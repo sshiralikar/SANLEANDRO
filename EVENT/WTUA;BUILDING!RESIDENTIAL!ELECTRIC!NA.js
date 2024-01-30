@@ -196,7 +196,7 @@ addParameter(params, "$$wfTaskComments$$", wfComment);
 }
 //CASALEAN-446
 //CASANLEAN-920
-if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
+/*if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 {
     addFee("PLNC","B_COMBO","FINAL",1,"Y");
 
@@ -253,7 +253,7 @@ if(wfTask == "Application Intake" && wfStatus == "Accepted - Plan Review Req")
 addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "BLD_PLAN_CHECK_FEES_DUE", params, null, capId);
-}
+}*/
 //CASANLEAN-920
 //CASANLEAN-927
 if(wfTask == "Planning Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments"))
