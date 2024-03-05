@@ -2,7 +2,7 @@
 if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
     var transLPS = getAllTransactionalLPs(capId);
     var errors = [];
-    if(transLP) {
+    if(transLPS) {
         logDebug("LPS total: " + transLPS.length);
         for(var i in transLPS) {
             var transLP = transLPS[i];
