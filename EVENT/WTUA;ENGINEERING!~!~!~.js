@@ -39,6 +39,24 @@ if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" |
         wfUserName = currentUsrVar.firstName + " "+ currentUsrVar.middleName+ " "+ currentUsrVar.lastName;
     }
 
+    var vAddress = "";
+    var capAddressResult1 = aa.address.getAddressByCapId(capId);
+    if (capAddressResult1.getSuccess())
+    {
+        var Address = capAddressResult1.getOutput();
+        for (yy in Address)
+        {
+            vAddress = Address[yy].getHouseNumberStart();
+            if (Address[yy].getStreetDirection())
+                vAddress += " " + Address[yy].getStreetDirection();
+            vAddress += " " + Address[yy].getStreetName();
+            if (Address[yy].getStreetSuffix())
+                vAddress += " " + Address[yy].getStreetSuffix();
+            if (Address[yy].getUnitStart())
+                vAddress += " " + Address[yy].getUnitStart();
+        }
+    }
+
     var applicantEmail = "";
     var conName = "";
     var contactResult = aa.people.getCapContactByCapID(capId);
@@ -51,6 +69,7 @@ if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" |
             }
         }
     }
+    addParameter(params, "$$location$$", vAddress);
     addParameter(params, "$$applicantName$$", conName);
     addParameter(params, "$$altID$$", capId.getCustomID()+"");
     addParameter(params, "$$assignedToStaff$$", wfUserName);
@@ -84,9 +103,37 @@ if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
 }
 
 //CASANLAN - 2931
-if(wfTask == "Plans Coordination" && wfStatus == "Approved Fees Due"){
+if(wfTask == "Plans Distribution" && ((wfStatus == "Minor Review and Inspections") || (wfStatus == "Major Review and Inspections"))) {
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_APPROVED_FEES_DUE", params, null, capId);
 }
+
+//CASANLAN - 2931
+if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fees Due"){
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_APPROVED_FEES_DUE", params, null, capId);
+}
+
+//CASANLAN - 2936
+if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature"){
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_SIGNATURE_REQUIRED", params, null, capId);
+}
+
+//CASANLAN - 293
+if(wfTask == "Inspections" && wfStatus == "Compaction Report"){
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_INSPECTION_COMPACTION_RPT_REQ", params, null, capId);
+}
+
+//CASANLAN - 3002
+if(wfTask == "Plans Coordination" && wfStatus == "Deposit Due"){
+	vResDeposit = parseInt(AInfo['Restoration']);
+	addParameter(params, "$$restDeposit$$", vResDeposit);
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_RESTORATION_DEPOSIT_DUE", params, null, capId);
+}
+
+//CASANLAN - 2936
+if(wfTask == "Plans Coordination" && wfStatus == "Contractor Expired Notice"){
+    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_CONTRACTOR_EXPIRED_NOTICE", params, null, capId);
+}
+
 
 //CASANLAN - 2960
 if(wfTask == "Plans Coordination" && wfStatus == "Fees Paid"){
