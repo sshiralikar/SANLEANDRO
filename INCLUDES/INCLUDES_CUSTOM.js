@@ -441,7 +441,7 @@ function externalLP_SLCA(licNum, rlpType, doPopulateRef, doPopulateTrx, itemCap)
         } else {
             isError = true;
         }
-		
+
         var lpStatus = XMLTagValue(result, "Status");
         // Primary Status
         //
@@ -461,7 +461,7 @@ function externalLP_SLCA(licNum, rlpType, doPopulateRef, doPopulateTrx, itemCap)
         }
 
         //logDebug(result);
-        
+
 
         if (doPopulateRef) {
             // refresh or create a reference LP
@@ -578,7 +578,7 @@ function externalLP_SLCA(licNum, rlpType, doPopulateRef, doPopulateTrx, itemCap)
                 newLic.setLicenseExpirationDate(aa.date.parseDate(ExpirationDate));
             var WorkersCompPolicyNumber = XMLTagValue(result, "WorkersCompPolicyNumber");
             if (WorkersCompPolicyNumber) {
-                newLic.setWcPolicyNo(WorkersCompPolicyNumber);                
+                newLic.setWcPolicyNo(WorkersCompPolicyNumber);
             }
             var PolicyEffectiveDate = XMLTagValue(result, "PolicyEffectiveDate");
             if (PolicyEffectiveDate) {
@@ -745,18 +745,18 @@ function copyGISDataToCustomFields(itemCap) {
         if(!parcelAttributes) {
             continue;
         }
-        parcelAttributes = parcelAttributes.toArray();        
+        parcelAttributes = parcelAttributes.toArray();
         logDebug("Parcel number: " + parcelNum);
         logDebug("Attributes size: " + parcelAttributes.length);
         for(var attributeIndex in parcelAttributes) {
             var attributeObj = parcelAttributes[attributeIndex];
             var attributeName = attributeObj.b1AttributeName;
             var attributeValue = attributeObj.value;
-            var attributeType = attributeObj.b1AttributeValueDataType;            
+            var attributeType = attributeObj.b1AttributeValueDataType;
             var asiField = lookup("GIS_ASI_MAP", attributeName);
             exposedMap[attributeName] = String(attributeValue);
             if(asiField && attributeValue) {
-                logDebug("Type: " + attributeType + " name: " + attributeName + " value: " + attributeValue);                
+                logDebug("Type: " + attributeType + " name: " + attributeName + " value: " + attributeValue);
                 if(asiField == "Liquefaction") {
                     var options = String(attributeValue).split(" ");
                     var remainders = [];
@@ -769,7 +769,7 @@ function copyGISDataToCustomFields(itemCap) {
                         }
                     }
                     if(remainders.length) {
-                        editAppSpecific(asiField, remainders.join(" "), itemCap);        
+                        editAppSpecific(asiField, remainders.join(" "), itemCap);
                     }
                     continue;
                 }
@@ -785,9 +785,9 @@ function copyGISDataToCustomFields(itemCap) {
 function correctParcelData() {
     var data = getGISBufferInfo("SANLEANDRO", "Parcels", 0);
     var parcelMap = {};
-    for(var i in data){        
+    for(var i in data){
         var gisData = data[i];
-        var parcelNum = gisData.GIS_ID;        
+        var parcelNum = gisData.GIS_ID;
         if(parcelNum && !parcelMap[parcelNum]) {
             parcelMap[parcelNum] = {};
             for(var prop in gisData) {
@@ -851,22 +851,22 @@ function checkLP(itemCap) {
     for(var lpIndex in transLPList) {
         var lpObj = transLPList[lpIndex];//LicenseProfessionalScriptModel
         var lpModel = lpObj.licenseProfessionalModel;
-        var refId = lpModel.licSeqNbr;        
+        var refId = lpModel.licSeqNbr;
         var licNumber = lpModel.licenseNbr;
         if(refId > 0) {
             logDebug("LP " + licNumber + " is already a reference LP " + refId);
             continue;
-        }        
+        }
         var existingRef = getRefLicenseProf(licNumber);
         if(existingRef) {
             //replace with reference and sync any unknown data
-            var licSeqNbr = syncDataFromTransToRef(lpObj, existingRef, licNumber);  
+            var licSeqNbr = syncDataFromTransToRef(lpObj, existingRef, licNumber);
             refreshLP(lpObj, itemCap, licSeqNbr);
-        } else {            
+        } else {
             //no existing reference LP, need to create it and sync it to the lp
             var licSeqNbr = createReferenceLicenseProf(lpObj, licNumber, lpModel.licenseType);
             refreshLP(lpObj, itemCap, licSeqNbr);
-        }        
+        }
     }
 }
 
@@ -896,7 +896,7 @@ function refreshLP(transLpScriptModel, itemCap, refSeqNbr) {
     if (remCapResult.getSuccess()) {
         logDebug("...Success.");
     } else {
-        logDebug("**WARNING removing lic prof: " + remCapResult.getErrorMessage());                
+        logDebug("**WARNING removing lic prof: " + remCapResult.getErrorMessage());
     }
 
     var asCapResult = aa.licenseScript.associateLpWithCap(itemCap, lpsm);
@@ -999,7 +999,7 @@ function createReferenceLicenseProf(licObj, licNum, licType) {
         logDebug("Created fresh reference LP for " + licNum);
     }
 
-    var licSeqNbr = myResult.getOutput();    
+    var licSeqNbr = myResult.getOutput();
     return licSeqNbr;
 }
 
@@ -1096,7 +1096,7 @@ function populateFromRefLP(licSeqNbr, transLPList, itemCap, licNum, licenseType)
             if (
                 thisLP.getLicenseType() == licenseType &&
                 thisLP.getLicenseNbr() == licNum) {
-                
+
             }
         }
     }
@@ -1124,7 +1124,7 @@ function populateFromRefLP(licSeqNbr, transLPList, itemCap, licNum, licenseType)
 }
 
 function validateFromCSLB(licNum, itemCap, recordType) {
-    
+
 
     var expiredLPs = [];
     var checkDate = new Date();
@@ -1155,12 +1155,12 @@ function validateFromCSLB(licNum, itemCap, recordType) {
 
     for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
         var licNum = workArray[thisLic];
-        var licObj = null;        
+        var licObj = null;
 
         if (typeof licNum == "object") {
             // is this one an object or string?
             licObj = licNum;
-            licNum = licObj.getLicenseNbr();            
+            licNum = licObj.getLicenseNbr();
         }
 
         // Make the call to the California State License Board
@@ -1191,11 +1191,11 @@ function validateFromCSLB(licNum, itemCap, recordType) {
         var isError = false;
         if (!res.getSuccess()) {
             logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
-            continue;   
+            continue;
         }
         result = String(res.getOutput());
         aa.print(result);
-		
+
         var lpStatus = XMLTagValue(result, "Status");
         var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
         var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
@@ -1210,18 +1210,18 @@ function validateFromCSLB(licNum, itemCap, recordType) {
             //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
             logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
             expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
-        }       
+        }
 
         var ExpirationDate = XMLTagValue(result, "ExpirationDate");
-        if (ExpirationDate) {            
+        if (ExpirationDate) {
             var cslbExpDate = new Date(ExpirationDate);
             if(cslbExpDate <= checkDate) {
                 expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
             }
         }
-        
+
         var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
-        if (PolicyExpirationDate) {            
+        if (PolicyExpirationDate) {
             var workersCompExpDate = new Date(PolicyExpirationDate);
             if(workersCompExpDate <= checkDate) {
                 expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
@@ -1254,10 +1254,10 @@ function validateFromCSLB(licNum, itemCap, recordType) {
                     classTypeMap[stdClass] = true;
                 }
             }
-    
+
             var Classifications = XMLTagValue(result, "Classifications");
             var ClassificationList = Classifications.split("|");
-    
+
             for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
                 var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
                 logDebug(classification);
@@ -1265,16 +1265,16 @@ function validateFromCSLB(licNum, itemCap, recordType) {
                     classErrors = [];
                     break;
                 }
-                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");                                    
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
             }
-        }    
+        }
         if(classErrors.length > 0) {
             logDebug("Adding: " + classErrors.length + " to errored list");
             logDebug("Prior error list length: " + expiredLPs.length);
             expiredLPs = expiredLPs.concat(classErrors);
             logDebug("New error list length: " + expiredLPs.length);
         }
-         
+
     } // for each license
     return expiredLPs;
 }
@@ -1282,20 +1282,20 @@ function validateFromCSLB(licNum, itemCap, recordType) {
 function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, distanceType
 {
 	// use buffer info to get info on the current object by using distance 0
-	// usage: 
+	// usage:
 	//
 	// x = getGISInfo("flagstaff","Parcels","LOT_AREA");
 	// x = getGISInfo2("flagstaff","Parcels","LOT_AREA", -1, "feet");
 	// x = getGISInfo2ASB("flagstaff","Parcels","LOT_AREA", -1, "feet");
 	//
 	// to be used with ApplicationSubmitBefore only
-	
+
 	var numDistance = 0
 	if (arguments.length >= 4) numDistance = arguments[3]; // use numDistance in arg list
 	var distanceType = "feet";
 	if (arguments.length == 5) distanceType = arguments[4]; // use distanceType in arg list
 	var retString;
-   	
+
 	var bufferTargetResult = aa.gis.getGISType(svc,layer); // get the buffer target
 	if (bufferTargetResult.getSuccess())
 	{
@@ -1304,9 +1304,9 @@ function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, dista
 	}
 	else
 	{ logDebug("**ERROR: Getting GIS Type for Buffer Target.  Reason is: " + bufferTargetResult.getErrorType() + ":" + bufferTargetResult.getErrorMessage()) ; return false }
-			
+
 	var gisObjResult = aa.gis.getParcelGISObjects(ParcelValidatedNumber); // get gis objects on the parcel number
-	if (gisObjResult.getSuccess()) 	
+	if (gisObjResult.getSuccess())
 		var fGisObj = gisObjResult.getOutput();
 	else
 		{ logDebug("**ERROR: Getting GIS objects for Parcel.  Reason is: " + gisObjResult.getErrorType() + ":" + gisObjResult.getErrorMessage()) ; return false }
@@ -1318,8 +1318,8 @@ function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, dista
 		if (bufchk.getSuccess())
 			var proxArr = bufchk.getOutput();
 		else
-			{ logDebug("**ERROR: Retrieving Buffer Check Results.  Reason is: " + bufchk.getErrorType() + ":" + bufchk.getErrorMessage()) ; return false }	
-		
+			{ logDebug("**ERROR: Retrieving Buffer Check Results.  Reason is: " + bufchk.getErrorType() + ":" + bufchk.getErrorMessage()) ; return false }
+
 		for (a2 in proxArr)
 		{
 			var proxObj = proxArr[a2].getGISObjects();  // if there are GIS Objects here, we're done
@@ -1330,7 +1330,7 @@ function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, dista
 			}
 		}
 	}
-	
+
 	return retString
 }
 
@@ -1363,13 +1363,13 @@ function validateCSLBClassifications(licNum, recordType) {
     var res = aa.httpClient.post(endPoint, headers, xmlout);
 
     // check the results
-    var result;    
+    var result;
     if (!res.getSuccess()) {
         logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
         returnObj.message = "The California Contractor State License Board website is temporarily down, please save the permit application you were creating so you can resume once the CSLB website is back up.";
         //returnObj.message = "CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum;
         returnObj.validated = false;
-        return returnObj;   
+        return returnObj;
     }
     result = String(res.getOutput());
     aa.print(result);
@@ -1401,14 +1401,14 @@ function validateCSLBClassifications(licNum, recordType) {
             break;
         }
     }
-        
+
     if(!returnObj.validated) {
         returnObj.message = "License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".";
     }
     return returnObj;
 }
 
-/* 
+/*
 GQ_DOCU_SIGN_LIBRARY.js
 Author: Gray Quarter Inc. (c)2023
 Usage: Used with Gray Quarter Sign UI with Adobe Sign.  See help.grayquarter.com for documentation.
@@ -1426,7 +1426,7 @@ function adobeSignerObj(FullName, Email) {
 
     /**
      * Load from Primary Contact Type
-     * @param {capIdModel} pCapId 
+     * @param {capIdModel} pCapId
      */
     this.SignerFromPrimary = function (pCapId) {
         this.FullName = "";
@@ -1464,7 +1464,7 @@ function adobeSignerObj(FullName, Email) {
 
     /**
      * Load a signer from contact type, if multiple of same type grabs first one
-     * @param {capIdModel} pCapId 
+     * @param {capIdModel} pCapId
      * @param {string} contactType
      */
     this.SignerFromContactType = function (pCapId, contacType) {
@@ -1519,7 +1519,7 @@ function adobeSignerObj(FullName, Email) {
 
     /**
      * Adds a new token for signing
-     * @param {string} token 
+     * @param {string} token
      * @param {int} offx defaults 20 if null
      * @param {int} offy defualts 5 if null
      */
@@ -1534,7 +1534,7 @@ function adobeSignerObj(FullName, Email) {
     }
     /**
      * Adds new token replacement for where date should go
-     * @param {string} token 
+     * @param {string} token
      * @param {int} offx defaults to 0
      * @param {int} offy defaults to 0
      */
@@ -1549,7 +1549,7 @@ function adobeSignerObj(FullName, Email) {
     }
     /**
      * Adds a new token where full name of signer should be pushed to
-     * @param {string} token 
+     * @param {string} token
      * @param {int} offx defaults to 0
      * @param {int} offy defaults to 0
      */
@@ -1623,7 +1623,7 @@ function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers
 
     /**
      * Adds a new Signer
-     * @param {AdobeSignerObj} dsObj 
+     * @param {AdobeSignerObj} dsObj
      */
     this.AddSigner = function (dsObj) {
         this.Signers.push(dsObj);
@@ -1638,7 +1638,7 @@ function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers
 
     /**
      * Adds a new doc to the signing array
-     * @param {int} docId 
+     * @param {int} docId
      */
     this.AddDocument = function (docId, pageNum) {
         var docObj = {};
@@ -1653,13 +1653,13 @@ function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers
 
     /**
      * Adds document from envelop record by type, if multiple grabs first occurance
-     * @param {string} docType 
+     * @param {string} docType
      */
     this.AddDocumentType = function (docType, pages) {
         //TODO: LOOKUP DOCUMENT ID AND TO ARRAY
         var docList = aa.document.getDocumentListByEntity(this.pCapId, "CAP").getOutput().toArray();
         if (docList.length > 0) {
-            //Convert list to upper case  
+            //Convert list to upper case
             for (docItem in docList) {
                 if (String(docList[docItem].getDocCategory()).toLowerCase() == String(docType).toLowerCase()) {
                     var dsDocObj = {};
@@ -1697,7 +1697,7 @@ function doAdobeSign(Organization, itemCap, ReturnDocType, EmailSubject, Signers
         if (this.Signers.length) {
             if (this.Signers.length > 0) {
                 for (var i = 0; i < this.Signers.length; i++) {
-                    if (this.Signers[i]) {                        
+                    if (this.Signers[i]) {
                         if (this.Signers[i].Email == "" || this.Signers[i].Email == null) {
                             return { success: false, message: "Email address is required for all signers" };
                         }
@@ -1755,7 +1755,7 @@ function httpPostJsonToService(url, postObj, apikey) {
     logDebug("Contents: " + contents);
     logDebug("******************");
 
-    //return { success: true, message:"TEST MODE" }; 
+    //return { success: true, message:"TEST MODE" };
     var resp = aa.httpClient.post(url, map, contents);
     if (resp.getSuccess()) {
         respString = String(resp.getOutput());
@@ -1779,30 +1779,30 @@ function httpPostJsonToService(url, postObj, apikey) {
 /**
  * Uses script tester and executs the script in the code section
  * requires EVENT_FOR_ASYNC.js
- * @param {*} pScriptName 
- * @param {*} pRecordId 
- * @param {*} pCurrentUserId 
+ * @param {*} pScriptName
+ * @param {*} pRecordId
+ * @param {*} pCurrentUserId
  */
 function runAsyncEvent(pScriptName,pRecordId,pCurrentUserId){
-    var parameters = aa.util.newHashMap();       
+    var parameters = aa.util.newHashMap();
     if(pCurrentUserId==null){
         pCurrentUserId=currentUserID;
     }
-    parameters.put("recordId",pRecordId); 
-    parameters.put("AsyncScriptName",pScriptName); 
-    parameters.put("currentUserID",pCurrentUserId);         
-    
+    parameters.put("recordId",pRecordId);
+    parameters.put("AsyncScriptName",pScriptName);
+    parameters.put("currentUserID",pCurrentUserId);
+
     aa.runAsyncScript("EVENT_FOR_ASYNC", parameters);
 }
 
 function generateReportSavetoEDMS(itemCap, reportName, rModule, parameters) {
-	// Specific to MIS	
+	// Specific to MIS
 	var capIdStr = String(itemCap.getID1() + "-" + itemCap.getID2() + "-" + itemCap.getID3());
 	// var capIdStr = "";
-      
+
     report = aa.reportManager.getReportInfoModelByName(reportName);
     report = report.getOutput();
-  
+
     report.setModule(rModule);
     report.setCapId(capIdStr);
 
@@ -1813,13 +1813,13 @@ function generateReportSavetoEDMS(itemCap, reportName, rModule, parameters) {
       // Needed to determine which record the document is attached
       ed1.setAltId(itemCap.getCustomID());
       // Needed to determine which record the document is attached
-      report.setEDMSEntityIdModel(ed1);	
+      report.setEDMSEntityIdModel(ed1);
 
     var permit = aa.reportManager.hasPermission(reportName,currentUserID);
 
     if(permit.getOutput().booleanValue()) {
        var reportResult = aa.reportManager.getReportResult(report);
-     
+
        if(reportResult) {
 	       reportResult = reportResult.getOutput();
 	       var reportFile = aa.reportManager.storeReportToDisk(reportResult);
@@ -1850,10 +1850,10 @@ function editLookup(stdChoice,stdValue,stdDesc) {
 		return false;
 		}
 	var bd = bds.getBizDomain()
-	bd.setAuditStatus("A")	
+	bd.setAuditStatus("A")
 	bd.setDescription(stdDesc);
 	var editResult = aa.bizDomain.editBizDomain(bd)
-	
+
 	if (editResult.getSuccess())
 		aa.print("Successfully edited Std Choice(" + stdChoice + "," + stdValue + ") = " + stdDesc);
 	else
@@ -1861,7 +1861,7 @@ function editLookup(stdChoice,stdValue,stdDesc) {
 }
 
 function validateFromCSLBEng(licNum, itemCap, recordType) {
-    
+
 
     var expiredLPs = [];
     var checkDate = new Date();
@@ -1894,7 +1894,7 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
         var licNum = workArray[thisLic];
         var licObj = null;
         var lpCSLBErrors = [];
-        var emailErrors = [];        
+        var emailErrors = [];
 
         if (typeof licNum == "object") {
             // is this one an object or string?
@@ -1931,11 +1931,11 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
         var isError = false;
         if (!res.getSuccess()) {
             logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
-            continue;   
+            continue;
         }
         result = String(res.getOutput());
         aa.print(result);
-		
+
         var lpStatus = XMLTagValue(result, "Status");
         var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
         var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
@@ -1951,19 +1951,19 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
             logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
             lpCSLBErrors.push("Status not clear for " + licUrl + " status: " + lpStatus);
             emailErrors.push("Status not clear for " + licNum + " status: " + lpStatus);
-        }       
+        }
 
         var ExpirationDate = XMLTagValue(result, "ExpirationDate");
-        if (ExpirationDate) {            
+        if (ExpirationDate) {
             var cslbExpDate = new Date(ExpirationDate);
             if(cslbExpDate <= checkDate) {
                 lpCSLBErrors.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
                 emailErrors.push(licNum + " License date has expired in CSLB: " + ExpirationDate);
             }
         }
-        
+
         var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
-        if (PolicyExpirationDate) {            
+        if (PolicyExpirationDate) {
             var workersCompExpDate = new Date(PolicyExpirationDate);
             if(workersCompExpDate <= checkDate) {
                 lpCSLBErrors.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
@@ -1997,10 +1997,10 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
                     classTypeMap[stdClass] = true;
                 }
             }
-    
+
             var Classifications = XMLTagValue(result, "Classifications");
             var ClassificationList = Classifications.split("|");
-    
+
             for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
                 var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
                 logDebug(classification);
@@ -2008,9 +2008,9 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
                     classErrors = [];
                     break;
                 }
-                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");                                    
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
             }
-        }    
+        }
         if(classErrors.length > 0) {
             logDebug("Adding: " + classErrors.length + " to errored list");
             logDebug("Prior error list length: " + lpCSLBErrors.length);
@@ -2045,7 +2045,7 @@ function validateFromCSLBEng(licNum, itemCap, recordType) {
                 logDebug(licNum + " already has condition");
             }
         }
-        expiredLPs = expiredLPs.concat(lpCSLBErrors);        
+        expiredLPs = expiredLPs.concat(lpCSLBErrors);
     } // for each license
     return expiredLPs;
 }
@@ -2079,4 +2079,844 @@ function checkLPHasCondition(lpNumber, conditionName) {
         logDebug("Unable to get conditions from " + lpNumber);
         return false;
     }
+}
+
+//GQ CSLB INTERFACE
+function validateLPWithCSLB(licenseNumber, itemCap, checkExpDate, checkWCDate, checkBondDate, checkClassifications, appType) {
+    var lpsToValidate = [];
+    var results = [];
+    if(licenseNumber) {
+        lpsToValidate.push(licenseNumber);
+    }
+    if(itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+            if(!capLicenseArr && !licenseNumber) {
+                logDebug("License professionals on " + itemCap.getCustomID() + " returned none");
+                return results;
+            }
+            logDebug("License professionals on record: " + capLicenseArr.length);
+            for(var capLPIndex in capLicenseArr) {
+                var licenseProfObj = capLicenseArr[capLPIndex];
+                var licenseNumFromCap = licenseProfObj.licenseNbr;
+                var licenseProfType = licenseProfObj.licenseType;
+                if(licenseProfType == "Contractor") {
+                    lpsToValidate.push(licenseNumFromCap);
+                }
+            }
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return results;
+        }
+    }
+    logDebug("Processing " + lpsToValidate.length);
+    var currentDate = new Date();
+    for(var lpsToValidateIndex in lpsToValidate) {
+        var licNum = lpsToValidate[lpsToValidateIndex];
+
+        var validationObj = {
+            licNum: licNum,
+            messages: [],
+            cslbStatus: "",
+            cslbLink: "<a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=" + licNum + "'>" + licNum + "</a>",
+            createdReference: false,
+            syncedReference: false,
+            refSeqNbr: null,
+            cslbData: null
+        };
+
+        logDebug("Checking " + licNum);
+
+        var cslbData = fetchCSLBData(licNum);
+
+        validationObj.cslbStatus = cslbData["Status"];
+        validationObj.cslbData = cslbData;
+
+        if(!cslbData || !cslbData["Status"]) {
+            logDebug("Unable to validate " + licNum + " from CSLB");
+            results.push(validationObj);
+            continue;
+        }
+
+        //check if reference
+        var refLp = grabReferenceLicenseProfessional(licNum);
+        var referenceSeqNumber = null;
+        if(!refLp) {
+            var createReference = lookup("GRAYQUARTER", "CREATE_REFERENCE_LP");
+            if(createReference == "YES") {
+                referenceSeqNumber = createReferenceLicenseProfessionalFromCSLB(licNum, cslbData, null);
+                validationObj.createdReference = true;
+            }
+        } else {
+            //sync with data from CSLB
+            referenceSeqNumber = refLp.getLicSeqNbr();
+            var result = syncReferenceLPWithCSLBData(licNum, cslbData);
+            if(result) {
+                logDebug("Successfuly synced " + licNum + " with CSLB data");
+                validationObj.syncedReference = true;
+            }
+            //TODO: add to set
+        }
+
+        if(referenceSeqNumber) {
+            validationObj.refSeqNbr = referenceSeqNumber;
+        }
+
+        if(checkExpDate) {
+            var ExpirationDate = cslbData["ExpirationDate"];
+            if (ExpirationDate) {
+                var cslbExpDate = new Date(ExpirationDate);
+                if(cslbExpDate <= currentDate) {
+                    validationObj.messages.push(licNum + ": License Expiration Date has expired " + ExpirationDate);
+                }
+            }
+        }
+
+        if(checkWCDate) {
+            var PolicyExpirationDate = cslbData["PolicyExpirationDate"];
+            if (PolicyExpirationDate) {
+                var workersCompExpDate = new Date(PolicyExpirationDate);
+                if(workersCompExpDate <= currentDate) {
+                    validationObj.messages.push(licNum + ": Worker's Comp has expired " + PolicyExpirationDate);
+                }
+            }
+        }
+
+        if(checkBondDate) {
+            var BondExpirationDate = cslbData["BondCancellationDate"];
+            if(BondExpirationDate) {
+                var bondExpDate = new Date(BondExpirationDate);
+                if(bondExpDate <= currentDate) {
+                    validationObj.messages.push(licNum + ": Bond has expired " + BondExpirationDate);
+                }
+            }
+        }
+
+        if(checkClassifications) {
+            var classificationResult = validateClassifications(itemCap, appType, cslbData);
+            if(!classificationResult.matched) {
+                validationObj.messages.push(licNum + ": Is not valid, " + classificationResult.recordType + " requires at least one of following classifications: "  + classificationResult.validClasses + ". Found " + classificationResult.currentClassifications);
+            }
+        }
+
+
+        logDebug(validationObj.cslbLink + ": CSLB returned a status of " + validationObj.cslbStatus);
+        logDebug(validationObj.messages.join("<BR>"));
+        results.push(validationObj);
+    }
+    return results;
+}
+
+function validateClassifications(itemCap, recordType, cslbData) {
+    if(!recordType && itemCap) {
+        var recordCap = aa.cap.getCap(itemCap).getOutput();
+        if(recordCap) {
+            recordType = String(recordCap.getCapType());
+        }
+    }
+    if(!recordType) {
+        logDebug("Unable to validate class types since no record type so we assume valid");
+        return {matched: true};
+    }
+    var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType);
+    var foundMatching = false;
+    if(!validClasses) {
+        logDebug("No classes found so must be valid");
+        return {matched: true};
+    }
+    if(validClasses) {
+        logDebug(recordType + " not configured so any LP goes");
+        var classTypeMap = {};
+        validClasses = validClasses.split(",");
+        for(var validClassIndex in validClasses) {
+            var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+            if(!classTypeMap[stdClass]) {
+                classTypeMap[stdClass] = true;
+            }
+        }
+        var classifications = cslbData["Classifications"];
+        for (var classificationIndex in classifications) {
+            var classification = String(classifications[classificationIndex]).toUpperCase().trim();
+            logDebug(classification);
+            if(classTypeMap[classification]) {
+                foundMatching = true;
+                break;
+            }
+        }
+    }
+    return {
+        matched: foundMatching,
+        recordType: recordType,
+        validClasses: validClasses.join(", "),
+        currentClassifications: classifications.join(", "),
+    }
+}
+
+function fetchCSLBData(licNum) {
+
+    //Agency specific
+    var cslbToken = lookup('GRAYQUARTER', 'CSLB TOKEN');
+    logDebug(cslbToken)
+    var cslbURL = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+
+    var xmlToPost = '<?xml version="1.0" encoding="utf-8"?> ';
+    xmlToPost += ' <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> ';
+    xmlToPost += '   <soap:Body> ';
+    xmlToPost += '     <GetLicense xmlns="http://CSLB.Ca.gov/"> ';
+    xmlToPost += '       <LicenseNumber>' + licNum + '</LicenseNumber> ';
+    xmlToPost += '       <Token>' + cslbToken + '</Token> ';
+    xmlToPost += '     </GetLicense> ';
+    xmlToPost += '   </soap:Body> ';
+    xmlToPost += ' </soap:Envelope> ';
+
+    var postRespOut = null;
+    var postResp = aa.util.httpPostToSoapWebService(cslbURL, xmlToPost, null, null, "http://CSLB.Ca.gov/GetLicense");
+    if (!postResp.getSuccess()) {
+        logDebug("CSLB Web Service returned an error. Please verify license number: " + licNum);
+        logDebug("postResp.getErrorMessage(): " + postResp.getErrorMessage());
+        if(postResp.getErrorMessage().indexOf('500 for URL') != -1){
+            logDebug("CLSB SOAP server returned response of 500.");
+        }
+        return {
+            error: "CSLB Web Service returned an error. " + postResp.getErrorType() + " " + postResp.getErrorMessage(),
+        };
+    }
+    postRespOut = postResp.getOutput();
+    aa.print(postRespOut);
+
+    var xmlProperties = [
+        "LicenseNumber",
+        "LastUpdated",
+        "BusinessType",
+        "BusinessName",
+        "Address",
+        "City",
+        "State",
+        "ZIP",
+        "County",
+        "PhoneNumber",
+        "IssueDate",
+        "ExpirationDate",
+        "Classifications",
+        "Status",
+        "SuretyCompany",
+        "ContractorBondNumber",
+        "ContractorBondAmount",
+        "BondEffectiveDate",
+        "BondCancellationDate",
+        "WorkersCompCoverageType",
+        "WorkersCompInsuranceCompany",
+        "WorkersCompPolicyNumber",
+        "PolicyEffectiveDate",
+        "PolicyExpirationDate",
+        "PolicyCancellationDate",
+        "WorkersCompSuspendDate",
+        "ComplaintDisclosure",
+    ];
+
+    var cslbObj = {
+        error: "",
+    };
+    for(var i in xmlProperties) {
+        var tag = xmlProperties[i];
+        //logDebug("Testing tag: " + tag);
+        var value = getNodeLocal(postRespOut, tag);
+        if(tag == "Classifications") {
+            value = value.split("|");
+            value = value.map(function (item) {
+                return String(item).trim();
+            });
+            if(String(value).length == 1) {
+                value = [value];
+            }
+        }
+        if(tag == "BusinessName" || tag == "Address" || tag == "SuretyCompany" || tag == "WorkersCompInsuranceCompany") {
+            value = String(value).replace(/&amp;/g, "&");
+        }
+        if(tag == "PhoneNumber") {
+            value = String(value).replace(/[^\d]/g, "");
+        }
+        if(value) {
+            cslbObj[tag] = value;
+        } else {
+            cslbObj[tag] = null;
+        }
+    }
+
+    //props(cslbObj);
+
+    return cslbObj;
+
+    function getNodeLocal(fString,fName)
+	{
+	 var fValue = "";
+	 var startTag = "<"+fName+">";
+	 var endTag = "</"+fName+">";
+
+	 var startPos = fString.indexOf(startTag) + startTag.length;
+	 var endPos = fString.indexOf(endTag);
+     //logDebug(startPos + " " + endPos);
+	 // make sure startPos and endPos are valid before using them
+	 if (startPos > 0 && startPos < endPos)
+		  fValue = fString.substring(startPos,endPos);
+
+	 return String(decodeURI(fValue)).trim();
+	}
+}
+
+function grabReferenceLicenseProfessional(licenseNumber) {
+	var refLicenseResult = aa.licenseScript.getRefLicensesProfByLicNbr(aa.getServiceProviderCode(), licenseNumber);
+	if (!refLicenseResult.getSuccess()) {
+        logDebug("Failed to get reference license professional " + refLicenseResult.getErrorType() + " : " + refLicenseResult.getErrorMessage());
+        return false;
+    }
+    var referenceLpArray = refLicenseResult.getOutput();
+    if(!referenceLpArray) {
+        logDebug("Reference LP Array returned null");
+        return false;
+    }
+    for (var refLpIndex in referenceLpArray) {
+        var refLPObject = referenceLpArray[refLpIndex];
+        var auditStatus = refLPObject.auditStatus;
+        if(auditStatus == "A") {
+            return refLPObject;
+        }
+    }
+    return false;
+}
+
+function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, businessLicense) {
+    var newLic = aa.licenseScript.createLicenseScriptModel();
+
+    newLic.setAgencyCode(aa.getServiceProviderCode());
+    newLic.setAuditDate(aa.date.getCurrentDate());
+    newLic.setAuditID("ADMIN");
+    newLic.setAuditStatus("A");
+    newLic.setLicenseType("Contractor");
+    newLic.setStateLicense(licenseNumber);
+
+    //cslb data
+    newLic.setBusinessName(cslbData["BusinessName"]);
+    newLic.setAddress1(cslbData["Address"]);
+    newLic.setCity(cslbData["City"]);
+    newLic.setLicState(cslbData["State"]);
+    newLic.setZip(cslbData["ZIP"]);
+    newLic.setPhone1(cslbData["PhoneNumber"]);
+
+    var scriptDate = null;
+
+    var licIssueDate = cslbData["IssueDate"];
+    if(licIssueDate) {
+        scriptDate = aa.date.parseDate(licIssueDate);
+        newLic.setLicenseIssueDate(scriptDate);
+    }
+    var licExpDate = cslbData["ExpirationDate"];
+    if(licExpDate) {
+        scriptDate = aa.date.parseDate(licExpDate);
+        newLic.setLicenseExpirationDate(scriptDate);
+    }
+
+    if(businessLicense) {
+        newLic.setBusinessLicense(businessLicense);
+    }
+
+    var data = cslbData["SuretyCompany"];
+    if(data) {
+        newLic.setInsuranceCo(data);
+    }
+
+    var data = cslbData["ContractorBondNumber"];
+    if(data) {
+        newLic.setPolicy(data);
+    }
+
+    var data = cslbData["ContractorBondAmount"];
+    if(data) {
+        newLic.setInsuranceAmount(parseFloat(data));
+    }
+
+    var data = cslbData["BondCancellationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        newLic.setInsuranceExpDate(scriptDate);
+    }
+
+
+    var data = cslbData["WorkersCompPolicyNumber"];
+    if(data) {
+        newLic.setWcPolicyNo(data);
+    }
+
+    var data = cslbData["PolicyEffectiveDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        newLic.setWcEffDate(scriptDate);
+    }
+
+    var data = cslbData["PolicyExpirationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        newLic.setWcExpDate(scriptDate);
+    }
+
+    var data = cslbData["PolicyCancellationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        newLic.setWcCancDate(scriptDate);
+    }
+
+    var wcSuspendedDate = cslbData["WorkersCompSuspendDate"];
+    if(wcSuspendedDate) {
+        scriptDate = aa.date.parseDate(wcSuspendedDate);
+        newLic.setWcSuspendDate(scriptDate);
+    }
+
+    if(cslbData["WorkersCompCoverageType"] == "Exempt") {
+        newLic.setWcExempt("Y");
+    } else {
+        newLic.setWcExempt("N");
+    }
+
+    var wcEffectiveDate = cslbData["PolicyEffectiveDate"];
+    if(wcEffectiveDate) {
+        scriptDate = aa.date.parseDate(wcEffectiveDate);
+        newLic.setWcEffDate(scriptDate);
+    }
+
+    var myResult = aa.licenseScript.createRefLicenseProf(newLic);
+    if (myResult.getSuccess()) {
+        logDebug("Created fresh reference LP for " + licenseNumber);
+    } else {
+        logDebug("Failed to create reference lp "  + licenseNumber +  " " + myResult.getErrorType() + " : " + myResult.getErrorMessage());
+    }
+
+    var licSeqNbr = myResult.getOutput();
+    addAttributesFromCSLB(licenseNumber, cslbData);
+    return licSeqNbr;
+}
+
+function addAttributesFromCSLB(licNum, cslbData) {
+    var refLp = grabReferenceLicenseProfessional(licNum);
+    if(!refLp) {
+        logDebug("Reference lp is not created can't update");
+        return false;
+    }
+
+    var cslbClassifications = cslbData["Classifications"];
+    //Agency specific
+    var attributeMap = {
+        "Bond Amount" : "ContractorBondAmount",
+        // "Bond Code" : "",
+        "Bond Effective Date" : "BondEffectiveDate",
+        "Bond Expiration" : "BondCancellationDate",
+        "Bond Insurance Company" : "SuretyCompany",
+        "Bond Number" : "ContractorBondNumber",
+        // "Bond Surety Type" : "",
+        "Worker's Comp Expiration Date" : "PolicyExpirationDate",
+        "Worker's Comp Policy #" : "WorkersCompPolicyNumber",
+    }
+
+    var attributes = refLp.attributes;
+    if(attributes) {
+        var keySet = attributes.keySet().toArray();
+        for(var i in keySet) {
+            var key = keySet[i];
+            var peopleAttributeModel = attributes.get(key);
+            var iterator = peopleAttributeModel.iterator();
+            while(iterator.hasNext()) {
+                var attributeObj = iterator.next();
+                var attrLabel = attributeObj.attributeLabel;
+                var cslbObjLabel = attributeMap[attrLabel];
+                var insertionValue = cslbData[cslbObjLabel];
+                if(attrLabel == "Class Code 1" && cslbClassifications.length > 0) {
+                    insertionValue = cslbClassifications.join("|");
+                }
+                if(insertionValue) {
+                    logDebug("Setting " + attrLabel + " to " + insertionValue);
+                    attributeObj.setAttributeValue(insertionValue);
+                }
+            }
+        }
+    }
+    var updateResult = aa.licenseScript.editRefLicenseProf(refLp);
+    if (updateResult.getSuccess()) {
+        logDebug("Updated attributes");
+        return true;
+    } else {
+        logDebug("Unable to update attributes from cslb " + updateResult.getErrorType() + " : " + updateResult.getErrorMessage());
+        return false;
+    }
+}
+
+function syncReferenceLPWithCSLBData(licenseNumber, cslbData) {
+    var refLp = grabReferenceLicenseProfessional(licenseNumber);
+    if(!refLp) {
+        logDebug("Reference lp is not created can't update");
+        return false;
+    }
+
+    //cslb data
+    refLp.setBusinessName(cslbData["BusinessName"]);
+    refLp.setAddress1(cslbData["Address"]);
+    refLp.setCity(cslbData["City"]);
+    refLp.setLicState(cslbData["State"]);
+    refLp.setZip(cslbData["ZIP"]);
+    refLp.setPhone1(cslbData["PhoneNumber"]);
+
+    var scriptDate = null;
+
+    var licIssueDate = cslbData["IssueDate"];
+    if(licIssueDate) {
+        scriptDate = aa.date.parseDate(licIssueDate);
+        refLp.setLicenseIssueDate(scriptDate);
+    }
+    var licExpDate = cslbData["ExpirationDate"];
+    if(licExpDate) {
+        scriptDate = aa.date.parseDate(licExpDate);
+        refLp.setLicenseExpirationDate(scriptDate);
+    }
+
+    var data = cslbData["SuretyCompany"];
+    if(data) {
+        refLp.setInsuranceCo(data);
+    }
+
+    var data = cslbData["ContractorBondNumber"];
+    if(data) {
+        refLp.setPolicy(data);
+    }
+
+    var data = cslbData["ContractorBondAmount"];
+    if(data) {
+        refLp.setInsuranceAmount(parseFloat(data));
+    }
+
+    var data = cslbData["BondCancellationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        refLp.setInsuranceExpDate(scriptDate);
+    }
+
+
+    var data = cslbData["WorkersCompPolicyNumber"];
+    if(data) {
+        refLp.setWcPolicyNo(data);
+    }
+
+    var data = cslbData["PolicyEffectiveDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        refLp.setWcEffDate(scriptDate);
+    }
+
+    var data = cslbData["PolicyExpirationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        refLp.setWcExpDate(scriptDate);
+    }
+
+    var data = cslbData["PolicyCancellationDate"];
+    if(data) {
+        scriptDate = aa.date.parseDate(data);
+        refLp.setWcCancDate(scriptDate);
+    }
+
+    var wcSuspendedDate = cslbData["WorkersCompSuspendDate"];
+    if(wcSuspendedDate) {
+        scriptDate = aa.date.parseDate(wcSuspendedDate);
+        refLp.setWcSuspendDate(scriptDate);
+    }
+
+
+    if(cslbData["WorkersCompCoverageType"] == "Exempt") {
+        refLp.setWcExempt("Y");
+    } else {
+        refLp.setWcExempt("N");
+    }
+
+    var wcEffectiveDate = cslbData["PolicyEffectiveDate"];
+    if(wcEffectiveDate) {
+        scriptDate = aa.date.parseDate(wcEffectiveDate);
+        refLp.setWcEffDate(scriptDate);
+    }
+
+    var cslbClassifications = cslbData["Classifications"];
+    //Agency specific
+    var attributeMap = {
+        "Bond Amount" : "ContractorBondAmount",
+        // "Bond Code" : "",
+        "Bond Effective Date" : "BondEffectiveDate",
+        "Bond Expiration" : "BondCancellationDate",
+        "Bond Insurance Company" : "SuretyCompany",
+        "Bond Number" : "ContractorBondNumber",
+        // "Bond Surety Type" : "",
+        "Worker's Comp Expiration Date" : "PolicyExpirationDate",
+        "Worker's Comp Policy #" : "WorkersCompPolicyNumber",
+    }
+
+    var attributes = refLp.attributes;
+    if(attributes) {
+        var keySet = attributes.keySet().toArray();
+        for(var i in keySet) {
+            var key = keySet[i];
+            var peopleAttributeModel = attributes.get(key);
+            var iterator = peopleAttributeModel.iterator();
+            while(iterator.hasNext()) {
+                var attributeObj = iterator.next();
+                var attrLabel = attributeObj.attributeLabel;
+                var cslbObjLabel = attributeMap[attrLabel];
+                var insertionValue = cslbData[cslbObjLabel];
+                if(attrLabel == "Class Code 1" && cslbClassifications.length > 0) {
+                    insertionValue = cslbClassifications.join("|");
+                }
+                if(insertionValue) {
+                    logDebug("Setting " + attrLabel + " to " + insertionValue);
+                    attributeObj.setAttributeValue(insertionValue);
+                }
+            }
+        }
+    }
+    var updateResult = aa.licenseScript.editRefLicenseProf(refLp);
+    if (updateResult.getSuccess()) {
+        logDebug("Updated attributes");
+        return true;
+    } else {
+        logDebug("Unable to sync data from cslb " + updateResult.getErrorType() + " : " + updateResult.getErrorMessage());
+        return false;
+    }
+}
+
+function checkRefLPConditionsBySeq(refSeqNbr, conditionName) {
+    if(!refSeqNbr) {
+        logDebug("Unable to get ref lp from " + refSeqNbr);
+        return true;
+    }
+    logDebug("Sequence number: " + refSeqNbr);
+    var conditions = aa.caeCondition.getCAEConditions(refSeqNbr);
+    if(conditions.getSuccess()) {
+        conditions = conditions.getOutput();
+        logDebug("Condition: " + conditions.length);
+        for(var cond in conditions) {
+            var condObj = conditions[cond];
+            var condObjName = condObj.conditionDescription;
+            var condStatusType = condObj.conditionStatusType;
+            if(String(conditionName).toLowerCase() == String(condObjName).toLowerCase() && condStatusType == "Applied") {
+                return true;
+            }
+        }
+    } else {
+        logDebug("Unable to get conditions from " + lpNumber);
+        return false;
+    }
+}
+
+function getRefrenceLPRecords(licenseNum, refLpObj) {
+    var referenceLPModel = refLpObj;
+    var records = [];
+    if(!refLpObj && licenseNum) {
+        referenceLPModel = grabReferenceLicenseProfessional(licenseNum);
+    }
+    if(!referenceLPModel) {
+        logDebug("Did not have reference LP model so returned 0 records");
+        return records;
+    }
+    var recordsResult = aa.licenseScript.getCapIDsByLicenseModel(referenceLPModel);
+    if(!recordsResult.getSuccess()) {
+        logDebug("Grabbing record ids failed for " + referenceLPModel.stateLicense);
+        return records;
+    }
+    var records = recordsResult.getOutput();
+    if(!records) {
+        logDebug("Output for grabbing records returned null");
+        return [];
+    }
+    logDebug("Returned " + records.length + " records for " + referenceLPModel.stateLicense) ;
+    return records.map(function(capScript) {
+        return aa.cap.getCapID(capScript.getID1(), capScript.getID2(), capScript.getID3()).getOutput();
+    });
+}
+
+function getAllTransactionalLPs(itemCap) {
+    if(!itemCap) {
+        logDebug("No record found cannot pull license professional");
+        return [];
+    }
+    var existingLPs = aa.licenseProfessional.getLicensedProfessionalsByCapID(itemCap);
+    if(!existingLPs.getSuccess()) {
+        logDebug("Failed to get existing lps on " + itemCap.customID);
+        return [];
+    }
+    existingLPs = existingLPs.getOutput();
+    if(!existingLPs) {
+        logDebug("Failed output from getting transactional lps");
+        return [];
+    }
+    logDebug("Returning " + existingLPs.length + " license professionals on " + itemCap.getCustomID());
+    return existingLPs;
+}
+
+function grabTransactionalLicenseProfessional(licenseNumber, itemCap) {
+    if(!licenseNumber) {
+        logDebug("No license number to search " + itemCap.customID);
+        return false;
+    }
+    if(!itemCap) {
+        logDebug("No record found cannot pull license professional");
+        return false;
+    }
+    var existingLPs = aa.licenseProfessional.getLicensedProfessionalsByCapID(itemCap);
+    if(!existingLPs.getSuccess()) {
+        logDebug("Failed to get existing lps on " + itemCap.customID);
+        return false;
+    }
+    existingLPs = existingLPs.getOutput();
+    for(var capLPIndex in existingLPs) {
+        var lpModel = existingLPs[capLPIndex];
+        var capLpNumber = lpModel.licenseNbr;
+        if(capLpNumber == licenseNumber) {
+            return lpModel;
+        }
+    }
+    logDebug(licenseNumber + " does not exist on " + itemCap.customID);
+    return false;
+}
+
+function syncReferenceLPToRecord(itemCap, licenseNum, refLpModel) {
+
+    if(!itemCap) {
+        logDebug("No record provided not sycing reference lp");
+        return false;
+    }
+    var referenceLP = refLpModel;
+    if(!refLpModel && licenseNum) {
+        referenceLP = grabReferenceLicenseProfessional(licenseNum);
+    }
+    if(!referenceLP) {
+        logDebug("Did not have reference LP model so could not update " + itemCap.getCustomID());
+        return false;
+    }
+    var foundLicenseNumber = referenceLP.stateLicense;
+    var transactionalLpModel = grabTransactionalLicenseProfessional(foundLicenseNumber, itemCap);
+    if(!transactionalLpModel) {
+        return false;
+    }
+    var foundPrimary = transactionalLpModel.printFlag == "Y" ? true : false;
+    if(foundPrimary) {
+        transactionalLpModel.setPrintFlag("N");
+        var updateResult = aa.licenseProfessional.editLicensedProfessional(transactionalLpModel);
+        if(updateResult.getSuccess()) {
+            logDebug("Successfully made " + foundLicenseNumber + " not primary");
+        } else {
+            logDebug("Failed to update " + foundLicenseNumber + " " + removeResult.getErrorType() + " : " + removeResult.getErrorMessage());
+        }
+    }
+    var removedLP = false;
+    var removeResult = aa.licenseProfessional.removeLicensedProfessional(transactionalLpModel);
+    if(removeResult.getSuccess()) {
+        logDebug("Successfully removed transactional lp " + foundLicenseNumber);
+        removedLP = true;
+    } else {
+        logDebug("Failed to remove " + foundLicenseNumber + " " + removeResult.getErrorType() + " : " + removeResult.getErrorMessage());
+    }
+
+    if(removedLP) {
+        var addResult = aa.licenseScript.associateLpWithCap(itemCap, referenceLP);
+        if(!addResult.getSuccess()) {
+            logDebug("Unable to add reference lp adding back transactional " + addResult.getErrorType() + " " + addResult.getErrorMessage());
+            return false;
+        }
+        logDebug("Added reference " + foundLicenseNumber + " to " + itemCap.getCustomID());
+        if(foundPrimary) {
+            //get new transactional
+            var newTransactionalRefLP = grabTransactionalLicenseProfessional(foundLicenseNumber, itemCap);
+            newTransactionalRefLP.setPrintFlag("Y");
+            var updateResult = aa.licenseProfessional.editLicensedProfessional(newTransactionalRefLP);
+            if(updateResult.getSuccess()) {
+                logDebug("Successfully made " + foundLicenseNumber + " primary");
+            } else {
+                logDebug("Failed to update " + foundLicenseNumber + " " + removeResult.getErrorType() + " : " + removeResult.getErrorMessage());
+            }
+        }
+    }
+    return true;
+}
+
+function syncTransactionalLPToReferenceLP(transLicNum, transObj) {
+    var refObj = grabReferenceLicenseProfessional(transLicNum);
+    if(!refObj) {
+        logDebug("Unable to sync transactional due to no reference found");
+        //TODO: Additional functionality can create reference from transactional?
+        return false;
+    }
+    if (transObj.getAddress1())
+        refObj.setAddress1(transObj.getAddress1());
+    if (transObj.getAddress2())
+        refObj.setAddress2(transObj.getAddress2());
+    if (transObj.getAddress3())
+        refObj.setAddress3(transObj.getAddress3());
+    if (transObj.getAgencyCode())
+        refObj.setAgencyCode(transObj.getAgencyCode());
+    if (transObj.getBusinessLicense())
+        refObj.setBusinessLicense(transObj.getBusinessLicense());
+    if (transObj.getBusinessName())
+        refObj.setBusinessName(transObj.getBusinessName());
+    if (transObj.getBusName2())
+        refObj.setBusinessName2(transObj.getBusName2());
+    if (transObj.getCity())
+        refObj.setCity(transObj.getCity());
+    if (transObj.getCityCode())
+        refObj.setCityCode(transObj.getCityCode());
+    if (transObj.getComment())
+        refObj.setComment(transObj.getComment());
+    if (transObj.getContactFirstName())
+        refObj.setContactFirstName(transObj.getContactFirstName());
+    if (transObj.getContactLastName())
+        refObj.setContactLastName(transObj.getContactLastName());
+    if (transObj.getContactMiddleName())
+        refObj.setContactMiddleName(transObj.getContactMiddleName());
+    if (transObj.getCountryCode())
+        refObj.setContryCode(transObj.getCountryCode());
+    if (transObj.getEmail())
+        refObj.setEMailAddress(transObj.getEmail());
+    if (transObj.getCountry())
+        refObj.setCountry(transObj.getCountry());
+    if (transObj.getEinSs())
+        refObj.setEinSs(transObj.getEinSs());
+    if (transObj.getFax())
+        refObj.setFax(transObj.getFax());
+    if (transObj.getFaxCountryCode())
+        refObj.setFaxCountryCode(transObj.getFaxCountryCode());
+    if (transObj.getHoldCode())
+        refObj.setHoldCode(transObj.getHoldCode());
+    if (transObj.getHoldDesc())
+        refObj.setHoldDesc(transObj.getHoldDesc());
+    if (transObj.getLicenseExpirDate())
+        refObj.setLicenseExpirationDate(transObj.getLicenseExpirDate());
+    if (transObj.getLastRenewalDate())
+        refObj.setLicenseLastRenewalDate(transObj.getLastRenewalDate());
+    if (transObj.getLicesnseOrigIssueDate())
+        refObj.setLicOrigIssDate(transObj.getLicesnseOrigIssueDate());
+    if (transObj.getPhone1())
+        refObj.setPhone1(transObj.getPhone1());
+    if (transObj.getPhone1CountryCode())
+        refObj.setPhone1CountryCode(transObj.getPhone1CountryCode());
+    if (transObj.getPhone2())
+        refObj.setPhone2(transObj.getPhone2());
+    if (transObj.getPhone2CountryCode())
+        refObj.setPhone2CountryCode(transObj.getPhone2CountryCode());
+    if (transObj.getSelfIns())
+        refObj.setSelfIns(transObj.getSelfIns());
+    if (transObj.getState())
+        refObj.setState(transObj.getState());
+    if (transObj.getSuffixName())
+        refObj.setSuffixName(transObj.getSuffixName());
+    if (transObj.getZip())
+        refObj.setZip(transObj.getZip());
+
+    var myResult = aa.licenseScript.editRefLicenseProf(refObj);
+    if(myResult.getSuccess()) {
+        logDebug("Successfully updated reference LP " + transLicNum);
+    }
+    return refObj;
 }

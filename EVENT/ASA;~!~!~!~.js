@@ -16,3 +16,8 @@ if(appMatch("Building/*/*/*")) {
     correctParcelData();
     copyGISDataToCustomFields(capId);
 }
+
+//GQ_CSLB_INTERFACE
+if(!publicUser) {
+	include("GQ_CSLB_SYNC_TRANSACTIONAL_LP");
+}
