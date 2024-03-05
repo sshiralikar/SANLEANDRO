@@ -12,8 +12,9 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
             if(transLPType == "Contractor") {
                 var refLpModel = grabReferenceLicenseProfessional(transLPNumber);
                 var hasOverride = false;
+                var lpRefId = null;
                 if(refLpModel) {
-                    var lpRefId = refLpModel.licSeqNbr;
+                    lpRefId = refLpModel.licSeqNbr;
                     hasOverride = checkRefLPConditionsBySeq(lpRefId, "CSLB Override");
                 }
                 if(hasOverride) {
@@ -26,6 +27,30 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                     var cslbValidationResults = cslbResult.messages;
                     if(cslbValidationResults.length > 0) {
                         errors.push(cslbValidationResults.join("<BR>"));
+                        if(lpRefId && !checkRefLPConditionsBySeq(referenceSeqNumber, "Contractor CSLB Information Expired")) {
+                            addRefLPConditionBySeq(lpRefId, "Engineering", "Contractor CSLB Information Expired", cslbValidationResults.join("\n"), "Notice", "Not Met");
+                            if(transLP && capId) {
+                                var transLPEmail = transLP.email;
+                                var capDetail = aa.cap.getCapDetail(capId).getOutput();
+                                var currentAssignedStaff = capDetail.getAsgnStaff();
+                                logDebug("Assigned staff: " + currentAssignedStaff);
+                                var staffUser = aa.person.getUser(currentAssignedStaff).getOutput();
+                                var staffEmail = staffUser.email;
+                                //CASANLEAN-3005
+                                if(transLPEmail && staffEmail) {
+                                    var emailParams = aa.util.newHashtable();
+                                    emailParams.put("$$licNum$$", String(transLPNumber));
+                                    emailParams.put("$$expiredData$$", cslbValidationResults.join("\n"));
+                                    emailParams.put("$$businessName$$", String(transLP.businessName));
+                                    emailParams.put("$$altId$$", String(capId.getCustomID()));
+                                    logDebug("Sending email to: " + transLPEmail);
+                                    logDebug("Staff CC: " + staffEmail);
+                                    sendNotification("", String(transLPEmail), String(staffEmail), "ENG_CSLB_EXPIRED_CONTRACTOR_INFO", emailParams, [], capId);
+                                }
+                            }
+                        } else {
+                            logDebug(transLPNumber + " already has condition");
+                        }
                     }
                 }
             }

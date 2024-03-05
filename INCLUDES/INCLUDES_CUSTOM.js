@@ -7736,6 +7736,16 @@ function validateLPWithCSLB(licenseNumber, itemCap, checkExpDate, checkWCDate, c
             }
         }
 
+        //data from CSLB came back fine
+        if(validationObj.messages.length == 0) {
+            if(referenceSeqNumber) {
+                var hasExpiredCondition = checkRefLPConditionsBySeq(referenceSeqNumber, "Contractor CSLB Information Expired");
+                //Update reference condition
+                if(hasExpiredCondition) {
+                    updateRefLPConditionBySeq(referenceSeqNumber, "Contractor CSLB Information Expired", "Met", "Not Applied", "");
+                }
+            }
+        }
 
         logDebug(validationObj.cslbLink + ": CSLB returned a status of " + validationObj.cslbStatus);
         logDebug(validationObj.messages.join("<BR>"));
@@ -8245,6 +8255,50 @@ function checkRefLPConditionsBySeq(refSeqNbr, conditionName) {
         logDebug("Unable to get conditions from " + lpNumber);
         return false;
     }
+}
+
+function updateRefLPConditionBySeq(refSeqNbr, conditionName, conditionStatus, conditionStatusType, impactCode) {
+    if(!refSeqNbr) {
+        logDebug("Unable to get ref lp from " + refSeqNbr);
+        return true;
+    }
+    logDebug("Sequence number: " + refSeqNbr);
+    var conditions = aa.caeCondition.getCAEConditions(refSeqNbr);
+    if(conditions.getSuccess()) {
+        conditions = conditions.getOutput();
+        logDebug("Condition: " + conditions.length);
+        for(var cond in conditions) {
+            var condObj = conditions[cond];
+            var condObjName = condObj.conditionDescription;
+            var condStatusType = condObj.conditionStatusType;
+            if(String(conditionName).toLowerCase() == String(condObjName).toLowerCase() && condStatusType == "Applied") {
+                condObj.setConditionStatus(conditionStatus);
+                condObj.setConditionStatusType(conditionStatusType);
+                condObj.setImpactCode(impactCode);
+                var editResult = aa.caeCondition.editCAECondition(condObj);
+                if(editResult.getSuccess()) {
+                    logDebug("Successfully updated " + conditionName + " to " + conditionStatus);
+                } else {
+                    logDebug("Failed to update " + conditionName + " : " + editResult.getErrorMessage() + " " + editResult.getErrorType());
+                }
+                return editResult.getSuccess();
+            }
+        }
+    } else {
+        logDebug("Unable to get conditions from " + lpNumber);
+        return false;
+    }
+}
+
+function addRefLPConditionBySeq(referenceSeqNumber, conditionType, conditionName, conditionComment, impactCode, conditionStatus) {
+    var addCAEResult = aa.caeCondition.addCAECondition(referenceSeqNumber, conditionType, conditionName, conditionComment, null, null, impactCode, conditionStatus, sysDate, null, sysDate, sysDate, systemUserObj, systemUserObj)
+    if (addCAEResult.getSuccess()) {
+        logDebug("Successfully added licensed professional (" + referenceSeqNumber + ") condition (" + impactCode + ") " + conditionName);
+        return true;
+    } else {
+        logDebug("**ERROR: adding licensed professional (" + referenceSeqNumber + ") condition (" + impactCode + "): " + addCAEResult.getErrorMessage());
+    }
+    return false;
 }
 
 function getRefrenceLPRecords(licenseNum, refLpObj) {
