@@ -57,7 +57,7 @@ if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" |
     addParameter(params, "$$assignedUserEmail$$", vEmail);
     addParameter(params, "$$wfTaskComments$$", wfComment);
     addParameter(params, "$$ACAUrl$$", String(lookup("ACA_CONFIGS", "ACA_SITE")).split("/Admin")[0]);
-    
+
 
 if(wfTask == "Application Intake" && wfStatus == "Additional Info Required"){
 	sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_ADDITIONAL_INFO_REQ", params, null, capId);
@@ -90,8 +90,8 @@ if(wfTask == "Plans Coordination" && wfStatus == "Approved Fees Due"){
 
 //CASANLAN - 2960
 if(wfTask == "Plans Coordination" && wfStatus == "Fees Paid"){
-	
-// get assigned user on record 
+
+// get assigned user on record
 capDetail = aa.cap.getCapDetail(capId).getOutput();
 
 userObj = aa.person.getUser(capDetail.getAsgnStaff());
@@ -174,4 +174,9 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
     if(reportResult) {
         runAsyncEvent("ENG_ADOBE_SIGN_ASYNC", String(capId.getCustomID()), "ADMIN");
     }
+}
+
+//GQ_CSLB_INTERFACE
+if(wfTask == "Application Submittal" && String(wfStatus).indexOf("Accepted") > -1) {
+	include("GQ_CSLB_SYNC_TRANSACTIONAL_LP");
 }
