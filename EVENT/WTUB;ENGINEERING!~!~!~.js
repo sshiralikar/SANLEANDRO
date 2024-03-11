@@ -49,7 +49,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                                             altId: String(capId.getCustomID()),
                                         },
                                         record: String(capId.getCustomID()),
-                                        lpRefId: lpRefId,
+                                        lpRefId: String(lpRefId),
                                     }
                                     notifications.push(emailObj);
                                     // var emailParams = aa.util.newHashtable();
