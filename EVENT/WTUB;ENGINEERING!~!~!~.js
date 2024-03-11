@@ -22,13 +22,14 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                     continue;
                 }
                 var cslbResults = validateLPWithCSLB(transLPNumber, null, true, true, false, true, appTypeString);
+                var notifications = [];
                 for(var i in cslbResults) {
                     var cslbResult = cslbResults[i];
                     var cslbValidationResults = cslbResult.messages;
                     if(cslbValidationResults.length > 0) {
                         errors.push(cslbValidationResults.join("<BR>"));
-                        if(lpRefId && !checkRefLPConditionsBySeq(referenceSeqNumber, "Contractor CSLB Information Expired")) {
-                            addRefLPConditionBySeq(lpRefId, "Engineering", "Contractor CSLB Information Expired", cslbValidationResults.join("\n"), "Notice", "Not Met");
+                        if(lpRefId && !checkRefLPConditionsBySeq(lpRefId, "Contractor CSLB Information Expired")) {
+                            // addRefLPConditionBySeq(lpRefId, "Engineering", "Contractor CSLB Information Expired", cslbValidationResults.join("\n"), "Notice", "Not Met");
                             if(transLP && capId) {
                                 var transLPEmail = transLP.email;
                                 var capDetail = aa.cap.getCapDetail(capId).getOutput();
@@ -38,14 +39,27 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                                 var staffEmail = staffUser.email;
                                 //CASANLEAN-3005
                                 if(transLPEmail && staffEmail) {
-                                    var emailParams = aa.util.newHashtable();
-                                    emailParams.put("$$licNum$$", String(transLPNumber));
-                                    emailParams.put("$$expiredData$$", cslbValidationResults.join("\n"));
-                                    emailParams.put("$$businessName$$", String(transLP.businessName));
-                                    emailParams.put("$$altId$$", String(capId.getCustomID()));
-                                    logDebug("Sending email to: " + transLPEmail);
-                                    logDebug("Staff CC: " + staffEmail);
-                                    sendNotification("", String(transLPEmail), String(staffEmail), "ENG_CSLB_EXPIRED_CONTRACTOR_INFO", emailParams, [], capId);
+                                    var emailObj = {
+                                        toAddress: String(transLPEmail).toLowerCase(),
+                                        ccAddress: String(staffEmail).toLowerCase(),
+                                        parameters: {
+                                            licNum: String(transLPNumber),
+                                            expiredData: String(cslbValidationResults.join("\n")),
+                                            businessName: String(transLP.businessName),
+                                            altId: String(capId.getCustomID()),
+                                        },
+                                        record: String(capId.getCustomID()),
+                                        lpRefId: lpRefId,
+                                    }
+                                    notifications.push(emailObj);
+                                    // var emailParams = aa.util.newHashtable();
+                                    // // emailParams.put("$$licNum$$", String(transLPNumber));
+                                    // // emailParams.put("$$expiredData$$", cslbValidationResults.join("\n"));
+                                    // // emailParams.put("$$businessName$$", String(transLP.businessName));
+                                    // // emailParams.put("$$altId$$", String(capId.getCustomID()));
+                                    // // logDebug("Sending email to: " + transLPEmail);
+                                    // // logDebug("Staff CC: " + staffEmail);
+                                    // // sendNotification("", String(transLPEmail), String(staffEmail), "ENG_CSLB_EXPIRED_CONTRACTOR_INFO", emailParams, [], capId);
                                 }
                             }
                         } else {
@@ -62,5 +76,9 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
         comment(errors.join("<br>"));
         aa.print(errors.join("\n"));
         cancel = true;
+        if(notifications.length > 0) {
+            aa.env.setValue("emailData", JSON.stringify(notifications));
+            var result = aa.runScriptInNewTransaction("GQ_CSLB_SEND_EXPIRED_NOTICE");
+        }
     }
 }
