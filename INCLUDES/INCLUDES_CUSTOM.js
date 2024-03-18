@@ -7952,11 +7952,11 @@ function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, bus
 
     var scriptDate = null;
 
-    var licIssueDate = cslbData["IssueDate"];
-    if(licIssueDate) {
-        scriptDate = aa.date.parseDate(licIssueDate);
-        newLic.setLicenseIssueDate(scriptDate);
-    }
+    // var licIssueDate = cslbData["IssueDate"];
+    // if(licIssueDate) {
+    //     scriptDate = aa.date.parseDate(licIssueDate);
+    //     newLic.setLicenseIssueDate(scriptDate);
+    // }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
@@ -8112,11 +8112,11 @@ function syncReferenceLPWithCSLBData(licenseNumber, cslbData) {
 
     var scriptDate = null;
 
-    var licIssueDate = cslbData["IssueDate"];
-    if(licIssueDate) {
-        scriptDate = aa.date.parseDate(licIssueDate);
-        refLp.setLicenseIssueDate(scriptDate);
-    }
+    // var licIssueDate = cslbData["IssueDate"];
+    // if(licIssueDate) {
+    //     scriptDate = aa.date.parseDate(licIssueDate);
+    //     refLp.setLicenseIssueDate(scriptDate);
+    // }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
