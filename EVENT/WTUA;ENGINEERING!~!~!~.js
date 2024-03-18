@@ -224,6 +224,6 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
 }
 
 //GQ_CSLB_INTERFACE
-if(wfTask == "Application Submittal" && String(wfStatus).indexOf("Accepted") > -1) {
+if((wfTask == "Application Intake" || wfTask == "Application Submittal") && String(wfStatus).indexOf("Accepted") > -1) {
 	include("GQ_CSLB_SYNC_TRANSACTIONAL_LP");
 }
