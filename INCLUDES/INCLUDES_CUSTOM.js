@@ -7881,7 +7881,10 @@ function fetchCSLBData(licNum) {
             value = String(value).replace(/&amp;/g, "&");
         }
         if(tag == "PhoneNumber") {
-            value = String(value).replace(/[^\d]/g, "");
+            var tempPhone = String(value).replace(/[^\d]/g, "");
+			var formattedPhone = tempPhone.substring(0, 3) + "-" + tempPhone.substring(3, 6) + "-" + tempPhone.substring(6, tempPhone.length);
+			logDebug("Formatted phone number: " + formattedPhone);
+			value = formattedPhone;
         }
         if(value) {
             cslbObj[tag] = value;
