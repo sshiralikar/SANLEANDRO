@@ -301,6 +301,7 @@ function mainProcess() {
                 var vAddress = "";
                 var capAddressResult1 = aa.address.getAddressByCapId(capId);
                 if(recordStatus != "Finaled" && apptypeArray[0] != "Engineering")
+                
                     {
 
                                 if (capAddressResult1.getSuccess())
