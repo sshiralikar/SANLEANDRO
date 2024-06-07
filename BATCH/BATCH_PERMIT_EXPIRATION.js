@@ -195,6 +195,9 @@ function mainProcess() {
                 cap = aa.cap.getCap(capId).getOutput();
                 var thisCapModel = cap.getCapModel();
                 var thisTypeResult = cap.getCapType();
+                var vAppTypeString = thisTypeResult.toString();
+                var apptypeArray = vAppTypeString.split("/");
+
                 var vBalanceDue = 0.0;
                 var capDetailObjResult = aa.cap.getCapDetail(capId);
                 if (capDetailObjResult.getSuccess())
@@ -204,7 +207,7 @@ function mainProcess() {
                 }
 
                 var recordStatus = getAppStatus(capId);
-                if(vBalanceDue <= 0 && recordStatus != "Finaled")
+                if(vBalanceDue <= 0 && recordStatus != "Finaled" && apptypeArray[0] != "Engineering")
                 {
                     updateAppStatus("Permit Expired","",capId);
                     inspCancelAll();
@@ -291,11 +294,13 @@ function mainProcess() {
                 cap = aa.cap.getCap(capId).getOutput();
                 var thisCapModel = cap.getCapModel();
                 var thisTypeResult = cap.getCapType();
+                var vAppTypeString = thisTypeResult.toString();
+                var apptypeArray = vAppTypeString.split("/");
                 var recordStatus = getAppStatus(capId);
                 var params = aa.util.newHashtable();
                 var vAddress = "";
                 var capAddressResult1 = aa.address.getAddressByCapId(capId);
-                if(recordStatus != "Finaled")
+                if(recordStatus != "Finaled" && apptypeArray[0] != "Engineering")
                     {
 
                                 if (capAddressResult1.getSuccess())
