@@ -185,7 +185,7 @@ try {
         if(errors.length > 0)  {
             showMessage = true;
             comment(errors.join("<br>"));
-            comment("If you feel that this has been flagged incorrectly, please email the City of San Leandro for further instructions <a href='mailto:ETPermits@SanLeandr.org' taget='_blank'>ETPermits@SanLeandr.org</a>")
+            comment("If you feel that this has been flagged incorrectly, please email the City of San Leandro for further instructions ETPermits@SanLeandr.org");
             aa.print(errors.join("\n"));
             cancel = true;
         }
