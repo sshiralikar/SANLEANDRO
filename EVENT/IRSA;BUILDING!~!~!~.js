@@ -722,7 +722,7 @@ if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Perm
     (appMatch("Building/Commercial/Fire/NA") && (inspType =="System Final"))||
     (appMatch("Building/Residential/Fire/NA") && (inspType =="System Final"))||
     (appMatch("Building/Residential/SolarPV/SolarApp") && (inspType =="2030 Final Electrical")) ||
-    (appMatch("Building/Commercial/Boarding/NA") && (inspType =="3000 Final - Building Permit"))||
+    (appMatch("Building/Commercial/Boarding/NA") && (inspType =="33000 Final Building"))||
     (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")))
     && (inspResult == "Pass" || inspResult == "Finaled"))
 {
