@@ -1,3 +1,4 @@
+//showDebug= true;
 assignInspection(inspId, currentUserID, capId);
 /*if(inspType == "2030 Final Electrical" &&
     isTaskActive("Inspection") &&
@@ -244,10 +245,10 @@ catch(err)
 //CASANLEAN-1499
 
 //CASANLEAN-1554
-if(inspType == "2050 Electrical Service Release" && inspResult == "Pass") {
+if((inspType == "2050 Electrical Service Release" || inspType == "2050 Residential Electrical Service") && inspResult == "Pass") {
     try
     {
-        var flag = false;
+        var flag = true;
         var params = aa.util.newHashtable();
         var applicantEmail = "";
         var conName = "";
@@ -720,6 +721,8 @@ if(((appMatch("Building/Combo/NA/NA") && (inspType =="3000 Final - Building Perm
     (appMatch("Building/Residential/Roofing/NA") && (inspType =="1540 Final Re-Roof"))||
     (appMatch("Building/Commercial/Fire/NA") && (inspType =="System Final"))||
     (appMatch("Building/Residential/Fire/NA") && (inspType =="System Final"))||
+    (appMatch("Building/Residential/SolarPV/SolarApp") && (inspType =="2030 Final Electrical")) ||
+    (appMatch("Building/Commercial/Boarding/NA") && (inspType =="3000 Final - Building Permit"))||
     (appMatch("Building/Residential/Solar/NA") && (inspType =="2030 Final Electrical")))
     && (inspResult == "Pass" || inspResult == "Finaled"))
 {
