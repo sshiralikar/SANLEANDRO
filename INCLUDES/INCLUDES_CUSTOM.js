@@ -8866,3 +8866,161 @@ function createPINSRecord(insuredId, description, requirementTemplateId, recordN
         return false;
     }
 }
+
+function validateFromCSLB(licNum, itemCap, recordType) {
+
+    var expiredLPs = [];
+    var checkDate = new Date();
+
+    // Build array of LPs to check
+    var workArray = new Array();
+    if (licNum) {
+        workArray.push(String(licNum));
+    }
+    var rlpType = "Contractor";
+    if (itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return false;
+        }
+
+        if (capLicenseArr == null || !capLicenseArr.length) {
+            logDebug("**WARNING: no licensed professionals on this CAP");
+        } else {
+            for (var thisLic in capLicenseArr)
+                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
+                    workArray.push(capLicenseArr[thisLic]);
+        }
+    }
+
+    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
+        var licNum = workArray[thisLic];
+        var licObj = null;
+
+        if (typeof licNum == "object") {
+            // is this one an object or string?
+            licObj = licNum;
+            licNum = licObj.getLicenseNbr();
+
+        }
+
+        // Make the call to the California State License Board
+
+        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+        var method = "http://CSLB.Ca.gov/GetLicense";
+        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+        //var licNum = "9";
+        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+        if (!token || token == "") {
+            logDebug("GRAYQUARTER CSLB TOKEN not configured");
+            return false;
+        }
+
+        xmlout = xmlout.replace("%%LICNUM%%", licNum);
+        xmlout = xmlout.replace("%%TOKEN%%", token);
+
+        var headers = aa.util.newHashMap();
+        headers.put("Content-Type", "text/xml");
+        headers.put("SOAPAction", method);
+
+        var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+
+        // check the results
+        var result;
+        var isError = false;
+        if (!res.getSuccess()) {
+            logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+            continue;
+        }
+        result = String(res.getOutput());
+        aa.print(result);
+
+        var lpStatus = XMLTagValue(result, "Status");
+        var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
+        var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
+        logDebug(licUrl + " status from CSLB: " + lpStatus);
+
+        if(!lpStatus || lpStatus == "") {
+            logDebug("CSLB did not return an LP Status for " + licNum);
+            continue;
+        }
+
+        if (lpStatus && lpStatus != "CLEAR") {
+            //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
+            logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
+            expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
+
+        }
+
+        var ExpirationDate = XMLTagValue(result, "ExpirationDate");
+        if (ExpirationDate) {
+            var cslbExpDate = new Date(ExpirationDate);
+            if(cslbExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
+            }
+        }
+
+        var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
+        if (PolicyExpirationDate) {
+            var workersCompExpDate = new Date(PolicyExpirationDate);
+            if(workersCompExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
+            }
+        }
+
+        // var BondExpirationDate = XMLTagValue(result, "BondEffectiveDate");
+        // if(BondExpirationDate) {
+        //     var bondExpDate = new Date(BondExpirationDate);
+        //     if(bondExpDate <= checkDate) {
+        //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
+        //     }
+        // }
+
+        var classErrors = [];
+        if(!recordType) {
+            var recordCap = aa.cap.getCapID(itemCap).getOutput();
+            if(recordCap) {
+                recordType = String(recordCap.getCapType());
+            }
+        }
+        var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
+        if(validClasses) {
+            logDebug(recordType + " not configured so any LP goes");
+            var classTypeMap = {};
+            validClasses = validClasses.split(",");
+            for(var validClassIndex in validClasses) {
+                var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+                if(!classTypeMap[stdClass]) {
+                    classTypeMap[stdClass] = true;
+                }
+            }
+
+            var Classifications = XMLTagValue(result, "Classifications");
+            var ClassificationList = Classifications.split("|");
+
+            for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
+                logDebug(classification);
+                if(classTypeMap[classification]) {
+                    classErrors = [];
+                    break;
+                }
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
+            }
+        }
+        if(classErrors.length > 0) {
+            logDebug("Adding: " + classErrors.length + " to errored list");
+            logDebug("Prior error list length: " + expiredLPs.length);
+            expiredLPs = expiredLPs.concat(classErrors);
+            logDebug("New error list length: " + expiredLPs.length);
+        }
+    } // for each license
+    return expiredLPs;
+}

@@ -65,7 +65,7 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 }
 
 //TESTING
-// var testingCap = aa.cap.getCapID("24TMP-000060").getOutput();
+// var testingCap = aa.cap.getCapID("ESTREET-24-0014").getOutput();
 // var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
 // var capTest = aa.env.setValue("CapModel", capModel);
 // aa.env.setValue("CurrentUserID", "ADMIN");
@@ -153,14 +153,47 @@ try {
     var lpList = cap.licenseProfessionalList;
     if(lpList && lpList.toArray) {
         lpList = lpList.toArray();
-        var errors = [];
+        var cslbErrors = [];
+        var hdlErrors = [];
         logDebug("LPS total: " + lpList.length);
         for(var lpIndex in lpList) {
             var lpObj = lpList[lpIndex];
             var licType = lpObj.licenseType;
             var licNum = lpObj.licenseNbr;
             // props(lpObj);
-            logDebug(licNum + " : " + licType);
+            // logDebug(licNum + " : " + licType);
+
+            var businessLicense = lpObj.businessLicense;
+            if(businessLicense && licType == "Contractor") {
+                (function () {
+                    var hdlData = getHDLLicenseInformation(businessLicense);
+                    // props(hdlData);
+                    if(!hdlData) {
+                        hdlErrors.push(licNum + ": Cannot validate business license. Please contact an administrator.");
+                        return;
+                    }
+                    if(!hdlData.successMessage) {
+                        hdlErrors.push(licNum + ": Invalid business license number. Make sure to include the '0' at the beginning of the license number");
+                        return;
+                    }
+                    // businessNameField.value = data.dba;
+                    var expirationDate = hdlData.currentExpireDate;
+                    var neededDate = expirationDate.split("T")[0];
+                    var dateArray = neededDate.split("-");
+                    var goodDate = dateArray[1] + "/" + dateArray[2] + "/" + dateArray[0];
+                    var expirationDateJS = new Date(goodDate);
+                    var compareDate = new Date();
+                    compareDate.setHours(0,0,0,0);
+
+                    var formattedExpirationDate = aa.util.formatDate(expirationDateJS, "MM/dd/yyyy");
+                    logDebug("Business License Status: " + hdlData.licenseStatus);
+                    logDebug("Expiration: " + formattedExpirationDate);
+                    if(expirationDateJS <= compareDate) {
+                        hdlErrors.push(licNum + ": Business license " + businessLicense + " has expired " + formattedExpirationDate);
+                    }
+                })();
+            }
+
             if(licType == "Contractor") {
                 var refLpModel = grabReferenceLicenseProfessional(licNum);
                 var hasOverride = false;
@@ -177,19 +210,26 @@ try {
                     var cslbResult = cslbResults[i];
                     var cslbValidationResults = cslbResult.messages;
                     if(cslbValidationResults.length > 0) {
-                        errors.push(cslbValidationResults.join("<BR>"));
+                        cslbErrors.push(cslbValidationResults.join("<BR>"));
                     }
                 }
             }
         }
-        if(errors.length > 0)  {
+        if(cslbErrors.length > 0)  {
             showMessage = true;
-            comment(errors.join("<br>"));
-            comment("If you feel that this has been flagged incorrectly, please email the City of San Leandro for further instructions ETPermits@SanLeandr.org");
-            aa.print(errors.join("\n"));
+            comment(cslbErrors.join("<br>"));
+            comment("If you feel that this has been flagged incorrectly, please email the City of San Leandro for further instructions ETPermits@SanLeandro.org");
+            cancel = true;
+        }
+        if(hdlErrors.length > 0) {
+            showMessage = true;
+            comment(hdlErrors.join("<br>"));
+            comment("If you need further assistance, you are welcome to contact us at sanleandro@hdlgov.com or by phone at (510) 809-3133.")
             cancel = true;
         }
     }
+
+    aa.print(message);
 
 } catch (err) {
     logDebug(err);
