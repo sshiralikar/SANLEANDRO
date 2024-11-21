@@ -7881,7 +7881,10 @@ function fetchCSLBData(licNum) {
             value = String(value).replace(/&amp;/g, "&");
         }
         if(tag == "PhoneNumber") {
-            value = String(value).replace(/[^\d]/g, "");
+            var tempPhone = String(value).replace(/[^\d]/g, "");
+			var formattedPhone = tempPhone.substring(0, 3) + "-" + tempPhone.substring(3, 6) + "-" + tempPhone.substring(6, tempPhone.length);
+			logDebug("Formatted phone number: " + formattedPhone);
+			value = formattedPhone;
         }
         if(value) {
             cslbObj[tag] = value;
@@ -7952,11 +7955,11 @@ function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, bus
 
     var scriptDate = null;
 
-    var licIssueDate = cslbData["IssueDate"];
-    if(licIssueDate) {
-        scriptDate = aa.date.parseDate(licIssueDate);
-        newLic.setLicenseIssueDate(scriptDate);
-    }
+    // var licIssueDate = cslbData["IssueDate"];
+    // if(licIssueDate) {
+    //     scriptDate = aa.date.parseDate(licIssueDate);
+    //     newLic.setLicenseIssueDate(scriptDate);
+    // }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
@@ -8112,11 +8115,11 @@ function syncReferenceLPWithCSLBData(licenseNumber, cslbData) {
 
     var scriptDate = null;
 
-    var licIssueDate = cslbData["IssueDate"];
-    if(licIssueDate) {
-        scriptDate = aa.date.parseDate(licIssueDate);
-        refLp.setLicenseIssueDate(scriptDate);
-    }
+    // var licIssueDate = cslbData["IssueDate"];
+    // if(licIssueDate) {
+    //     scriptDate = aa.date.parseDate(licIssueDate);
+    //     refLp.setLicenseIssueDate(scriptDate);
+    // }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
@@ -8509,4 +8512,515 @@ function syncTransactionalLPToReferenceLP(transLicNum, transObj) {
         logDebug("Successfully updated reference LP " + transLicNum);
     }
     return refObj;
+}
+
+function updateLPAttribute(licNum, attributeField, attributeValue) {
+    var refLp = grabReferenceLicenseProfessional(licNum);
+    if(!refLp) {
+        logDebug("Reference lp does not exist " + licNum + " can't update");
+        return false;
+    }
+
+    var attributes = refLp.attributes;
+    if(attributes) {
+        var keySet = attributes.keySet().toArray();
+        for(var i in keySet) {
+            var key = keySet[i];
+            var peopleAttributeModel = attributes.get(key);
+            var iterator = peopleAttributeModel.iterator();
+            while(iterator.hasNext()) {
+                var attributeObj = iterator.next();
+                var attrLabel = attributeObj.attributeLabel;
+                if(attrLabel == attributeField) {
+                    logDebug("Setting " + attrLabel + " to " + attributeValue);
+                    attributeObj.setAttributeValue(attributeValue);
+                }
+            }
+        }
+    }
+    var updateResult = aa.licenseScript.editRefLicenseProf(refLp);
+    if (updateResult.getSuccess()) {
+        logDebug("Updated attribute");
+        return true;
+    } else {
+        logDebug("Unable to update attribute on LP " + updateResult.getErrorType() + " : " + updateResult.getErrorMessage());
+        return false;
+    }
+}
+
+function getLPAttribute(licNum, attributeField) {
+    var refLp = grabReferenceLicenseProfessional(licNum);
+    if(!refLp) {
+        logDebug("Reference lp does not exist " + licNum + " can't update");
+        return false;
+    }
+
+    var attributes = refLp.attributes;
+    if(attributes) {
+        var keySet = attributes.keySet().toArray();
+        for(var i in keySet) {
+            var key = keySet[i];
+            var peopleAttributeModel = attributes.get(key);
+            var iterator = peopleAttributeModel.iterator();
+            while(iterator.hasNext()) {
+                var attributeObj = iterator.next();
+                var attrLabel = attributeObj.attributeLabel;
+                if(attrLabel == attributeField) {
+                    var attributeValue = attributeObj.getAttributeValue();
+                    logDebug(attrLabel + " : " + attributeValue);
+                    return attributeValue;
+                }
+            }
+        }
+    }
+}
+
+//PINS
+function getInsuredRecords(insuredId, authObj) {
+    if(!authObj) {
+        logDebug("Unable to validate PINS record");
+        return false;
+    }
+
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var insuredRecordsRoute = lookup(standardChoice, "GET_INSURED_RECORDS");
+    insuredRecordsRoute = insuredRecordsRoute.replace("{insured_id}", insuredId);
+    var apiUrl = endpoint + insuredRecordsRoute;
+    logDebug(apiUrl);
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
+
+    try {
+        var request = aa.httpClient.get(apiUrl, header);
+        var response = request.getOutput();
+        // logDebug(response);
+        var responseData = JSON.parse(response);
+        var insuredRecordList = responseData.data;
+        return insuredRecordList;
+    } catch (err) {
+        logDebug(err + " " + err.lineNumber);
+    }
+    return [];
+}
+
+function validateInsured(insuredId, templateName, authObj) {
+    if(!authObj) {
+        logDebug("Unable to validate PINS record");
+        return false;
+    }
+
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var recordRoute = lookup(standardChoice, "GET_RECORDS");
+
+    var apiUrl = endpoint + recordRoute + "?insured_id=" + insuredId;
+    logDebug(apiUrl)
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
+
+    try {
+        var request = aa.httpClient.get(apiUrl, header);
+        var response = request.getOutput();
+        // logDebug(response);
+        var responseData = JSON.parse(response);
+        var insuredData = responseData.data;
+        logDebug("Records: " + insuredData.length);
+        for(var dataIndex in insuredData) {
+            var dataObj = insuredData[dataIndex];
+            var insuredTemplate = dataObj.contract_number;
+            var insuredTemplateStatus = dataObj.status;
+            if(insuredTemplate == templateName) {
+                var result = insuredTemplateStatus == "approved" ? true : false;
+                return result;
+            }
+        }
+    } catch (err) {
+        logDebug(err + " " + err.lineNumber);
+    }
+    return false;
+}
+
+function getPINSAuthObject() {
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var authRoute = lookup(standardChoice, "GET_AUTH");
+    var clientId = lookup(standardChoice, "CLIENT_ID");
+    var clientSecret = lookup(standardChoice, "CLIENT_SECRET");
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+
+    var apiURL = endpoint + authRoute;
+    logDebug(apiURL);
+
+    var body = {
+        "client_id": clientId,
+        "client_secret": clientSecret,
+        "grant_type": "client_credentials"
+    }
+
+    var response = aa.httpClient.post(apiURL, header, JSON.stringify(body));
+
+    if(response.getSuccess()) {
+        return JSON.parse(response.getOutput());
+    } else {
+        logDebug("Failed to get auth token from PINS " + response.getErrorType() + " " + response.getErrorMessage());
+        return false;
+    }
+}
+
+function getPINSTemplates(authObj) {
+    if(!authObj) {
+        logDebug("Unable to get PINS Templates");
+        return false;
+    }
+
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var templateRoute = lookup(standardChoice, "GET_TEMPLATES");
+
+    var apiUrl = endpoint + templateRoute;
+    logDebug(apiUrl);
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
+
+    var response = aa.httpClient.get(apiUrl, header);
+    /*
+        {
+            current_page: 1
+            has_more: false
+            last_page: 1
+            per_page: 25
+            next_page_url: null
+            path: https://portal.pinsadvantage.com/api/v1.0/requirement-templates
+            previous_page_url: null
+            total: 5
+            data: [{}, {}, ...]
+        }
+    */
+    if(response.getSuccess()) {
+        //TODO: incorporate refetching until all templates are aquired
+        var responseData = JSON.parse(response.getOutput());
+        return responseData.data;
+    } else {
+        logDebug("Failed to get auth token from PINS " + response.getErrorType() + " " + response.getErrorMessage());
+        return false;
+    }
+}
+
+function getPINSTemplateRequirements(itemCap, authObj) {
+
+    if(!itemCap) {
+        logDebug("No record provided to get template requirements");
+        return false;
+    }
+
+    var recordCap = aa.cap.getCap(itemCap).getOutput();
+    if(!recordCap) {
+        logDebug("Unable to get record type");
+        return false;
+    }
+
+    var recordType = String(recordCap.getCapType());
+    var standardChoice = "PINS_TEMPLATE_MAPPING";
+
+    var pinsRequiredTemplate = lookup(standardChoice, recordType);
+    if(!pinsRequiredTemplate) {
+        logDebug(recordType + " does not have required PINS template");
+        return false;
+    }
+
+    logDebug(recordType + " requires " + pinsRequiredTemplate);
+
+    var templates = getPINSTemplates(authObj);
+    for(var templateIndex in templates) {
+        var template = templates[templateIndex];
+        var templateName = template["name"];
+        var templateId = template["id"];
+        if(templateName == pinsRequiredTemplate) {
+            logDebug("Found template ID: " + templateId);
+            return {
+                id: String(templateId),
+                name: String(templateName)
+            };
+        }
+    }
+    return false;
+}
+
+function createPINSInsured(name, email, contactName, address, city, state, country, zipcode, description, businessType, externalId, authObj) {
+    if(!authObj) {
+        logDebug("Unable to create PINS Insured");
+        return false;
+    }
+
+    // props(arguments);
+
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var templateRoute = lookup(standardChoice, "POST_INSURED");
+
+    var apiUrl = endpoint + templateRoute;
+    logDebug(apiUrl);
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
+
+    var body = {
+        name: String(name),
+        email: String(email),
+        "contact_name": String(contactName),
+        address: String(address),
+        city: String(city),
+        state: String(state),
+        country: String(country),
+        zipcode: String(zipcode),
+        description: String(description),
+        "business_type": String(businessType),
+        "external_id": String(externalId),
+        "notes": "Created via Accela"
+    }
+
+    // return;
+
+    var response = aa.httpClient.post(apiUrl, header, JSON.stringify(body));
+    logDebug(response.getOutput());
+    if(response.getSuccess()) {
+        /*
+            {
+                "company_id": 33626,
+                "name": "Sal's Test",
+                "external_id": "1000002",
+                "created_at": "2024-05-06T20:18:44.000000Z",
+                "contact_name": "Sal Guerrero",
+                "email": "sal@grayquarter.com",
+                "cc": "",
+                "country": "US",
+                "address": "123 Test Street",
+                "city": "San Leandro",
+                "state": "CA",
+                "description": "Contractor",
+                "business_type": "Contractor",
+                "notes": "Created via API",
+                "id": 311450
+            }
+        */
+        var responseData = JSON.parse(response.getOutput());
+        return responseData;
+    } else {
+        logDebug("Failed to get auth token from PINS " + response.getErrorType() + " " + response.getErrorMessage());
+        return false;
+    }
+}
+
+function createPINSRecord(insuredId, description, requirementTemplateId, recordNumber, authObj) {
+    if(!authObj) {
+        logDebug("Unable to create PINS Insured");
+        return false;
+    }
+
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var projectId = lookup(standardChoice, "PROJECT_ID");
+    var watcherId = lookup(standardChoice, "WATCHER_ID");
+
+    //v1.0/insureds/{insured_id}/projects/{project_id}/records
+    // var recordRoute = lookup(standardChoice, "POST_RECORD");
+    recordRoute = lookup(standardChoice, "GET_RECORDS");
+
+    // recordRoute = recordRoute.replace("{insured_id}", insuredId);
+    // recordRoute = recordRoute.replace("{project_id}", projectId);
+
+    var apiUrl = endpoint + recordRoute;
+    logDebug(apiUrl);
+
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
+
+    var body = {
+        "insured_id": String(insuredId),
+        "project_id": String(projectId),
+        description: String(description),
+        "requirement_template_id": String(requirementTemplateId),
+        "contract_number": String(recordNumber),
+        "watcher_id": String(watcherId)
+    }
+    logDebug(apiUrl);
+    var response = aa.httpClient.post(apiUrl, header, JSON.stringify(body));
+    logDebug(response.getOutput());
+    if(response.getSuccess()) {
+        logDebug("Successfully created record for " + recordNumber);
+        var responseData = JSON.parse(response.getOutput());
+        return responseData.data;
+    } else {
+        logDebug("Failed to get auth token from PINS " + response.getErrorType() + " " + response.getErrorMessage());
+        return false;
+    }
+}
+
+function validateFromCSLB(licNum, itemCap, recordType) {
+
+    var expiredLPs = [];
+    var checkDate = new Date();
+
+    // Build array of LPs to check
+    var workArray = new Array();
+    if (licNum) {
+        workArray.push(String(licNum));
+    }
+    var rlpType = "Contractor";
+    if (itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return false;
+        }
+
+        if (capLicenseArr == null || !capLicenseArr.length) {
+            logDebug("**WARNING: no licensed professionals on this CAP");
+        } else {
+            for (var thisLic in capLicenseArr)
+                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
+                    workArray.push(capLicenseArr[thisLic]);
+        }
+    }
+
+    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
+        var licNum = workArray[thisLic];
+        var licObj = null;
+
+        if (typeof licNum == "object") {
+            // is this one an object or string?
+            licObj = licNum;
+            licNum = licObj.getLicenseNbr();
+
+        }
+
+        // Make the call to the California State License Board
+
+        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+        var method = "http://CSLB.Ca.gov/GetLicense";
+        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+        //var licNum = "9";
+        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+        if (!token || token == "") {
+            logDebug("GRAYQUARTER CSLB TOKEN not configured");
+            return false;
+        }
+
+        xmlout = xmlout.replace("%%LICNUM%%", licNum);
+        xmlout = xmlout.replace("%%TOKEN%%", token);
+
+        var headers = aa.util.newHashMap();
+        headers.put("Content-Type", "text/xml");
+        headers.put("SOAPAction", method);
+
+        var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+
+        // check the results
+        var result;
+        var isError = false;
+        if (!res.getSuccess()) {
+            logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+            continue;
+        }
+        result = String(res.getOutput());
+        aa.print(result);
+
+        var lpStatus = XMLTagValue(result, "Status");
+        var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
+        var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
+        logDebug(licUrl + " status from CSLB: " + lpStatus);
+
+        if(!lpStatus || lpStatus == "") {
+            logDebug("CSLB did not return an LP Status for " + licNum);
+            continue;
+        }
+
+        if (lpStatus && lpStatus != "CLEAR") {
+            //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
+            logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
+            expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
+
+        }
+
+        var ExpirationDate = XMLTagValue(result, "ExpirationDate");
+        if (ExpirationDate) {
+            var cslbExpDate = new Date(ExpirationDate);
+            if(cslbExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
+            }
+        }
+
+        var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
+        if (PolicyExpirationDate) {
+            var workersCompExpDate = new Date(PolicyExpirationDate);
+            if(workersCompExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
+            }
+        }
+
+        // var BondExpirationDate = XMLTagValue(result, "BondEffectiveDate");
+        // if(BondExpirationDate) {
+        //     var bondExpDate = new Date(BondExpirationDate);
+        //     if(bondExpDate <= checkDate) {
+        //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
+        //     }
+        // }
+
+        var classErrors = [];
+        if(!recordType) {
+            var recordCap = aa.cap.getCapID(itemCap).getOutput();
+            if(recordCap) {
+                recordType = String(recordCap.getCapType());
+            }
+        }
+        var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
+        if(validClasses) {
+            logDebug(recordType + " not configured so any LP goes");
+            var classTypeMap = {};
+            validClasses = validClasses.split(",");
+            for(var validClassIndex in validClasses) {
+                var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+                if(!classTypeMap[stdClass]) {
+                    classTypeMap[stdClass] = true;
+                }
+            }
+
+            var Classifications = XMLTagValue(result, "Classifications");
+            var ClassificationList = Classifications.split("|");
+
+            for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
+                logDebug(classification);
+                if(classTypeMap[classification]) {
+                    classErrors = [];
+                    break;
+                }
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
+            }
+        }
+        if(classErrors.length > 0) {
+            logDebug("Adding: " + classErrors.length + " to errored list");
+            logDebug("Prior error list length: " + expiredLPs.length);
+            expiredLPs = expiredLPs.concat(classErrors);
+            logDebug("New error list length: " + expiredLPs.length);
+        }
+    } // for each license
+    return expiredLPs;
 }
