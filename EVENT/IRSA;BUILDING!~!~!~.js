@@ -248,7 +248,7 @@ catch(err)
 if((inspType == "2050 Electrical Service Release" || inspType == "2050 Residential Electrical Service") && inspResult == "Pass") {
     try
     {
-        var flag = true;
+        var flag = false;
         var params = aa.util.newHashtable();
         var applicantEmail = "";
         var conName = "";
