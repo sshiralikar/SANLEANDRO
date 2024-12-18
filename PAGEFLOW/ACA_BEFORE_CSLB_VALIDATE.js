@@ -65,7 +65,7 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 }
 
 //TESTING
-// var testingCap = aa.cap.getCapID("ESTREET-24-0014").getOutput();
+// var testingCap = aa.cap.getCapID("24TMP-000419").getOutput();
 // var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
 // var capTest = aa.env.setValue("CapModel", capModel);
 // aa.env.setValue("CurrentUserID", "ADMIN");
@@ -156,6 +156,21 @@ try {
         var cslbErrors = [];
         var hdlErrors = [];
         logDebug("LPS total: " + lpList.length);
+
+        var classificationRequirements = lookup("ENG_CONTRACTOR_CLASS_REC_TYPES", appTypeString);
+        aa.print("Classifications required: " + classificationRequirements);
+        if(classificationRequirements) {
+            var classTypeMap = {};
+            validClasses = classificationRequirements.split(",");
+            for(var validClassIndex in validClasses) {
+                var stdClass = String(validClasses[validClassIndex]).toUpperCase().trim();
+                if(!classTypeMap[stdClass]) {
+                    classTypeMap[stdClass] = true;
+                }
+            }
+        }
+        var foundCorrectClassification = false;
+
         for(var lpIndex in lpList) {
             var lpObj = lpList[lpIndex];
             var licType = lpObj.licenseType;
@@ -206,12 +221,33 @@ try {
                     continue;
                 }
                 var cslbResults = validateLPWithCSLB(licNum, null, true, true, false, true, appTypeString);
+                var classErrors = [];
                 for(var i in cslbResults) {
                     var cslbResult = cslbResults[i];
+                    if(classificationRequirements && !foundCorrectClassification) {
+                        var cslbData = cslbResult.cslbData;
+                        classificationList = cslbData.Classifications;
+                        for (var classificationIndex = 0; classificationIndex < classificationList.length; classificationIndex++) {
+                            var classification = String(classificationList[classificationIndex]).toUpperCase().trim();
+                            aa.print(classification);
+                            if(classTypeMap[classification]) {
+                                foundCorrectClassification = true;
+                                classErrors = [];
+                                break;
+                            }
+                        }
+                        if(!foundCorrectClassification) {
+                            classErrors.push("License Professional: " + licNum + " is not valid, " + appTypeString + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + classificationList.join(", ") + ".");
+                        }
+                    }
                     var cslbValidationResults = cslbResult.messages;
                     if(cslbValidationResults.length > 0) {
                         cslbErrors.push(cslbValidationResults.join("<BR>"));
                     }
+                }
+                if(classErrors.length > 0) {
+                    logDebug("Adding: " + classErrors.length + " to errored list");
+                    cslbErrors.push(classErrors.join("<BR>"));
                 }
             }
         }
