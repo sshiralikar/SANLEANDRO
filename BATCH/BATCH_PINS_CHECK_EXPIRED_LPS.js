@@ -215,6 +215,14 @@ function sendNotificationNoCap(emailFrom,emailTo,emailCC,templateName,params,rep
 
 function getIssuedEngineeringRecords() {
     var recordList = [];
+    var validPINSLPS = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
+    var validLPS = [];
+    for(var lpType in validPINSLPS) {
+        var value = validPINSLPS[lpType];
+        if(value == "true") {
+            validLPS.push("'" + lpType + "'");
+        }
+    }
     var sql = "SELECT DISTINCT \
         RLP.LIC_NBR, \
         RLP.BUS_NAME, \
@@ -229,7 +237,7 @@ function getIssuedEngineeringRecords() {
     FROM RSTATE_LIC RLP \
     JOIN G3CONTACT_ATTRIBUTE RLP_ASI \
         ON RLP_ASI.G1_CONTACT_NBR = RLP.LIC_SEQ_NBR \
-        AND RLP_ASI.G1_ATTRIBUTE_NAME = 'PINS Reference ID' \
+        AND UPPER(RLP_ASI.G1_ATTRIBUTE_NAME) = UPPER('PINS Reference ID') \
     JOIN B3CONTRA TLP \
         ON TLP.B1_LICENSE_NBR = RLP.LIC_NBR \
         AND TLP.B1_LICENSE_TYPE = RLP.LIC_TYPE \
@@ -248,7 +256,7 @@ function getIssuedEngineeringRecords() {
     AND RLP.SERV_PROV_CODE='" + aa.getServiceProviderCode() + "' \
     AND P.B1_APPL_STATUS = 'Issued' \
     AND P.B1_PER_GROUP = 'Engineering' \
-    AND TLP.B1_LICENSE_TYPE = 'Contractor' \
+    AND TLP.B1_LICENSE_TYPE IN (" + validLPS.join(", ") + ") \
     AND P.REC_STATUS = 'A' \
     AND RLP.REC_STATUS = 'A' \
     AND RLP_ASI.G1_ATTRIBUTE_VALUE IS NOT NULL";

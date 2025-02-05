@@ -19,6 +19,36 @@ if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" |
 			}
 		}
 	}
+	if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" || wfStatus == "In Progress")) {
+		var appExpDate = new Date();
+		var newAppExpDate = new Date(appExpDate);
+		newAppExpDate.setDate(newAppExpDate.getDate() + 90);
+		var appExpDateString = (newAppExpDate.getMonth() + 1) + "/" + newAppExpDate.getDate() + "/" + newAppExpDate.getFullYear();
+		var expDate = getAppSpecific("Application Expiration Date");
+		if (expDate == null) {
+			editAppSpecific("Application Expiration Date", appExpDateString);
+		}
+	}
+	//CASANLAN - 2942 - Add Customer Number for Utility Permits
+	if (appMatch("*/Utility/*/*")) {
+		profArry = new Array();
+		profArry = aa.licenseProfessional.getLicenseProf(capId).getOutput();
+		vCustNo="";
+		for (x in profArry) {
+			var LP = profArry[x];
+			//vLPName = profArry[x]["businessName"];
+			vLP = LP.getLicenseNbr();
+			if (LP.getPrintFlag() == "Y")	{
+				var vCustNo = lookup("ENG_UTILITY_CUST_NOS", vLP);
+				if (vCustNo != 'undefined' && vCustNo != null && vCustNo != "") {
+					editAppSpecific("Customer Number", vCustNo);
+					logDebug("Primary: "+vLP+" Customer Number Set: "+vCustNo);
+				}
+				break;
+			}
+		}
+	}
+
 }
 
 //CASANLAN - 2931
@@ -89,14 +119,14 @@ if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required"){
 }
 
 //CASANLAN - 2942
-if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
-   sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_REVISIONS_REQUIRED", params, null, capId);
-}
+//if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
+ //  sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_REVISIONS_REQUIRED", params, null, capId);
+//}
 
 //CASANLAN - 2933
-//if(wfTask == "Traffic Review" && wfStatus == "Revisions Required"){
-   //sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_TRAFFIC_RESUBMITTAL_REQUIRED", params, null, capId);
-// }
+if(wfTask == "Traffic Review" && wfStatus == "Revisions/Resubmittal Required"){
+   sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_TRAFFIC_RESUBMITTAL_REQUIRED", params, null, capId);
+}
 //Only for Revisions
 if (appMatch("*/Revision/*/*")) {
 	if (wfTask == "Plans Coordination" && wfStatus == "Update Revision") {
@@ -117,7 +147,7 @@ if(wfTask == "Permit Issuance" && wfStatus == "Issue"){
 	}
 }
 
-//CASANLAN - ????
+//CASANLAN - 2942
 if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
     sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PLANS_COORDINATION_RESUBMITTAL_REQUIRED", params, null, capId);
 }
@@ -201,25 +231,26 @@ if(wfTask == "Final Processing" && wfStatus == "Finaled"){
 }
 
 //CASANLAN - 2960
-if(wfTask == "Plans Coordination" && wfStatus == "Fees Paid"){
+//if(wfTask == "Plans Coordination" && wfStatus == "Fees Paid"){
 
 // get assigned user on record
-capDetail = aa.cap.getCapDetail(capId).getOutput();
+//capDetail = aa.cap.getCapDetail(capId).getOutput();
 
-userObj = aa.person.getUser(capDetail.getAsgnStaff());
+//userObj = aa.person.getUser(capDetail.getAsgnStaff());
 
-if (userObj.getSuccess()) {
-    staff = userObj.getOutput();
-    userID = staff.getUserID();
-    var userObj = aa.person.getUser(userID);
-    if (userObj.getSuccess()) {
-		var userInfo = userObj.getOutput();
-        userEmail = userInfo.getEmail()+"";
-        logDebug("userEmail: " + userEmail)
-    }
-}
-    sendEmail("no-reply@sanleandro.org", userEmail, "", "ENG_PERMIT_ISSUE", params, null, capId);
-}
+//if (userObj.getSuccess()) {
+//    staff = userObj.getOutput();
+//    userID = staff.getUserID();
+//    var userObj = aa.person.getUser(userID);
+//    if (userObj.getSuccess()) {
+//		var userInfo = userObj.getOutput();
+//        userEmail = userInfo.getEmail()+"";
+//        logDebug("userEmail: " + userEmail)
+
+//    }
+//}
+//   sendEmail("no-reply@sanleandro.org", userEmail, "", "ENG_PERMIT_ISSUE", params, null, capId);
+//}
 //showDebug = true;
 /*
 START SHASHANK
@@ -563,27 +594,44 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
         var pinIDsToCheck = [];
         var pinsAuth = getPINSAuthObject();
         var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
+        var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
         for(var i in professionals) {
             var lp = professionals[i];
+            var lpType = lp.licenseType;
+            if(validPINSLPMap[lpType] != "true") {
+               continue;
+            }
             var licNum = lp.licenseNbr;
             var pinsId = getLPAttribute(licNum, "PINS Reference ID");
+            logDebug("Checking PINS reference on " + licNum + " " + lpType);
             logDebug(pinsId);
             if(pinsId) {
                 logDebug("Already created in PINS");
                 pinIDsToCheck.push(pinsId);
                 continue;
             }
-            logDebug(licNum + " missing in PINS");
+
+            pinsId = searchPINSIDByRefLPSeq(licSeqNumber, pinsAuth);
+            if(pinsId) {
+                logDebug("Found PINS insured " + pinsId);
+                updateLPAttribute(licNum, "PINS Reference ID", pinsId);
+                pinIDsToCheck.push(pinsId);
+                continue;
+            }
+
             var refLp = grabReferenceLicenseProfessional(licNum);
             var licSeqNumber = refLp.licSeqNbr;
+
+            logDebug(licNum + " missing in PINS");
             var lpName = refLp.businessName;
-            var lpEmail = refLp.EMailAddress;
-            var lpAddress = refLp.address1;
-            var lpCity = refLp.city;
-            var lpState = refLp.licState;
+            var lpEmail = refLp.EMailAddress ? refLp.EMailAddress : "";
+            var lpAddress = refLp.address1 ? refLp.address1 : "";
+            var lpCity = refLp.city ? refLp.city : "";
+            var lpState = refLp.licState ? refLp.licState : "";
             var lpCountry = "US";
-            var lpZip = refLp.zip;
-            var insuredObj = createPINSInsured(lpName, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, "Contractor", "Contractor", licNum, pinsAuth);
+            var lpZip = refLp.zip ? refLp.zip : "";;
+            var description = ["License Number: " + licNum, "License Type: " + lpType];
+            var insuredObj = createPINSInsured(lpName, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
                 updateLPAttribute(licNum, "PINS Reference ID", insuredObj.id);
                 createPINSRecord(insuredObj.id, "", templateRequirementsObj.id, templateRequirementsObj.name, pinsAuth);

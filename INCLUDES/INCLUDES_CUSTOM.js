@@ -7955,11 +7955,11 @@ function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, bus
 
     var scriptDate = null;
 
-    // var licIssueDate = cslbData["IssueDate"];
-    // if(licIssueDate) {
-    //     scriptDate = aa.date.parseDate(licIssueDate);
-    //     newLic.setLicenseIssueDate(scriptDate);
-    // }
+    var licIssueDate = cslbData["IssueDate"];
+    if(licIssueDate) {
+        scriptDate = aa.date.parseDate(licIssueDate);
+        newLic.setLicenseIssueDate(scriptDate);
+    }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
@@ -8115,11 +8115,11 @@ function syncReferenceLPWithCSLBData(licenseNumber, cslbData) {
 
     var scriptDate = null;
 
-    // var licIssueDate = cslbData["IssueDate"];
-    // if(licIssueDate) {
-    //     scriptDate = aa.date.parseDate(licIssueDate);
-    //     refLp.setLicenseIssueDate(scriptDate);
-    // }
+    var licIssueDate = cslbData["IssueDate"];
+    if(licIssueDate) {
+        scriptDate = aa.date.parseDate(licIssueDate);
+        refLp.setLicenseIssueDate(scriptDate);
+    }
     var licExpDate = cslbData["ExpirationDate"];
     if(licExpDate) {
         scriptDate = aa.date.parseDate(licExpDate);
@@ -8514,6 +8514,169 @@ function syncTransactionalLPToReferenceLP(transLicNum, transObj) {
     return refObj;
 }
 
+function getPavementConditionIndex(x, y) {
+    var url = "https://services.arcgis.com/nFaSPZoTjS78xXjw/ArcGIS/rest/services/PavementConditionIndex/FeatureServer/0/query";
+
+    var queryParams = {
+        f: 'json',
+        where: '',
+        geometry: JSON.stringify({
+            x: x,
+            y: y,
+            spatialReference: { wkid: 4326 }
+        }),
+        geometryType: 'esriGeometryPoint',
+        spatialRel: 'esriSpatialRelIntersects',
+        distance: 100,
+        units: 'esriSRUnit_Foot',
+        returnGeometry: false,
+        returnCentroid: false,
+        returnIdsOnly: false,
+        returnUniqueIdsOnly: false,
+        returnCountOnly: false,
+        returnExtentOnly: false,
+        returnQueryGeometry: false,
+        returnDistinctValues: false,
+        cacheHint: false,
+        outFields: '*',
+        maxAllowableOffset: '',
+        featureEncoding: 'esriDefault',
+        multipatchOption: 'xyFootprint'
+    };
+
+    // Construct the query string manually
+    var queryString = Object.keys(queryParams)
+        .map(function(key){
+            return "" +encodeURIComponent(key) +"=" + encodeURIComponent(queryParams[key])
+        })
+        .join('&');
+
+    aa.print(queryString);
+    try {
+        var header = aa.httpClient.initPostParameters();
+        header.put("Content-Type", "application/json");
+
+        var searchURL = url + "?" + queryString;
+        aa.print(searchURL);
+        var response = aa.httpClient.get(searchURL, header);
+        if(response.getSuccess()) {
+            var output = JSON.parse(String(response.getOutput()));
+            // explore(output)
+            var data = output.features;
+            return data;
+        }
+    } catch (error) {
+        logDebug('Error fetching PCI attribute:', error);
+        return null;
+    }
+}
+
+
+//HDL
+function getHDLLicenseInformation(businessLicenseNum) {
+    var passwordEncoded = getHDLPassword();
+
+    if(!passwordEncoded) {
+        logDebug("API call failed");
+        return false;
+    }
+
+    var standardChoiceBase = "HDL_INTERFACE";
+    var baseEndpoint = lookup(standardChoiceBase, "BASE_ENDPOINT");
+    var accountSearchRoute = lookup(standardChoiceBase, "POST_LICENSE_NUMBER_ROUTE");
+
+    var endpoint = baseEndpoint + accountSearchRoute + businessLicenseNum;
+    var headers = aa.httpClient.initPostParameters();
+    headers.put("Authorization", "Basic " + passwordEncoded);
+    var response = aa.httpClient.get(endpoint, headers);
+    /*
+        {
+            "dba": "AJW CONSTRUCTION",
+            "corporateName": "",
+            "locationAddressLine1": "966 81ST AVE",
+            "locationAddressLine2": "OAKLAND, CA 94621-2512",
+            "mailingAddressLine1": "966 81ST AVE",
+            "mailingAddressLine2": "OAKLAND, CA 94621-2512",
+            "businessStatus": "Closed",
+            "licenseStatus": "Closed",
+            "accountNumber": "04504265",
+            "licenseNumber": "22771",
+            "phone1": "(123) 456-7890",
+            "phone2": "",
+            "phone3": "",
+            "fax": "",
+            "startDate": "2000-07-11T00:00:00",
+            "closeDate": "2023-12-31T00:00:00",
+            "ownershipType": "Corporation",
+            "currentExpireDate": "2023-12-31T00:00:00",
+            "rates": [
+                "Contractor"
+            ],
+            "successMessage": "Successfully executed API!",
+            "errorMessage": null
+        }
+    */
+    var data = response.getOutput();
+    if(!data) {
+        return false;
+    }
+    logDebug("Data: " + data);
+    if(String(data).trim().length == 0) {
+        logDebug("No data returned from API");
+        return false;
+    }
+    try {
+        var jsonData = JSON.parse(data);
+        return jsonData;
+    } catch (err) {
+        logDebug("Error parsing HDL data " + err);
+    }
+    return false;
+}
+
+function getHDLPassword() {
+
+    var standardChoiceBase = "HDL_INTERFACE";
+    var hdlEncodedPassword = "";
+
+    var baseEndpoint = lookup(standardChoiceBase, "BASE_ENDPOINT");
+    var apiKey = lookup(standardChoiceBase, "API_KEY");
+    var apiPassword = lookup(standardChoiceBase, "API_PASSWORD");
+
+    var pingRoute = lookup(standardChoiceBase, "GET_PING_ROUTE");
+    var response = aa.httpClient.get(baseEndpoint + pingRoute);
+    var responseOutput = response.getOutput();
+    if(!responseOutput) {
+        logDebug("HDL Interface is down");
+        return;
+    }
+
+    var ipRoute = lookup(standardChoiceBase, "GET_IP_ROUTE");
+    var accelaBizIp = "";
+    var response = aa.httpClient.get(baseEndpoint + ipRoute);
+    var responseOutput = response.getOutput();
+    if(!responseOutput) {
+        logDebug("HDL IP Route is down");
+        return;
+    }
+
+    try {
+        responseOutput = JSON.parse(responseOutput);
+        accelaBizIp = responseOutput[0];
+    } catch (err) {
+        logDebug("Error getting IP: " + err);
+    }
+    logDebug(accelaBizIp);
+
+    var base64Route = lookup(standardChoiceBase, "GET_BASE64_ROUTE");
+    var response = aa.httpClient.get(baseEndpoint + base64Route + apiKey + ":" + apiPassword);
+    var responseOutput = response.getOutput();
+    if(responseOutput) {
+        hdlEncodedPassword = JSON.parse(responseOutput)[0];
+    }
+    return hdlEncodedPassword;
+}
+
 function updateLPAttribute(licNum, attributeField, attributeValue) {
     var refLp = grabReferenceLicenseProfessional(licNum);
     if(!refLp) {
@@ -8530,8 +8693,8 @@ function updateLPAttribute(licNum, attributeField, attributeValue) {
             var iterator = peopleAttributeModel.iterator();
             while(iterator.hasNext()) {
                 var attributeObj = iterator.next();
-                var attrLabel = attributeObj.attributeLabel;
-                if(attrLabel == attributeField) {
+                var attrLabel = String(attributeObj.attributeName).toUpperCase();
+                if(attrLabel == String(attributeField).toUpperCase()) {
                     logDebug("Setting " + attrLabel + " to " + attributeValue);
                     attributeObj.setAttributeValue(attributeValue);
                 }
@@ -8564,8 +8727,8 @@ function getLPAttribute(licNum, attributeField) {
             var iterator = peopleAttributeModel.iterator();
             while(iterator.hasNext()) {
                 var attributeObj = iterator.next();
-                var attrLabel = attributeObj.attributeLabel;
-                if(attrLabel == attributeField) {
+                var attrLabel = String(attributeObj.attributeName).toUpperCase();
+                if(attrLabel == String(attributeField).toUpperCase()) {
                     var attributeValue = attributeObj.getAttributeValue();
                     logDebug(attrLabel + " : " + attributeValue);
                     return attributeValue;
@@ -8573,6 +8736,164 @@ function getLPAttribute(licNum, attributeField) {
             }
         }
     }
+}
+
+function validateFromCSLB(licNum, itemCap, recordType) {
+
+    var expiredLPs = [];
+    var checkDate = new Date();
+
+    // Build array of LPs to check
+    var workArray = new Array();
+    if (licNum) {
+        workArray.push(String(licNum));
+    }
+    var rlpType = "Contractor";
+    if (itemCap) {
+        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
+        if (capLicenseResult.getSuccess()) {
+            var capLicenseArr = capLicenseResult.getOutput();
+        } else {
+            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
+            return false;
+        }
+
+        if (capLicenseArr == null || !capLicenseArr.length) {
+            logDebug("**WARNING: no licensed professionals on this CAP");
+        } else {
+            for (var thisLic in capLicenseArr)
+                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
+                    workArray.push(capLicenseArr[thisLic]);
+        }
+    }
+
+    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
+        var licNum = workArray[thisLic];
+        var licObj = null;
+
+        if (typeof licNum == "object") {
+            // is this one an object or string?
+            licObj = licNum;
+            licNum = licObj.getLicenseNbr();
+
+        }
+
+        // Make the call to the California State License Board
+
+        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
+        var method = "http://CSLB.Ca.gov/GetLicense";
+        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
+        //var licNum = "9";
+        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
+
+        if (!token || token == "") {
+            logDebug("GRAYQUARTER CSLB TOKEN not configured");
+            return false;
+        }
+
+        xmlout = xmlout.replace("%%LICNUM%%", licNum);
+        xmlout = xmlout.replace("%%TOKEN%%", token);
+
+        var headers = aa.util.newHashMap();
+        headers.put("Content-Type", "text/xml");
+        headers.put("SOAPAction", method);
+
+        var res = aa.httpClient.post(endPoint, headers, xmlout);
+
+
+        // check the results
+        var result;
+        var isError = false;
+        if (!res.getSuccess()) {
+            logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+            continue;
+        }
+        result = String(res.getOutput());
+        aa.print(result);
+
+        var lpStatus = XMLTagValue(result, "Status");
+        var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
+        var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
+        logDebug(licUrl + " status from CSLB: " + lpStatus);
+
+        if(!lpStatus || lpStatus == "") {
+            logDebug("CSLB did not return an LP Status for " + licNum);
+            continue;
+        }
+
+        if (lpStatus && lpStatus != "CLEAR") {
+            //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
+            logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
+            expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
+
+        }
+
+        var ExpirationDate = XMLTagValue(result, "ExpirationDate");
+        if (ExpirationDate) {
+            var cslbExpDate = new Date(ExpirationDate);
+            if(cslbExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
+            }
+        }
+
+        var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
+        if (PolicyExpirationDate) {
+            var workersCompExpDate = new Date(PolicyExpirationDate);
+            if(workersCompExpDate <= checkDate) {
+
+                expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
+            }
+        }
+
+        // var BondExpirationDate = XMLTagValue(result, "BondEffectiveDate");
+        // if(BondExpirationDate) {
+        //     var bondExpDate = new Date(BondExpirationDate);
+        //     if(bondExpDate <= checkDate) {
+        //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
+        //     }
+        // }
+
+        var classErrors = [];
+        if(!recordType) {
+            var recordCap = aa.cap.getCapID(itemCap).getOutput();
+            if(recordCap) {
+                recordType = String(recordCap.getCapType());
+            }
+        }
+        var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
+        if(validClasses) {
+            logDebug(recordType + " not configured so any LP goes");
+            var classTypeMap = {};
+            validClasses = validClasses.split(",");
+            for(var validClassIndex in validClasses) {
+                var stdClass = String(validClasses[validClassIndex]).toUpperCase();
+                if(!classTypeMap[stdClass]) {
+                    classTypeMap[stdClass] = true;
+                }
+            }
+
+            var Classifications = XMLTagValue(result, "Classifications");
+            var ClassificationList = Classifications.split("|");
+
+            for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
+                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
+                logDebug(classification);
+                if(classTypeMap[classification]) {
+                    classErrors = [];
+                    break;
+                }
+                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
+            }
+        }
+        if(classErrors.length > 0) {
+            logDebug("Adding: " + classErrors.length + " to errored list");
+            logDebug("Prior error list length: " + expiredLPs.length);
+            expiredLPs = expiredLPs.concat(classErrors);
+            logDebug("New error list length: " + expiredLPs.length);
+        }
+    } // for each license
+    return expiredLPs;
 }
 
 //PINS
@@ -8867,160 +9188,64 @@ function createPINSRecord(insuredId, description, requirementTemplateId, recordN
     }
 }
 
-function validateFromCSLB(licNum, itemCap, recordType) {
+function searchPINSIDByRefLPSeq(refLPSeq, authObj) {
 
-    var expiredLPs = [];
-    var checkDate = new Date();
-
-    // Build array of LPs to check
-    var workArray = new Array();
-    if (licNum) {
-        workArray.push(String(licNum));
-    }
-    var rlpType = "Contractor";
-    if (itemCap) {
-        var capLicenseResult = aa.licenseScript.getLicenseProf(itemCap);
-        if (capLicenseResult.getSuccess()) {
-            var capLicenseArr = capLicenseResult.getOutput();
-        } else {
-            logDebug("**ERROR: getting lic prof: " + capLicenseResult.getErrorMessage());
-            return false;
-        }
-
-        if (capLicenseArr == null || !capLicenseArr.length) {
-            logDebug("**WARNING: no licensed professionals on this CAP");
-        } else {
-            for (var thisLic in capLicenseArr)
-                if (capLicenseArr[thisLic].getLicenseType() == rlpType)
-                    workArray.push(capLicenseArr[thisLic]);
-        }
+    if(!authObj) {
+        logDebug("Unable to validate PINS record");
+        return false;
     }
 
-    for (var thisLic = 0; thisLic < workArray.length; thisLic++) {
-        var licNum = workArray[thisLic];
-        var licObj = null;
+    var standardChoice = "PINS_INTERFACE";
+    var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
+    var insuredRecordsRoute = lookup(standardChoice, "GET_INSURED_SEARCH");
+    insuredRecordsRoute = insuredRecordsRoute.replace("{lic_seq}", refLPSeq);
+    var apiUrl = endpoint + insuredRecordsRoute;
+    logDebug(apiUrl);
 
-        if (typeof licNum == "object") {
-            // is this one an object or string?
-            licObj = licNum;
-            licNum = licObj.getLicenseNbr();
+    var header = aa.httpClient.initPostParameters();
+    header.put("Content-Type", "application/json");
+    header.put("Authorization", "Bearer " + authObj["access_token"]);
 
+    try {
+        var request = aa.httpClient.get(apiUrl, header);
+        var response = request.getOutput();
+        // logDebug(response);
+        var responseData = JSON.parse(response);
+        var insuredRecordList = responseData.data;
+        for(var insuredIndex in insuredRecordList) {
+            var insured = insuredRecordList[insuredIndex];
+            var externalId = insured["external_id"];
+            var pinsId = insured["id"];
+            if(externalId == licSeqNumber) {
+                return pinsId;
+            }
         }
+    } catch (err) {
+        logDebug(err + " " + err.lineNumber);
+    }
+    return false;
+}
 
-        // Make the call to the California State License Board
-
-        var endPoint = "https://www.cslb.ca.gov/onlineservices/DataPortalAPI/GetbyClassification.asmx";
-        var method = "http://CSLB.Ca.gov/GetLicense";
-        var xmlout = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cslb="http://CSLB.Ca.gov/"><soapenv:Header/><soapenv:Body><cslb:GetLicense><cslb:LicenseNumber>%%LICNUM%%</cslb:LicenseNumber><cslb:Token>%%TOKEN%%</cslb:Token></cslb:GetLicense></soapenv:Body></soapenv:Envelope>';
-        //var licNum = "9";
-        var token = lookup("GRAYQUARTER", "CSLB TOKEN");
-
-        if (!token || token == "") {
-            logDebug("GRAYQUARTER CSLB TOKEN not configured");
-            return false;
-        }
-
-        xmlout = xmlout.replace("%%LICNUM%%", licNum);
-        xmlout = xmlout.replace("%%TOKEN%%", token);
-
-        var headers = aa.util.newHashMap();
-        headers.put("Content-Type", "text/xml");
-        headers.put("SOAPAction", method);
-
-        var res = aa.httpClient.post(endPoint, headers, xmlout);
-
-
-        // check the results
-        var result;
-        var isError = false;
-        if (!res.getSuccess()) {
-            logDebug("CSLB call failed: " + res.getErrorMessage() + " " + res.getErrorType() + " for " + licNum);
+function loadStdChoiceObj(stdChoiceName) {
+    var stdChoiceObj = aa.bizDomain.getBizDomain(stdChoiceName).getOutput();
+    if(!stdChoiceObj) {
+        logDebug("Unable to load " + stdChoiceName);
+        return null;
+    }
+    var stdChoiceArray = stdChoiceObj.toArray();
+    var returnObj = {};
+    var activeCount = 0;
+    for(var i in stdChoiceArray) {
+        var stdChoice = stdChoiceArray[i];
+        var auditStatus = stdChoice.auditStatus;
+        if(auditStatus != "A") {
             continue;
         }
-        result = String(res.getOutput());
-        aa.print(result);
-
-        var lpStatus = XMLTagValue(result, "Status");
-        var webUrl = "License: <a target='_blank' href='https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=";
-        var licUrl = webUrl + licNum + "'>" + licNum + "</a>";
-        logDebug(licUrl + " status from CSLB: " + lpStatus);
-
-        if(!lpStatus || lpStatus == "") {
-            logDebug("CSLB did not return an LP Status for " + licNum);
-            continue;
-        }
-
-        if (lpStatus && lpStatus != "CLEAR") {
-            //returnMessage += webUrl + licNum + "'>License:" + licNum + "</a>
-            logDebug("Status not clear for " + licUrl + " status: " + lpStatus);
-            expiredLPs.push("Status not clear for " + licUrl + " status: " + lpStatus);
-
-        }
-
-        var ExpirationDate = XMLTagValue(result, "ExpirationDate");
-        if (ExpirationDate) {
-            var cslbExpDate = new Date(ExpirationDate);
-            if(cslbExpDate <= checkDate) {
-
-                expiredLPs.push(licUrl + " License date has expired in CSLB: " + ExpirationDate);
-            }
-        }
-
-        var PolicyExpirationDate = XMLTagValue(result, "PolicyExpirationDate");
-        if (PolicyExpirationDate) {
-            var workersCompExpDate = new Date(PolicyExpirationDate);
-            if(workersCompExpDate <= checkDate) {
-
-                expiredLPs.push(licUrl + " Workers Comp date has expired in CSLB: " + PolicyExpirationDate);
-            }
-        }
-
-        // var BondExpirationDate = XMLTagValue(result, "BondEffectiveDate");
-        // if(BondExpirationDate) {
-        //     var bondExpDate = new Date(BondExpirationDate);
-        //     if(bondExpDate <= checkDate) {
-        //         expiredLPs.push(licUrl + " Bond date has expired in CSLB: " + bondExpDate);
-        //     }
-        // }
-
-        var classErrors = [];
-        if(!recordType) {
-            var recordCap = aa.cap.getCapID(itemCap).getOutput();
-            if(recordCap) {
-                recordType = String(recordCap.getCapType());
-            }
-        }
-        var validClasses = lookup("CONTRACTOR_CLASS_REC_TYPES", recordType)
-        if(validClasses) {
-            logDebug(recordType + " not configured so any LP goes");
-            var classTypeMap = {};
-            validClasses = validClasses.split(",");
-            for(var validClassIndex in validClasses) {
-                var stdClass = String(validClasses[validClassIndex]).toUpperCase();
-                if(!classTypeMap[stdClass]) {
-                    classTypeMap[stdClass] = true;
-                }
-            }
-
-            var Classifications = XMLTagValue(result, "Classifications");
-            var ClassificationList = Classifications.split("|");
-
-            for (var classificationIndex = 0; classificationIndex < ClassificationList.length; classificationIndex++) {
-                var classification = String(ClassificationList[classificationIndex]).toUpperCase().trim();
-                logDebug(classification);
-                if(classTypeMap[classification]) {
-                    classErrors = [];
-                    break;
-                }
-                classErrors.push("License Professional: " + licNum + " is not valid, " + recordType + " requires at least one of following classifications: "  + validClasses.join(", ") + ". Found " + ClassificationList.join(", ") + ".");
-            }
-        }
-        if(classErrors.length > 0) {
-            logDebug("Adding: " + classErrors.length + " to errored list");
-            logDebug("Prior error list length: " + expiredLPs.length);
-            expiredLPs = expiredLPs.concat(classErrors);
-            logDebug("New error list length: " + expiredLPs.length);
-        }
-    } // for each license
-    return expiredLPs;
+        var stdChoiceKey = stdChoice.bizdomainValue;
+        var stdChoiceValue = stdChoice.description;
+        returnObj[stdChoiceKey] = String(stdChoiceValue);
+        activeCount++;
+    }
+    logDebug("Loaded " + activeCount + " std choice values from " + stdChoiceName);
+    return returnObj;
 }

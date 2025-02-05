@@ -179,18 +179,32 @@ try {
             // logDebug(licNum + " : " + licType);
 
             var businessLicense = lpObj.businessLicense;
-            if(businessLicense && licType == "Contractor") {
+            if(businessLicense) {
                 (function () {
-                    var hdlData = getHDLLicenseInformation(businessLicense);
+                    var hdlData = getHDLLicenseInformation(String(businessLicense).trim());
                     // props(hdlData);
                     if(!hdlData) {
                         hdlErrors.push(licNum + ": Cannot validate business license. Please contact an administrator.");
                         return;
                     }
+                    if(hdlData.length > 0) {
+                        hdlData = hdlData[0];
+                    }
                     if(!hdlData.successMessage) {
-                        hdlErrors.push(licNum + ": Invalid business license number. Make sure to include the '0' at the beginning of the license number");
+                        hdlErrors.push(licNum + ": Invalid business license number (" + businessLicense + "). Make sure to include the '0' at the beginning of the license number");
                         return;
                     }
+
+                    if(licType == "Contractor") {
+                        var hdlLicenseNumber = hdlData.stateLicenseNumber;
+                        if(hdlLicenseNumber) {
+                            if(hdlLicenseNumber != licNum) {
+                                hdlErrors.push("Business license number (" + businessLicense + ") does not match contractor number (" + licNum + ") found on business license");
+                                return;
+                            }
+                        }
+                    }
+
                     // businessNameField.value = data.dba;
                     var expirationDate = hdlData.currentExpireDate;
                     var neededDate = expirationDate.split("T")[0];
