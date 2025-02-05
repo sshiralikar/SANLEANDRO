@@ -195,6 +195,9 @@ function mainProcess() {
                 cap = aa.cap.getCap(capId).getOutput();
                 var thisCapModel = cap.getCapModel();
                 var thisTypeResult = cap.getCapType();
+                var vAppTypeString = thisTypeResult.toString();
+                var apptypeArray = vAppTypeString.split("/");
+
                 var vBalanceDue = 0.0;
                 var capDetailObjResult = aa.cap.getCapDetail(capId);
                 if (capDetailObjResult.getSuccess())
@@ -202,7 +205,9 @@ function mainProcess() {
                     capDetail = capDetailObjResult.getOutput();
                     vBalanceDue = parseFloat(capDetail.getBalance());
                 }
-                if(vBalanceDue <= 0)
+
+                var recordStatus = getAppStatus(capId);
+                if(vBalanceDue <= 0 && recordStatus != "Finaled" && apptypeArray[0] != "Engineering")
                 {
                     updateAppStatus("Permit Expired","",capId);
                     inspCancelAll();
@@ -289,11 +294,17 @@ function mainProcess() {
                 cap = aa.cap.getCap(capId).getOutput();
                 var thisCapModel = cap.getCapModel();
                 var thisTypeResult = cap.getCapType();
-
+                var vAppTypeString = thisTypeResult.toString();
+                var apptypeArray = vAppTypeString.split("/");
+                var recordStatus = getAppStatus(capId);
                 var params = aa.util.newHashtable();
                 var vAddress = "";
                 var capAddressResult1 = aa.address.getAddressByCapId(capId);
-                if (capAddressResult1.getSuccess())
+                if(recordStatus != "Finaled" && apptypeArray[0] != "Engineering")
+                
+                    {
+
+                                if (capAddressResult1.getSuccess())
                 {
                     var Address = capAddressResult1.getOutput();
                     for (yy in Address)
@@ -348,6 +359,7 @@ function mainProcess() {
                     }
                 }
             }
+            }
         }
     }
     catch (err) {
@@ -362,6 +374,23 @@ function mainProcess() {
 /*------------------------------------------------------------------------------------------------------/
 | <===========Internal Functions and Classes (Used by this script)
 /------------------------------------------------------------------------------------------------------*/
+function getAppStatus() {
+    var itemCap = capId;
+    if (arguments.length == 1) itemCap = arguments[0]; // use cap ID specified in args
+
+    var appStatus = null;
+    var capResult = aa.cap.getCap(itemCap);
+    if (capResult.getSuccess()) {
+        licCap = capResult.getOutput();
+        if (licCap != null) {
+            appStatus = "" + licCap.getCapStatus();
+        }
+    } else {
+        logDebug("ERROR: Failed to get app status: " + capResult.getErrorMessage());
+    }
+    return appStatus;
+}
+
 
 function elapsed() {
     var thisDate = new Date();

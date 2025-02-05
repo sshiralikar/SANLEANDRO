@@ -1,127 +1,114 @@
-showDebug=true;
-showMessage=true;
+// ES_ENG_WTUA
 if(appMatch("Engineering/Grading/*/*")&& wfTask=="Permit Decision"&& wfStatus =="Issued")
     editAppSpecific("Issued Date", wfDateMMDDYYYY);
 if(appMatch("*/Encroachment/*/*") && matches(wfStatus,"Issue"))
     editAppSpecific("Permit Expiration Date",dateAdd(null,91));
 if(appMatch("*/Grading/*/*") && matches(wfStatus,"Issued"))
     editAppSpecific("Permit Expiration Date",dateAdd(null,181));
-if(wfStatus == "Route" && AInfo["Traffic Control"] == "Yes" && !isTaskComplete == "Traffic Control")
-    email("rchen@sanleandro.org","noreply@accela.com","Traffic Control Review Requested","A Traffic Control review is requested for " + capIDString + ", " + capName + ".");email("dhsiao@sanleandro.org","noreply@accela.com","Traffic Control Review Requested","A Traffic Control review is requested for " + capIDString + ", " + capName + ".");
-if(wfHours > 0 && wfStaffUserID == "ASANCHEZ")
-{
-    logDebug("adding Fee: StaffUserID is ASANCHEZ");
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+//if(wfStatus == "Route" && AInfo["Traffic Control"] == "Yes" && !isTaskComplete == "Traffic Control")
+//   email("rchen@sanleandro.org","noreply@accela.com","Traffic Control Review Requested","A Traffic Control review is requested for " + capIDString + ", " + capName + ".");email("dhsiao@sanleandro.org","noreply@accela.com","Traffic Control Review Requested","A Traffic Control review is requested for " + capIDString + ", " + capName + ".");
+
+if (wfTask == "Plans Coordination" && wfStatus == "Recalculate to Major") { 
+	include("ENG_RECALCULATE_TO_MAJOR");
 }
-if(wfHours > 0 && wfStaffUserID == "ENGINSPECTOR")
-{
-    logDebug("adding Fee: StaffUserID is ENGINSPECTOR");
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if (wfTask == "Plans Coordination" && wfStatus == "Calculate Restoration Deposit") { 
+	include("ENG_CALCULATE_RESTORATION_DEPOSIT");
 }
-if(wfHours > 0 && wfStaffUserID == "DGUTIERREZ")
-{
-    logDebug("adding Fee: StaffUserID is DGUTIERREZ");
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+
+// Automatically close Task 'Public Works Review'
+if(appMatch("Engineering/Utility/Above Ground/NA") && matches(wfStatus,"Routed for Review") && 
+	(AInfo["Tree Removal"] == "No" && AInfo["Tree Trimming"] == "No")) {
+		closeTask("Public Works Review","Not Required","","Closed by script");
+	}
+vFeeCode="STPCR";  // Default fee code to STPCR
+if(wfStaffUserID == "JDOLEZAL" || wfStaffUserID == "ASANCHEZ" || wfStaffUserID == "DHOO" || wfStaffUserID == "MZOOBI") {
+	vFeeCode="STTAR";
 }
-if(wfHours > 0 && wfStaffUserID == "DHSIAO")
-{
-    logDebug("adding Fee: StaffUserID is DHSIAO");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "SVANIER" || wfStaffUserID == "EAGUAYO" || wfStaffUserID == "RCRAIG" || wfStaffUserID == "EGUERRERO") {
+	vFeeCode="STTAR";
+}  
+if(wfStaffUserID == "ENGINSPECTOR" || wfStaffUserID == "GGARCIA" || wfStaffUserID == "DGUTIERREZ" || wfStaffUserID == "VRUIZVERA" || wfStaffUserID == "JGUERRERO") {
+	vFeeCode="STIR";
 }
-if(wfHours > 0 && wfStaffUserID == "DHOO")
-{
-    logDebug("adding Fee: StaffUserID is DHOO");
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "RGONZALES" || wfStaffUserID == "APENA" || wfStaffUserID == "DCOCONNOR" || wfStaffUserID == "VRUIZVERA") {
+	vFeeCode="STIR";
 }
-if(wfHours > 0 && wfStaffUserID == "GGARCIA")
-{
-    logDebug("adding Fee: StaffUserID is GGARCIA");
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "DPERRY" || wfStaffUserID == "RLEYVA" || wfStaffUserID == "MCATIC") {
+	vFeeCode="STIR";
 }
-if(wfHours > 0 && wfStaffUserID == "JLO")
-{
-    logDebug("adding Fee: StaffUserID is JLO");
-    addFeeWithExtraData("SINSP","E_ENC","FINAL",((AInfo["JLO Rate"]*(wfHours))*274/100),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "JLO" || wfStaffUserID == "LSMITH") {
+	vFeeCode="SINSP";
 }
-if(wfHours > 0 && wfStaffUserID == "JODRISCOLL")
-{
-    logDebug("adding Fee: StaffUserID is JODRISCOLL");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "NTHOM" || wfStaffUserID == "SMARQUISES") {
+	vFeeCode="SPENG";
 }
-if(wfHours > 0 && wfStaffUserID == "RMAGNO")
-{
-    logDebug("adding Fee: StaffUserID is RMAGNO");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+if(wfStaffUserID == "DRODGERS" || wfStaffUserID == "LSMITH") {
+	vFeeCode="STSER";
 }
-if(wfHours > 0 && wfStaffUserID == "LSMITH")
-{
-    logDebug("adding Fee: StaffUserID is LSMITH");
-    addFeeWithExtraData("SINSP","E_ENC","FINAL",((AInfo["LSMITH Rate"]*(wfHours))*274/100),"N",capId,"Task: " + wfTask,null,null);
+
+if(wfHours > 0) {
+	if (wfTimeOT == "Y") {
+		vTotHours=0;
+		if (wfHours <= 4) {
+			vTotHours = (vTotHours+(wfHours*.5));
+		} else {
+			vTotHours = 6; //this is the OT for the first 4 hours (4 *1.5 = 6)
+			vRemain = (wfHours - 4);
+			vRemain = (vRemain * 2);
+			vTotHours = (vTotHours+vRemain);
+		}
+		vNote="Task: " + wfTask + " and Overtime for "+wfHours+" hours"; 
+		logDebug("Task Fee: " + wfTask + " user: " + wfStaffUserID + " Fee Code: " + vFeeCode + " Hours: "+wfHours+" OT: "+wfTimeOT);
+		addFeeWithExtraData(vFeeCode,"E_ENC","FINAL", vTotHours,"N",capId,vNote,null,null);
+	} else {
+		addFeeWithExtraData(vFeeCode,"E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+	}
 }
-if(wfHours > 0 && wfStaffUserID == "NTHOM")
-{
-    logDebug("adding Fee: StaffUserID is NTHOM");
-    addFeeWithExtraData("SPENG","E_ENC","FINAL", (1*(wfHours)),"N",capId, "Task: " + wfTask,null,null);
+
+//if()
+    //email("myoung@youngconsultingllc.com","noreply@accela.com","OVERTIME","A overtime has been triggered" + capIDString + ", " + capName + ".");
+//include("WTUA_EXECUTE_DIGEPLAN_SCRIPTS_ENG");
+
+if (wfTask == "Final Processing" && wfStatus == "PAC Monthly (Invoice)") {
+	var wfHist = aa.workflow.getWorkflowHistory(capId, null);
+	if (wfHist.getSuccess()) {
+		wfHist = wfHist.getOutput();
+		var vTotHours=0;
+		for ( var h in wfHist) {
+			debugObject(wfHist[h]);
+			//wfHist[h].getTaskDescription() == "" //if needed to check wfTask with wfStatus in history
+			vHours = Number(wfHist[i].getHoursSpent());
+			vTotHours = (vTotHours+vHours);
+			vStatus = wfHist[h].getDisposition();
+			vTask = wfHist[h].getTaskDescription();
+			vBill = wfHist[h].getBillable();
+			vOT = wfHist[h].getOverTime();
+			if (vOT == "Y") {
+				if (vHours <= 4) {
+					vTotHours = (vTotHours+(vHours*.5));
+				} else {
+					vTotHours = 6; //this is the OT for the first 4 hours (4 +2)
+					vRemain = (vHours - 4);
+					vTotHours = (vTotHours+vRemain);
+				}
+			}
+			vAssigned = "Not Found";
+			//if (matches(wfObj[i].getTaskDescription(), "Review Distribution")) {
+			if (!matches(wfHist[h].getAssignedStaff(), null, "")) {
+				var userSplit = String(wfHist[h].getAssignedStaff()).split("/")[6];
+				var assignUser = aa.people.getUsersByUserIdAndName("", userSplit.split(" ")[0], "", userSplit.split(" ")[1]);
+				if (assignUser.getSuccess()) {
+					var vAssigned = assignUser.getOutput();			
+				}
+			}
+			logDebug("Task: " + vTask + " Stat: " + vStatus + " Assigned: " + vAssigned + " Hours: " + vHours + " Total: " + vTotHours +" Bill: " + vBill+" OT: " + vOT);
+		}//for all hist items
+	}
 }
-if(wfHours > 0 && wfStaffUserID == "VRUIZVERA")
-{
-    logDebug("adding Fee: StaffUserID is VRUIZVERA");
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
+function debugObject(object) {
+	var output = '';
+	for (property in object) {
+		output += "<font color=red>" + property + "</font>" + ': ' + "<bold>" + object[property] + "</bold>" + '; ' + "<BR>";
+	}
+	logDebug(output);
 }
-if(wfHours > 0 && wfStaffUserID == "NCASTELINO")
-{
-    logDebug("adding Fee: StaffUserID is NCASTELINO");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "PTOSTE")
-{
-    logDebug("adding Fee: StaffUserID is PTOSTE");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "RCHEE")
-{
-    logDebug("adding Fee: StaffUserID is RCHEE");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "MCHAUDHARY")
-{
-    logDebug("adding Fee: StaffUserID is MCHAUDHARY");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "ATOSCANO")
-{
-    logDebug("adding Fee: StaffUserID is ATOSCANO");
-    addFeeWithExtraData("STPCR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "MZOOBI")
-{
-    logDebug("adding Fee: StaffUserID is MZOOBI");
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "RGONZALES")
-{
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-}
-if(wfHours > 0 && wfStaffUserID == "SMARQUISES")
-    addFeeWithExtraData("SPENG","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "RCRAIG")
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "DRODGERS")
-    addFeeWithExtraData("STSER","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "APENA")
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "EGUERRERO")
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "KHAMIDI")
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "DCOCONNOR")
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "DPERRY")
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "MZOOBI")
-    addFeeWithExtraData("STTAR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfHours > 0 && wfStaffUserID == "RLEYVA")
-    addFeeWithExtraData("STIR","E_ENC","FINAL", (1*(wfHours)),"N",capId,"Task: " + wfTask,null,null);
-if(wfTimeOT  == "Y")
-    email("myoung@youngconsultingllc.com","noreply@accela.com","OVERTIME","A overtime has been triggered" + capIDString + ", " + capName + ".");
-include("WTUA_EXECUTE_DIGEPLAN_SCRIPTS_ENG");
