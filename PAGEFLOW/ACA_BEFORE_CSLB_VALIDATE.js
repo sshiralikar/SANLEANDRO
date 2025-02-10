@@ -190,7 +190,7 @@ try {
                     if(hdlData.length > 0) {
                         hdlData = hdlData[0];
                     }
-                    if(!hdlData.successMessage) {
+                    if(!hdlData.successMessage || hdlData.successMessage == "null") {
                         hdlErrors.push(licNum + ": Invalid business license number (" + businessLicense + "). Make sure to include the '0' at the beginning of the license number");
                         return;
                     }
