@@ -9198,7 +9198,7 @@ function searchPINSIDByRefLPSeq(refLPSeq, authObj) {
     var standardChoice = "PINS_INTERFACE";
     var endpoint = lookup(standardChoice, "BASE_ENDPOINT");
     var insuredRecordsRoute = lookup(standardChoice, "GET_INSURED_SEARCH");
-    insuredRecordsRoute = insuredRecordsRoute.replace("{lic_seq}", refLPSeq);
+    insuredRecordsRoute = insuredRecordsRoute.replace("{lic_seq_id}", refLPSeq);
     var apiUrl = endpoint + insuredRecordsRoute;
     logDebug(apiUrl);
 
@@ -9216,7 +9216,7 @@ function searchPINSIDByRefLPSeq(refLPSeq, authObj) {
             var insured = insuredRecordList[insuredIndex];
             var externalId = insured["external_id"];
             var pinsId = insured["id"];
-            if(externalId == licSeqNumber) {
+            if(externalId == refLPSeq) {
                 return pinsId;
             }
         }
