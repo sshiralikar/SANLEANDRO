@@ -44,7 +44,7 @@ try {
                 }
 
                 var failedValidation = false;
-                if(!hdlData.successMessage) {
+                if(!hdlData.successMessage || hdlData.successMessage == "null") {
 
                     //failed initial validation
                     failedValidation = true;
@@ -54,23 +54,21 @@ try {
 
                         var tempLicenseNum = businessLicenseField.value;
                         businessLicenseField.value = "0" + businessLicenseField.value;
-
                         var retryData = getHDLLicenseInformation(businessLicenseField.value);
-                        if(!retryData) {
+                        if(!retryData || retryData.successMessage == "null") {
                             // businessLicenseField.message = "Cannot validate business license. Please contact an administrator.";
                             businessLicenseField.value = tempLicenseNum;
                         } else {
                             //return first result
                             if(retryData.length > 0) {
                                 retryData = retryData[0];
-                                if(retryData.successMessage) {
-                                    failedValidation = false;
-                                    hdlData = retryData;
-                                } else {
-                                    businessLicenseField.value = tempLicenseNum;
-                                }
+                            }
+                            if(retryData.successMessage != "null" && retryData.successMessage) {
+                                failedValidation = false;
+                                hdlData = retryData;
                             } else {
                                 businessLicenseField.value = tempLicenseNum;
+                                hdlData = null;
                             }
                         }
                     }

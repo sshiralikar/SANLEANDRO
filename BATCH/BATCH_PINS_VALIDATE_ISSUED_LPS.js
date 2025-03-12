@@ -55,10 +55,11 @@ function mainProccess() {
     var issuedEngPermits = getIssuedEngineeringRecords();
     var lpsToLock = {};
     for(var i in issuedEngPermits) {
-
+        // break;
         var sqlObj = issuedEngPermits[i];
         /*
             LIC_NBR: 1313000
+            LIC_TYPE: Contractor
             B1_ALT_ID: EGRADE-24-0011
             B1_APPL_STATUS: Issued
             SERV_PROV_CODE: SANLEANDRO
@@ -79,9 +80,16 @@ function mainProccess() {
 
 
         var lpNum = sqlObj["LIC_NBR"];
+        var lpType = sqlObj["LIC_TYPE"];
         var altId = sqlObj["B1_ALT_ID"];
         var recType = sqlObj["B1_PER_GROUP"] + "/" + sqlObj["B1_PER_TYPE"] + "/" + sqlObj["B1_PER_SUB_TYPE"] + "/" + sqlObj["B1_PER_CATEGORY"];
         logDebug("");
+
+        if(lpType != "Utility" && sqlObj["B1_PER_TYPE"] == "Utility") {
+            logDebug("Skipping " + lpNum + " as this is a sub on a utilty " + altId);
+            continue;
+        }
+
         logDebug(lpNum);
         logDebug(altId);
         logDebug(recType);
@@ -225,6 +233,7 @@ function getIssuedEngineeringRecords() {
     }
     var sql = "SELECT DISTINCT \
         RLP.LIC_NBR, \
+        RLP.LIC_TYPE, \
         RLP.BUS_NAME, \
         RLP.EMAIL, \
         P.B1_ALT_ID, \

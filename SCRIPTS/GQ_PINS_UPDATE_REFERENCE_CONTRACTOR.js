@@ -76,8 +76,8 @@ function updateLPAttribute(licNum, attributeField, attributeValue) {
             var iterator = peopleAttributeModel.iterator();
             while(iterator.hasNext()) {
                 var attributeObj = iterator.next();
-                var attrLabel = attributeObj.attributeLabel;
-                if(attrLabel == attributeField) {
+                var attrLabel = String(attributeObj.attributeName).toUpperCase();
+                if(attrLabel == String(attributeField).toUpperCase()) {
                     logDebug("Setting " + attrLabel + " to " + attributeValue);
                     attributeObj.setAttributeValue(attributeValue);
                 }

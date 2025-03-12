@@ -595,6 +595,9 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
         var pinsAuth = getPINSAuthObject();
         var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
         var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
+
+        var utilityPermit = appMatch("Engineering/Utility/*/*", capId);
+
         for(var i in professionals) {
             var lp = professionals[i];
             var lpType = lp.licenseType;
@@ -611,6 +614,8 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
                 continue;
             }
 
+            var refLp = grabReferenceLicenseProfessional(licNum);
+            var licSeqNumber = refLp.licSeqNbr;
             pinsId = searchPINSIDByRefLPSeq(licSeqNumber, pinsAuth);
             if(pinsId) {
                 logDebug("Found PINS insured " + pinsId);
@@ -619,8 +624,6 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
                 continue;
             }
 
-            var refLp = grabReferenceLicenseProfessional(licNum);
-            var licSeqNumber = refLp.licSeqNbr;
 
             logDebug(licNum + " missing in PINS");
             var lpName = refLp.businessName;
@@ -629,11 +632,17 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
             var lpCity = refLp.city ? refLp.city : "";
             var lpState = refLp.licState ? refLp.licState : "";
             var lpCountry = "US";
-            var lpZip = refLp.zip ? refLp.zip : "";;
+            var lpZip = refLp.zip ? refLp.zip : "";
             var description = ["License Number: " + licNum, "License Type: " + lpType];
             var insuredObj = createPINSInsured(lpName, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
                 updateLPAttribute(licNum, "PINS Reference ID", insuredObj.id);
+
+                if(utilityPermit && lpType != "Utility") {
+                    logDebug("Only the utility needs PINS requirements skipping record creation");
+                    continue;
+                }
+
                 createPINSRecord(insuredObj.id, "", templateRequirementsObj.id, templateRequirementsObj.name, pinsAuth);
             }
         }
