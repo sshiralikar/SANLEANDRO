@@ -105,7 +105,7 @@ if(wfTask == "Application Intake" && (wfStatus == "Accepted - Plan Review Req" |
 
 
 if(wfTask == "Application Intake" && wfStatus == "Additional Info Required"){
-	sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_ADDITIONAL_INFO_REQ", params, null, capId);
+	sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_ADDITIONAL_INFO_REQ", params, null, capId);
 }
 //CASANLAN - 3070
 if(wfTask == "Engineering Review" && (wfStatus == "Approved" || wfStatus == "Approved w/ Comments")){
@@ -115,17 +115,17 @@ if(wfTask == "Engineering Review" && (wfStatus == "Approved" || wfStatus == "App
 }
 //CASANLAN - 2932
 if(wfTask == "Plans Distribution" && wfStatus == "Resubmittal Required"){
-   sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_RESUBMITTAL_REQUIRED", params, null, capId);
+   sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_RESUBMITTAL_REQUIRED", params, null, capId);
 }
 
 //CASANLAN - 2942
 //if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
- //  sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_REVISIONS_REQUIRED", params, null, capId);
+ //  sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_REVISIONS_REQUIRED", params, null, capId);
 //}
 
 //CASANLAN - 2933
 if(wfTask == "Traffic Review" && wfStatus == "Revisions/Resubmittal Required"){
-   sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_TRAFFIC_RESUBMITTAL_REQUIRED", params, null, capId);
+   sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_TRAFFIC_RESUBMITTAL_REQUIRED", params, null, capId);
 }
 //Only for Revisions
 if (appMatch("*/Revision/*/*")) {
@@ -137,19 +137,19 @@ if (appMatch("*/Revision/*/*")) {
 if(wfTask == "Permit Issuance" && wfStatus == "Issue"){
 	if (!appMatch("*/Revision/*/*")) {
 		if(appMatch("*/Encroachment/Annual/*")) {  // CASANLEAN - 3041
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "etinspections@sanleandro.org", "ENG_ANNUAL_PERMIT_ISSUE", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "etinspections@sanleandro.org", "ENG_ANNUAL_PERMIT_ISSUE", params, null, capId);
 		} else {
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "etinspections@sanleandro.org", "ENG_PERMIT_ISSUE", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "etinspections@sanleandro.org", "ENG_PERMIT_ISSUE", params, null, capId);
 		}
 	} else {
 		include("ES_ENG_ISSUE_REVISION");
-		sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_REVISION_ISSUE", params, null, capId);
+		sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_REVISION_ISSUE", params, null, capId);
 	}
 }
 
 //CASANLAN - 2942
 if(wfTask == "Plans Coordination" && wfStatus == "Resubmittal Required"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PLANS_COORDINATION_RESUBMITTAL_REQUIRED", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_PLANS_COORDINATION_RESUBMITTAL_REQUIRED", params, null, capId);
 }
 
 //CASANLAN - 2931
@@ -157,55 +157,55 @@ if(wfTask == "Plans Distribution" && ((wfStatus == "Minor Review and Inspections
 	include("ENG_CALCULATE_TO_MINOR_MAJOR");
 	if (wfStatus == "Minor Review and Inspections") {
 		if((appMatch("*/*/Street/*")) || appMatch("*/*/Concrete/*") || appMatch("*/*/Sewer/*") || appMatch("*/*/Monitoring Wells/*")) {
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_MINOR_FEES_AND_REST_DEPOSIT", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_MINOR_FEES_AND_REST_DEPOSIT", params, null, capId);
 		} else {
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_MINOR_FEES_DUE", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_MINOR_FEES_DUE", params, null, capId);
 		}
 	}
 	if (wfStatus == "Major Review and Inspections") {
 		if((appMatch("*/*/Street/*")) || appMatch("*/*/Concrete/*") || appMatch("*/*/Sewer/*") || appMatch("*/*/Monitoring Wells/*")) {
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_MAJOR_FEES_AND_REST_DEPOSIT", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_MAJOR_FEES_AND_REST_DEPOSIT", params, null, capId);
 		} else {
-			sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_MAJOR_DEPOSIT_DUE", params, null, capId);
+			sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_MAJOR_DEPOSIT_DUE", params, null, capId);
 		}
 	}
 }
 
 //CASANLAN - 2931
 if(wfTask == "Plans Coordination" && wfStatus == "Approved - Fees Due"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_APPROVED_FEES_DUE", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_APPROVED_FEES_DUE", params, null, capId);
 }
 
 //CASANLAN - 2936
 if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_SIGNATURE_REQUIRED", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_SIGNATURE_REQUIRED", params, null, capId);
 }
 
 //CASANLAN - 293
 if(wfTask == "Inspections" && wfStatus == "Compaction Report"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_INSPECTION_COMPACTION_RPT_REQ", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_INSPECTION_COMPACTION_RPT_REQ", params, null, capId);
 }
 
 //CASANLAN - 3002
 if(wfTask == "Plans Coordination" && wfStatus == "Deposit Due"){
 	vResDeposit = parseInt(AInfo['Restoration']);
 	addParameter(params, "$$restDeposit$$", vResDeposit);
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_RESTORATION_DEPOSIT_DUE", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_RESTORATION_DEPOSIT_DUE", params, null, capId);
 }
 
 //CASANLAN - 2936
 if(wfTask == "Plans Coordination" && wfStatus == "Contractor Expired Notice"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_CONTRACTOR_EXPIRED_NOTICE", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_CONTRACTOR_EXPIRED_NOTICE", params, null, capId);
 }
 
 //CASANLAN - Post Issuance Activity - Finaled
 if(wfTask == "Post-Issuance Activity" && wfStatus == "Permit - FINAL Review - Forward to Final Processing"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_FINALED", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_FINALED", params, null, capId);
 }
 
 //CASANLAN - Post Issuance Activity - Expired
 if(wfTask == "Post-Issuance Activity" && wfStatus == "Permit - Expired - Forward to Final Processing"){
-    sendEmail("no-reply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_EXPIRED", params, null, capId);
+    sendEmail("noreply@sanleandro.org", applicantEmail, "", "ENG_PERMIT_EXPIRED", params, null, capId);
 }
 
 //CASANLAN - Final Processing - Finaled
@@ -249,7 +249,7 @@ if(wfTask == "Final Processing" && wfStatus == "Finaled"){
 
 //    }
 //}
-//   sendEmail("no-reply@sanleandro.org", userEmail, "", "ENG_PERMIT_ISSUE", params, null, capId);
+//   sendEmail("noreply@sanleandro.org", userEmail, "", "ENG_PERMIT_ISSUE", params, null, capId);
 //}
 //showDebug = true;
 /*
