@@ -93,6 +93,9 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
         var pinsAuth = getPINSAuthObject();
         var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
         var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
+
+        var utilityPermit = appMatch("Engineering/Utility/*/*", capId);
+
         for(var i in professionals) {
             var lp = professionals[i];
             var lpType = lp.licenseType;
@@ -140,6 +143,10 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
             var insuredObj = createPINSInsured(lpName, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
                 // updateLPAttribute(licNum, "PINS Reference ID", insuredObj.id);
+                if(utilityPermit && lpType != "Utility") {
+                    logDebug("Only the utility needs PINS requirements skipping record creation");
+                    continue;
+                }
                 pinsValidationErrors.push(licNum + " was not in PINS and therefore could not reach requirements");
                 idsToUpdate.push({
                     licNum: String(licNum),
