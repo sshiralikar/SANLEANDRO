@@ -1,24 +1,24 @@
 //GQ_CSLB_INTERFACE
 var transLPS = getAllTransactionalLPs(capId);
 for(var i in transLPS) {
-    var transLP = transLPS[i];
-    var transLPNumber = transLP.licenseNbr;
-    var transLPType = transLP.licenseType;
+    var transactionalLP = transLPS[i];
+    var transactionalLPNumber = transactionalLP.licenseNbr;
+    var transactionalLPType = transactionalLP.licenseType;
 
     //only sync with contractor types from CSLB
     if(transLPType == "Contractor") {
-        logDebug("Syncing " + transLPNumber + " from " + capId.getCustomID());
-        var syncedRefModel = syncTransactionalLPToReferenceLP(transLPNumber, transLP);
+        logDebug("Syncing " + transactionalLPNumber + " from " + capId.getCustomID());
+        var syncedRefModel = syncTransactionalLPToReferenceLP(transactionalLPNumber, transactionalLPType, transactionalLP);
 
         //get all current records and sync them.
         //not doing incase agency wants transactional info of lp on cap
-        // var currentRecords = getRefrenceLPRecords(transLPNumber, syncedRefModel);
+        // var currentRecords = getRefrenceLPRecords(syncedRefModel);
         // for(var currentRecordsIndex in currentRecords) {
         //     var currentRec = currentRecords[currentRecordsIndex];
         //     syncReferenceLPToRecord(currentRec, transLPNumber, syncedRefModel);
         // }
 
         //finally sync the currently submitted one
-        syncReferenceLPToRecord(capId, transLPNumber, syncedRefModel);
+        syncReferenceLPToRecord(capId, transactionalLPNumber, syncedRefModel);
     }
 }

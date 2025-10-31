@@ -65,7 +65,7 @@ function getScriptText(vScriptName, servProvCode, useProductScripts) {
 }
 
 //TESTING
-// var testingCap = aa.cap.getCapID("24TMP-000419").getOutput();
+// var testingCap = aa.cap.getCapID("25TMP-000053").getOutput();
 // var capModel = aa.cap.getCapViewBySingle4ACA(testingCap);
 // var capTest = aa.env.setValue("CapModel", capModel);
 // aa.env.setValue("CurrentUserID", "ADMIN");
@@ -170,17 +170,38 @@ try {
             }
         }
         var foundCorrectClassification = false;
+        var classErrors = [];
+
+        var currentDate = new Date(aa.date.getCurrentDate().epochMilliseconds);
+        currentDate.setHours(0,0,0,0);
 
         for(var lpIndex in lpList) {
             var lpObj = lpList[lpIndex];
             var licType = lpObj.licenseType;
             var licNum = lpObj.licenseNbr;
+            var primaryFlag = lpObj.printFlag;
             // props(lpObj);
             // logDebug(licNum + " : " + licType);
 
             var businessLicense = lpObj.businessLicense;
-            if(businessLicense) {
+
+            var referenceLP = grabReferenceLicenseProfessionalLocal(licNum, licType);
+            logDebug("Business lic: " + businessLicense);
+            if(businessLicense && String(businessLicense).trim().length > 0) {
                 (function () {
+
+                    if(referenceLP) {
+                        var refBusinessLicenseDate = referenceLP.businessLicExpDate;
+                        var refBusinessLicense = referenceLP.getBusinessLicense();
+                        if(refBusinessLicenseDate && refBusinessLicense == businessLicense) {
+                            var refBusinessLicenseDateJS = new Date(refBusinessLicenseDate.epochMilliseconds);
+                            if(refBusinessLicenseDateJS > currentDate) {
+                                logDebug("Valid date do not need to validate");
+                                return;
+                            }
+                        }
+                    }
+
                     var hdlData = getHDLLicenseInformation(String(businessLicense).trim());
                     // props(hdlData);
                     if(!hdlData) {
@@ -219,25 +240,35 @@ try {
                     logDebug("Expiration: " + formattedExpirationDate);
                     if(expirationDateJS <= compareDate) {
                         hdlErrors.push(licNum + ": Business license " + businessLicense + " has expired " + formattedExpirationDate);
+                    } else if(referenceLP) {
+                        referenceLP.setBusinessLicense(businessLicense);
+                        referenceLP.setBusinessLicExpDate(aa.date.parseDate(goodDate));
+                        var updateResult = aa.licenseScript.editRefLicenseProf(referenceLP);
+                        if (updateResult.getSuccess()) {
+                            logDebug("Updated refrence date with data from HDL.");
+                        } else {
+                            logDebug("Unable to update LP " + updateResult.getErrorType() + " : " + updateResult.getErrorMessage());
+                        }
                     }
                 })();
+
+                // break;
             }
 
             if(licType == "Contractor") {
-                var refLpModel = grabReferenceLicenseProfessional(licNum);
                 var hasOverride = false;
-                if(refLpModel) {
-                    var lpRefId = refLpModel.licSeqNbr;
+                if(referenceLP) {
+                    var lpRefId = referenceLP.licSeqNbr;
                     hasOverride = checkRefLPConditionsBySeq(lpRefId, "CSLB Override");
                 }
                 if(hasOverride) {
                     logDebug("No longer blocking due to override on reference LP");
                     continue;
                 }
-                var cslbResults = validateLPWithCSLB(licNum, null, true, true, false, true, appTypeString);
-                var classErrors = [];
+                var cslbResults = validateLPWithCSLB(licNum, null, true, true, true, false, true, appTypeString);
                 for(var i in cslbResults) {
                     var cslbResult = cslbResults[i];
+                    //Only process primary for classifications
                     if(classificationRequirements && !foundCorrectClassification) {
                         var cslbData = cslbResult.cslbData;
                         classificationList = cslbData.Classifications;
@@ -259,11 +290,11 @@ try {
                         cslbErrors.push(cslbValidationResults.join("<BR>"));
                     }
                 }
-                if(classErrors.length > 0) {
-                    logDebug("Adding: " + classErrors.length + " to errored list");
-                    cslbErrors.push(classErrors.join("<BR>"));
-                }
             }
+        }
+        if(!foundCorrectClassification && classErrors.length > 0) {
+            logDebug("Adding: " + classErrors.length + " to errored list");
+            cslbErrors.push(classErrors.join("<BR>"));
         }
         if(cslbErrors.length > 0)  {
             showMessage = true;
@@ -315,6 +346,34 @@ if (debug.indexOf("**ERROR") > 0) {
         }
 
     }
+}
+
+function grabReferenceLicenseProfessionalLocal(licenseNumber, licenseType) {
+	var refLicenseResult = aa.licenseScript.getRefLicensesProfByLicNbr(aa.getServiceProviderCode(), licenseNumber);
+	if (!refLicenseResult.getSuccess()) {
+        logDebug("Failed to get reference license professional " + refLicenseResult.getErrorType() + " : " + refLicenseResult.getErrorMessage());
+        return false;
+    }
+    var referenceLpArray = refLicenseResult.getOutput();
+    if(!referenceLpArray) {
+        logDebug("Reference LP Array returned null");
+        return false;
+    }
+    var firstReferenceFound = false;
+    for (var refLpIndex in referenceLpArray) {
+        var refLPObject = referenceLpArray[refLpIndex];
+        var refLPType = refLPObject.licenseType;
+        var auditStatus = refLPObject.auditStatus;
+        if(auditStatus == "A") {
+            if(licenseType && refLPType == licenseType) {
+                return refLPObject;
+            }
+        }
+    }
+    if(referenceLpArray[0]) {
+        firstReferenceFound = referenceLpArray[0];
+    }
+    return firstReferenceFound;
 }
 
 function explore(objExplore) {

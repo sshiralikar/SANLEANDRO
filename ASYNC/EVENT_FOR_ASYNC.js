@@ -1,4 +1,4 @@
-/* 
+/*
 GQ_DOCU_SIGN_LIBRARY.js
 Author: Gray Quarter Inc. (c)2023
 Usage: Used with Gray Quarter Sign UI.  See help.grayquarter.com for documentation.

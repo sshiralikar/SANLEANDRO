@@ -10,7 +10,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
             var transLPType = transLP.licenseType;
             logDebug(transLPNumber + " : " + transLPType);
             if(transLPType == "Contractor") {
-                var refLpModel = grabReferenceLicenseProfessional(transLPNumber);
+                var refLpModel = grabReferenceLicenseProfessional(transLPNumber, transLPType);
                 var hasOverride = false;
                 var lpRefId = null;
                 if(refLpModel) {
@@ -21,7 +21,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                     logDebug("No longer blocking due to override on reference LP");
                     continue;
                 }
-                var cslbResults = validateLPWithCSLB(transLPNumber, null, true, true, false, true, appTypeString);
+                var cslbResults = validateLPWithCSLB(transLPNumber, null, false, true, true, false, true, appTypeString);
                 var notifications = [];
                 for(var i in cslbResults) {
                     var cslbResult = cslbResults[i];
@@ -90,6 +90,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
     if(professionals) {
         var pinIDsToCheck = [];
         var idsToUpdate = [];
+        var notifyPINS = [];
         var pinsAuth = getPINSAuthObject();
         var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
         var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
@@ -103,44 +104,51 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                continue;
             }
             var licNum = lp.licenseNbr;
-            var pinsId = getLPAttribute(licNum, "PINS Reference ID");
+            var refLp = grabReferenceLicenseProfessional(licNum, lpType);
+            var licSeqNumber = refLp.licSeqNbr;
+            var lpEmail = refLp.EMailAddress ? refLp.EMailAddress : "";
+            var pinsId = getLPAttribute(licNum, lpType, "PINS Reference ID");
             logDebug("Checking PINS reference on " + licNum + " " + lpType);
             logDebug(pinsId);
             if(pinsId) {
                 logDebug("Already created in PINS");
                 pinIDsToCheck.push( {
                     licNum: String(licNum),
-                    pinsId: String(pinsId)
+                    pinsId: String(pinsId),
+                    email: String(lpEmail)
                 });
                 continue;
             }
-            //TODO search by lp seq ID if no data found on attribute
-            var refLp = grabReferenceLicenseProfessional(licNum);
-            var licSeqNumber = refLp.licSeqNbr;
 
             pinsId = searchPINSIDByRefLPSeq(licSeqNumber, pinsAuth);
             if(pinsId) {
                 logDebug("Found PINS insured " + pinsId);
                 idsToUpdate.push({
                     licNum: String(licNum),
-                    pinsId: String(pinsId)
+                    pinsId: String(pinsId),
+                    type: String(lpType)
                 })
                 pinIDsToCheck.push( {
                     licNum: String(licNum),
-                    pinsId: String(pinsId)
+                    pinsId: String(pinsId),
+                    email: String(lpEmail)
                 });
                 continue;
             }
             logDebug(licNum + " missing in PINS");
+
             var lpName = refLp.businessName;
-            var lpEmail = refLp.EMailAddress ? refLp.EMailAddress : "";
+            if(!lpName) {
+                lpName = refLp.contactFirstName + " " + refLp.contactLastName;
+            }
+
             var lpAddress = refLp.address1 ? refLp.address1 : "";
             var lpCity = refLp.city ? refLp.city : "";
             var lpState = refLp.licState ? refLp.licState : "";
             var lpCountry = "US";
             var lpZip = refLp.zip ? refLp.zip : "";;
             var description = ["License Number: " + licNum, "License Type: " + lpType];
-            var insuredObj = createPINSInsured(lpName, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
+            var insuredObj = createPINSInsured(lpName + " - " + licNum, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
                 // updateLPAttribute(licNum, "PINS Reference ID", insuredObj.id);
                 if(utilityPermit && lpType != "Utility") {
@@ -150,9 +158,15 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                 pinsValidationErrors.push(licNum + " was not in PINS and therefore could not reach requirements");
                 idsToUpdate.push({
                     licNum: String(licNum),
-                    pinsId: String(insuredObj.id)
+                    pinsId: String(insuredObj.id),
+                    type: String(lpType)
                 })
+                //createPINSRecord(insuredId, description, requirementTemplateId, recordNumber, authObj)
                 createPINSRecord(insuredObj.id, "", templateRequirementsObj.id, templateRequirementsObj.name, pinsAuth);
+                notifyPINS.push({
+                    email: String(lpEmail),
+                    altId: String(capId.getCustomID())
+                });
             }
         }
         logDebug("IDS to check: " + pinIDsToCheck);
@@ -175,10 +189,18 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
                 if(createRecord) {
                     pinsValidationErrors.push(pinsObj.licNum + " was missing " + templateRequirementsObj.name + " requirements");
                     createPINSRecord(pinsObj.pinsId, "", templateRequirementsObj.id, templateRequirementsObj.name, pinsAuth);
+                    notifyPINS.push({
+                        email: String(pinsObj.email),
+                        altId: String(capId.getCustomID())
+                    });
                 } else {
                     var validated = validateInsured(pinsObj.pinsId, templateRequirementsObj.name, pinsAuth);
                     if(!validated) {
                         pinsValidationErrors.push(pinsObj.licNum + " has not fufilled " + templateRequirementsObj.name + " requirements");
+                        notifyPINS.push({
+                            email: String(pinsObj.email),
+                            altId: String(capId.getCustomID())
+                        });
                     }
                 }
             }
@@ -186,6 +208,11 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
         if(idsToUpdate.length > 0) {
             aa.env.setValue("pinsData", JSON.stringify(idsToUpdate));
             var result = aa.runScriptInNewTransaction("GQ_PINS_UPDATE_REFERENCE_CONTRACTOR");
+        }
+        logDebug("Notify amount: " + notifyPINS.length);
+        if(notifyPINS.length > 0) {
+            aa.env.setValue("pinsData", JSON.stringify(notifyPINS));
+            var result = aa.runScriptInNewTransaction("GQ_PINS_NOTIFY_CONTRACTOR");
         }
         if(pinsValidationErrors.length > 0) {
             showMessage = true;

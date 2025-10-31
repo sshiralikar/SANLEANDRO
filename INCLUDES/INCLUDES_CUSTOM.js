@@ -6412,9 +6412,18 @@ function copyGISDataToCustomFields(itemCap) {
             var attributeValue = attributeObj.value;
             var attributeType = attributeObj.b1AttributeValueDataType;
             var asiField = lookup("GIS_ASI_MAP", attributeName);
+            logDebug("Updating field: " + asiField);
             exposedMap[attributeName] = String(attributeValue);
             if(asiField && attributeValue) {
                 logDebug("Type: " + attributeType + " name: " + attributeName + " value: " + attributeValue);
+                if(asiField.indexOf("|") > -1) {
+                    var multipleFields = asiField.split("|");
+                    for(var multipleFieldsIndex in multipleFields) {
+                        asiField = multipleFields[multipleFieldsIndex];
+                        editAppSpecific(asiField, attributeValue, itemCap);
+                    }
+                    continue;
+                }
                 if(asiField == "Liquefaction") {
                     var options = String(attributeValue).split(" ");
                     var remainders = [];
@@ -7618,7 +7627,7 @@ function checkLPHasCondition(lpNumber, conditionName) {
 }
 
 //GQ CSLB INTERFACE
-function validateLPWithCSLB(licenseNumber, itemCap, checkExpDate, checkWCDate, checkBondDate, checkClassifications, appType) {
+function validateLPWithCSLB(licenseNumber, itemCap, fromACA, checkExpDate, checkWCDate, checkBondDate, checkClassifications, appType) {
     var lpsToValidate = [];
     var results = [];
     if(licenseNumber) {
@@ -7676,11 +7685,11 @@ function validateLPWithCSLB(licenseNumber, itemCap, checkExpDate, checkWCDate, c
         }
 
         //check if reference
-        var refLp = grabReferenceLicenseProfessional(licNum);
+        var refLp = grabReferenceLicenseProfessional(licNum, "Contractor");
         var referenceSeqNumber = null;
         if(!refLp) {
             var createReference = lookup("GRAYQUARTER", "CREATE_REFERENCE_LP");
-            if(createReference == "YES") {
+            if(createReference == "YES" && !fromACA) {
                 referenceSeqNumber = createReferenceLicenseProfessionalFromCSLB(licNum, cslbData, null);
                 validationObj.createdReference = true;
             }
@@ -7878,7 +7887,8 @@ function fetchCSLBData(licNum) {
             }
         }
         if(tag == "BusinessName" || tag == "Address" || tag == "SuretyCompany" || tag == "WorkersCompInsuranceCompany") {
-            value = String(value).replace(/&amp;/g, "&");
+            value = String(value).replace(/amp;/g, "");
+            value = String(value).replace(/&/g, "");
         }
         if(tag == "PhoneNumber") {
             var tempPhone = String(value).replace(/[^\d]/g, "");
@@ -7914,7 +7924,7 @@ function fetchCSLBData(licNum) {
 	}
 }
 
-function grabReferenceLicenseProfessional(licenseNumber) {
+function grabReferenceLicenseProfessional(licenseNumber, licenseType) {
 	var refLicenseResult = aa.licenseScript.getRefLicensesProfByLicNbr(aa.getServiceProviderCode(), licenseNumber);
 	if (!refLicenseResult.getSuccess()) {
         logDebug("Failed to get reference license professional " + refLicenseResult.getErrorType() + " : " + refLicenseResult.getErrorMessage());
@@ -7925,14 +7935,21 @@ function grabReferenceLicenseProfessional(licenseNumber) {
         logDebug("Reference LP Array returned null");
         return false;
     }
+    var firstReferenceFound = false;
     for (var refLpIndex in referenceLpArray) {
         var refLPObject = referenceLpArray[refLpIndex];
+        var refLPType = refLPObject.licenseType;
         var auditStatus = refLPObject.auditStatus;
         if(auditStatus == "A") {
-            return refLPObject;
+            if(licenseType && refLPType == licenseType) {
+                return refLPObject;
+            }
         }
     }
-    return false;
+    if(referenceLpArray[0]) {
+        firstReferenceFound = referenceLpArray[0];
+    }
+    return firstReferenceFound;
 }
 
 function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, businessLicense) {
@@ -8046,7 +8063,7 @@ function createReferenceLicenseProfessionalFromCSLB(licenseNumber, cslbData, bus
 }
 
 function addAttributesFromCSLB(licNum, cslbData) {
-    var refLp = grabReferenceLicenseProfessional(licNum);
+    var refLp = grabReferenceLicenseProfessional(licNum, "Contractor");
     if(!refLp) {
         logDebug("Reference lp is not created can't update");
         return false;
@@ -8099,7 +8116,7 @@ function addAttributesFromCSLB(licNum, cslbData) {
 }
 
 function syncReferenceLPWithCSLBData(licenseNumber, cslbData) {
-    var refLp = grabReferenceLicenseProfessional(licenseNumber);
+    var refLp = grabReferenceLicenseProfessional(licenseNumber, "Contractor");
     if(!refLp) {
         logDebug("Reference lp is not created can't update");
         return false;
@@ -8304,12 +8321,9 @@ function addRefLPConditionBySeq(referenceSeqNumber, conditionType, conditionName
     return false;
 }
 
-function getRefrenceLPRecords(licenseNum, refLpObj) {
+function getRefrenceLPRecords(refLpObj) {
     var referenceLPModel = refLpObj;
     var records = [];
-    if(!refLpObj && licenseNum) {
-        referenceLPModel = grabReferenceLicenseProfessional(licenseNum);
-    }
     if(!referenceLPModel) {
         logDebug("Did not have reference LP model so returned 0 records");
         return records;
@@ -8382,9 +8396,6 @@ function syncReferenceLPToRecord(itemCap, licenseNum, refLpModel) {
         return false;
     }
     var referenceLP = refLpModel;
-    if(!refLpModel && licenseNum) {
-        referenceLP = grabReferenceLicenseProfessional(licenseNum);
-    }
     if(!referenceLP) {
         logDebug("Did not have reference LP model so could not update " + itemCap.getCustomID());
         return false;
@@ -8435,13 +8446,13 @@ function syncReferenceLPToRecord(itemCap, licenseNum, refLpModel) {
     return true;
 }
 
-function syncTransactionalLPToReferenceLP(transLicNum, transObj) {
-    var refObj = grabReferenceLicenseProfessional(transLicNum);
+function syncTransactionalLPToReferenceLP(transLicNum, transLicType, transObj) {
+    var refObj = grabReferenceLicenseProfessional(transLicNum, transLicType);
     if(!refObj) {
-        logDebug("Unable to sync transactional due to no reference found");
-        //TODO: Additional functionality can create reference from transactional?
+        logDebug("No reference found");
         return false;
     }
+
     if (transObj.getAddress1())
         refObj.setAddress1(transObj.getAddress1());
     if (transObj.getAddress2())
@@ -8677,8 +8688,8 @@ function getHDLPassword() {
     return hdlEncodedPassword;
 }
 
-function updateLPAttribute(licNum, attributeField, attributeValue) {
-    var refLp = grabReferenceLicenseProfessional(licNum);
+function updateLPAttribute(licNum, licType, attributeField, attributeValue) {
+    var refLp = grabReferenceLicenseProfessional(licNum, licType);
     if(!refLp) {
         logDebug("Reference lp does not exist " + licNum + " can't update");
         return false;
@@ -8711,8 +8722,8 @@ function updateLPAttribute(licNum, attributeField, attributeValue) {
     }
 }
 
-function getLPAttribute(licNum, attributeField) {
-    var refLp = grabReferenceLicenseProfessional(licNum);
+function getLPAttribute(licNum, licType, attributeField) {
+    var refLp = grabReferenceLicenseProfessional(licNum, licType);
     if(!refLp) {
         logDebug("Reference lp does not exist " + licNum + " can't update");
         return false;
@@ -9226,6 +9237,42 @@ function searchPINSIDByRefLPSeq(refLPSeq, authObj) {
     return false;
 }
 
+function searchPINSOnlyProfessionals(email) {
+    var recordList = [];
+    var sql = "SELECT * \
+        FROM RSTATE_LIC \
+        WHERE SERV_PROV_CODE='" + aa.getServiceProviderCode() + "' \
+        AND LIC_TYPE = 'PINSOnly' \
+        AND EMAIL = '" + email + "' \
+        AND REC_STATUS = 'A'";
+
+    logDebug(sql);
+    var dq = aa.db.select(sql, []);// only accela hosted have to do the old lookup way agencys
+    if (dq.getSuccess()) {
+        var dso = dq.getOutput();
+        if (dso) {
+            var a = [];
+            var ds = dso.toArray();
+            for (var x in ds) {
+                var r = {};
+                var row = ds[x];
+                var ks = ds[x].keySet().toArray();
+                for (var c in ks) {
+                    r[ks[c]] = String(row.get(ks[c]));
+                    aa.print(ks[c] + ": " + (row.get(ks[c])));
+                }
+                a.push(r);
+            }
+            logDebug("Query returned " + a.length + " records");
+            recordList = a;
+        }
+        logDebug("Successful query.");
+    } else {
+        logDebug("Unsuccessful query because " + dq.getErrorMessage());
+    }
+    return recordList;
+}
+
 function loadStdChoiceObj(stdChoiceName) {
     var stdChoiceObj = aa.bizDomain.getBizDomain(stdChoiceName).getOutput();
     if(!stdChoiceObj) {
@@ -9248,4 +9295,1273 @@ function loadStdChoiceObj(stdChoiceName) {
     }
     logDebug("Loaded " + activeCount + " std choice values from " + stdChoiceName);
     return returnObj;
+}
+function addFee(fcode,fsched,fperiod,fqty,finvoice) // Adds a single fee, optional argument: fCap
+	{
+	// Updated Script will return feeSeq number or null if error encountered (SR5112)
+	var feeCap = capId;
+	var feeCapMessage = "";
+	var feeSeq_L = new Array();				// invoicing fee for CAP in args
+	var paymentPeriod_L = new Array();			// invoicing pay periods for CAP in args
+	var feeSeq = null;
+	if (arguments.length > 5)
+		{
+		feeCap = arguments[5]; // use cap ID specified in args
+		feeCapMessage = " to specified CAP";
+		}
+        var startDate = new Date(lookup("B_COMBOX_StartDate", "Start")).setHours(0, 0, 0, 0);
+        var today = new Date().setHours(0, 0, 0, 0);
+        if(fsched == "B_COMBO" && today>= startDate)
+            fsched = "B_COMBOX"
+        if(fsched == "B_SOLARAPP" && today>= startDate)
+            fsched = "B_SOLARAPPX"
+	assessFeeResult = aa.finance.createFeeItem(feeCap,fsched,fcode,fperiod,fqty);
+	if (assessFeeResult.getSuccess())
+		{
+		feeSeq = assessFeeResult.getOutput();
+		logMessage("Successfully added Fee " + fcode + ", Qty " + fqty + feeCapMessage);
+		logDebug("The assessed fee Sequence Number " + feeSeq + feeCapMessage);
+
+		if (finvoice == "Y" && arguments.length == 5) // use current CAP
+			{
+			feeSeqList.push(feeSeq);
+			paymentPeriodList.push(fperiod);
+			}
+		if (finvoice == "Y" && arguments.length > 5) // use CAP in args
+			{
+			feeSeq_L.push(feeSeq);
+			paymentPeriod_L.push(fperiod);
+			var invoiceResult_L = aa.finance.createInvoice(feeCap, feeSeq_L, paymentPeriod_L);
+			if (invoiceResult_L.getSuccess())
+				logMessage("Invoicing assessed fee items" + feeCapMessage + " is successful.");
+			else
+				logDebug("**ERROR: Invoicing the fee items assessed" + feeCapMessage + " was not successful.  Reason: " +  invoiceResult.getErrorMessage());
+			}
+		}
+	else
+		{
+		logDebug( "**ERROR: assessing fee (" + fcode + "): " + assessFeeResult.getErrorMessage());
+		feeSeq = null;
+		}
+var s_result = aa.cap.getBValuatn4AddtInfo(capId).getOutput();
+if(s_result)
+{
+    var jobValue = parseFloat(s_result.getEstimatedValue());
+    var getFeeResult = aa.fee.getFeeItems(capId, null, "NEW");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList) {
+           if (feeList[feeNum].getFeeCod() == "PVRES") {
+                var finalFee = 0.0;
+                var pvUnits = parseInt(AInfo["System Size (KW)"]);
+                if(typeof AInfo["System Size (KW)"] === "undefined" || AInfo["System Size (KW)"] == "undefined")
+                    pvUnits = parseInt(AInfo["System Size"]);
+                finalFee+= 450.0;
+                if(pvUnits > 15)
+                    finalFee+= (15 * (pvUnits-15));
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "PVCOM") {
+                var finalFee = 0.0;
+                var pvUnits = parseInt(AInfo["System Size (KW)"]);
+                if(typeof AInfo["System Size (KW)"] === "undefined" || AInfo["System Size (KW)"] == "undefined")
+                    pvUnits = parseInt(AInfo["System Size"]);
+                finalFee+= 956.0;
+                if(pvUnits > 50 && pvUnits <=250)
+                    finalFee+= (7 * (pvUnits-50));
+                if(pvUnits > 250)
+                {
+                    finalFee+= 1400.0 + (5 * (pvUnits-250));
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "SMI RESIDENT") {
+                var finalFee = 0.00013 * jobValue;
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "BCEC") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=319.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 31.86;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 31.86;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.06;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.93;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=903.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.32;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=1062.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.13;
+                }
+                else if(jobValue >= 5000001)
+                {
+                    baseVal = 5000000;
+                    finalFee+=1593.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.13;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "BPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "CPF") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = finalFee * 0.1084;
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "PLNC") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=212.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=266.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.62;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=319.0 + Math.floor(((jobValue-baseVal)/1000)) * 9.29;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=690.0 + Math.floor(((jobValue-baseVal)/1000)) * 4.25;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=903.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.33;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=1434.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.74;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=1805.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.45;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=3611.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.68;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=7010.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.51;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=27454.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.55;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "EPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 74.34;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1328.0 + Math.floor(((jobValue-baseVal)/1000)) * 9.29;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1699.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2761.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.32;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=4089.0 + Math.floor(((jobValue-baseVal)/1000)) * 8.18;
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "MPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 74.34;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1328.0 + Math.floor(((jobValue-baseVal)/1000)) * 6.64;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1593.0 + Math.floor(((jobValue-baseVal)/1000)) * 23.37;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2761.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.19;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=4036.0 + Math.floor(((jobValue-baseVal)/1000)) * 8.07;
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "PPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 63.72;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1274.0 + Math.floor(((jobValue-baseVal)/1000)) * 6.64;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1540.0 + Math.floor(((jobValue-baseVal)/1000)) * 18.05;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2443.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.05;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=3664.0 + Math.floor(((jobValue-baseVal)/1000)) * 7.33;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+if (feeList[feeNum].getFeeCod() == "MISC") {
+                var finalFee = 0.0;
+                var projectArea = parseFloat(AInfo["Project Area (Sq. Ft.)"]);
+                var alias = aa.cap.getCap(capId).getOutput().getCapType().getAlias();
+                if(matches(alias,"Commercial Accessory Permit", "Commercial Addition Permit", "Commercial Alteration Permit"
+                ,"Commercial Cell Permit", "Commercial Electric Permit","Commercial Mechanical Permit","Commercial Solar Permit"))
+                {
+                    if(projectArea <= 5000)
+                    {
+                        finalFee += 2046.00;
+                    }
+                    else if(projectArea>5000 && projectArea<= 45000)
+                    {
+                        finalFee += 2046.00;
+                    }
+                    else
+                    {
+                        finalFee += 2558.00;
+                    }
+                }
+                else
+                if(matches(alias,"Residential Accessory Dwelling Unit", "Residential Accessory Permit", "Residential Addition Permit"
+                    ,"Residential Alteration Permit", "Residential Electrical Permit","Residential New Construction Permit"))
+                {
+                    finalFee+= 1535.00
+                }
+                else
+                if(matches(alias,"Commercial New Construction Permit"))
+                {
+                    if(projectArea <= 5000)
+                    {
+                        finalFee += 1535.00;
+                    }
+                    else if(projectArea>5000 && projectArea<= 45000)
+                    {
+                        finalFee += 2558.00;
+                    }
+                    else
+                    {
+                        finalFee += 3070.00;
+                    }
+
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "BAUT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = (finalFee * 6.92)/100;
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+        }
+    }
+}
+	return feeSeq;
+
+	}
+
+function addFeeWithExtraData(fcode, fsched, fperiod, fqty, finvoice, feeCap, feeComment, UDF1, UDF2) {
+    var feeCapMessage = "";
+    var feeSeq_L = new Array(); 			// invoicing fee for CAP in args
+    var paymentPeriod_L = new Array(); 		// invoicing pay periods for CAP in args
+        var startDate = new Date(lookup("B_COMBOX_StartDate", "Start")).setHours(0, 0, 0, 0);
+        var today = new Date().setHours(0, 0, 0, 0);
+        if(fsched == "B_COMBO" && today>= startDate)
+            fsched = "B_COMBOX"
+        if(fsched == "B_SOLARAPP" && today>= startDate)
+            fsched = "B_SOLARAPPX"
+    assessFeeResult = aa.finance.createFeeItem(feeCap, fsched, fcode, fperiod, fqty);
+    if (assessFeeResult.getSuccess()) {
+        feeSeq = assessFeeResult.getOutput();
+        logMessage("Successfully added Fee " + fcode + ", Qty " + fqty + feeCapMessage);
+        logDebug("The assessed fee Sequence Number " + feeSeq + feeCapMessage);
+
+        fsm = aa.finance.getFeeItemByPK(feeCap, feeSeq).getOutput().getF4FeeItem();
+
+        if (feeComment) fsm.setFeeNotes(feeComment);
+        if (UDF1) fsm.setUdf1(UDF1);
+        if (UDF2) fsm.setUdf2(UDF2);
+
+        aa.finance.editFeeItem(fsm)
+
+
+        if (finvoice == "Y" && arguments.length == 5) // use current CAP
+        {
+            feeSeqList.push(feeSeq);
+            paymentPeriodList.push(fperiod);
+        }
+        if (finvoice == "Y" && arguments.length > 5) // use CAP in args
+        {
+            feeSeq_L.push(feeSeq);
+            paymentPeriod_L.push(fperiod);
+            var invoiceResult_L = aa.finance.createInvoice(feeCap, feeSeq_L, paymentPeriod_L);
+            if (invoiceResult_L.getSuccess())
+                logMessage("Invoicing assessed fee items is successful.");
+            else
+                logDebug("**ERROR: Invoicing the fee items assessed was not successful.  Reason: " + invoiceResult.getErrorMessage());
+        }
+    }
+    else {
+        logDebug("**ERROR: assessing fee (" + fcode + "): " + assessFeeResult.getErrorMessage());
+        return null;
+    }
+var s_result = aa.cap.getBValuatn4AddtInfo(capId).getOutput();
+if(s_result)
+{
+    var jobValue = parseFloat(s_result.getEstimatedValue());
+    var getFeeResult = aa.fee.getFeeItems(capId, null, "NEW");
+    if (getFeeResult.getSuccess()) {
+        var feeList = getFeeResult.getOutput();
+        for (feeNum in feeList) {
+           if (feeList[feeNum].getFeeCod() == "PVRES") {
+                var finalFee = 0.0;
+                var pvUnits = parseInt(AInfo["System Size (KW)"]);
+                if(typeof AInfo["System Size (KW)"] === "undefined" || AInfo["System Size (KW)"] == "undefined")
+                    pvUnits = parseInt(AInfo["System Size"]);
+                finalFee+= 450.0;
+                if(pvUnits > 15)
+                    finalFee+= (15 * (pvUnits-15));
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "PVCOM") {
+                var finalFee = 0.0;
+                var pvUnits = parseInt(AInfo["System Size (KW)"]);
+                if(typeof AInfo["System Size (KW)"] === "undefined" || AInfo["System Size (KW)"] == "undefined")
+                    pvUnits = parseInt(AInfo["System Size"]);
+                finalFee+= 956.0;
+                if(pvUnits > 50 && pvUnits <=250)
+                    finalFee+= (7 * (pvUnits-50));
+                if(pvUnits > 250)
+                {
+                    finalFee+= 1400.0 + (5 * (pvUnits-250));
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "SMI RESIDENT") {
+                var finalFee = 0.00013 * jobValue;
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "BCEC") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=319.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 31.86;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 31.86;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=478.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.06;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.93;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=903.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.32;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=1062.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.13;
+                }
+                else if(jobValue >= 5000001)
+                {
+                    baseVal = 5000000;
+                    finalFee+=1593.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.13;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "BPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "CPF") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = finalFee * 0.1084;
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+if (feeList[feeNum].getFeeCod() == "MISC") {
+                var finalFee = 0.0;
+                var projectArea = parseFloat(AInfo["Project Area (Sq. Ft.)"]);
+                var alias = aa.cap.getCap(capId).getOutput().getCapType().getAlias();
+                if(matches(alias,"Commercial Accessory Permit", "Commercial Addition Permit", "Commercial Alteration Permit"
+                ,"Commercial Cell Permit", "Commercial Electric Permit","Commercial Mechanical Permit","Commercial Solar Permit"))
+                {
+                    if(projectArea <= 5000)
+                    {
+                        finalFee += 2046.00;
+                    }
+                    else if(projectArea>5000 && projectArea<= 45000)
+                    {
+                        finalFee += 2046.00;
+                    }
+                    else
+                    {
+                        finalFee += 2558.00;
+                    }
+                }
+                else
+                if(matches(alias,"Residential Accessory Dwelling Unit", "Residential Accessory Permit", "Residential Addition Permit"
+                    ,"Residential Alteration Permit", "Residential Electrical Permit","Residential New Construction Permit"))
+                {
+                    finalFee+= 1535.00
+                }
+                else
+                if(matches(alias,"Commercial New Construction Permit"))
+                {
+                    if(projectArea <= 5000)
+                    {
+                        finalFee += 1535.00;
+                    }
+                    else if(projectArea>5000 && projectArea<= 45000)
+                    {
+                        finalFee += 2558.00;
+                    }
+                    else
+                    {
+                        finalFee += 3070.00;
+                    }
+
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "PLNC") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=212.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=266.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.62;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=319.0 + Math.floor(((jobValue-baseVal)/1000)) * 9.29;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=690.0 + Math.floor(((jobValue-baseVal)/1000)) * 4.25;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=903.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.33;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=1434.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.74;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=1805.0 + Math.floor(((jobValue-baseVal)/1000)) * 0.45;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=3611.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.68;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=7010.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.51;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=27454.0 + Math.floor(((jobValue-baseVal)/1000)) *  0.55;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "EPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 74.34;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1328.0 + Math.floor(((jobValue-baseVal)/1000)) * 9.29;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1699.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2761.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.32;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=4089.0 + Math.floor(((jobValue-baseVal)/1000)) * 8.18;
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+
+            if (feeList[feeNum].getFeeCod() == "MPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 74.34;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1328.0 + Math.floor(((jobValue-baseVal)/1000)) * 6.64;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1593.0 + Math.floor(((jobValue-baseVal)/1000)) * 23.37;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2761.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.19;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=4036.0 + Math.floor(((jobValue-baseVal)/1000)) * 8.07;
+                }
+
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "PPMT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=425.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=956.0 + Math.floor(((jobValue-baseVal)/1000)) * 63.72;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=1274.0 + Math.floor(((jobValue-baseVal)/1000)) * 6.64;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1540.0 + Math.floor(((jobValue-baseVal)/1000)) * 18.05;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2443.0 + Math.floor(((jobValue-baseVal)/1000)) * 3.05;
+                }
+                else if(jobValue >= 500001)
+                {
+                    baseVal = 500000;
+                    finalFee+=3664.0 + Math.floor(((jobValue-baseVal)/1000)) * 7.33;
+                }
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+            if (feeList[feeNum].getFeeCod() == "BAUT") {
+                var finalFee = 0.0;
+                var baseVal = 0;
+                if(jobValue >= 1 && jobValue<= 5000)
+                {
+                    baseVal = 0;
+                    finalFee+=531.0;
+                }
+                else if(jobValue >= 5001 && jobValue<= 10000)
+                {
+                    baseVal = 5000;
+                    finalFee+=531.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 10001 && jobValue<= 50000)
+                {
+                    baseVal = 10000;
+                    finalFee+=637.0 + Math.floor(((jobValue-baseVal)/1000)) * 14.60;
+                }
+                else if(jobValue >= 50001 && jobValue<= 100000)
+                {
+                    baseVal = 50000;
+                    finalFee+=1221.0 + Math.floor(((jobValue-baseVal)/1000)) * 21.24;
+                }
+                else if(jobValue >= 100001 && jobValue<= 500000)
+                {
+                    baseVal = 100000;
+                    finalFee+=2283.0 + Math.floor(((jobValue-baseVal)/1000)) * 10.75;
+                }
+                else if(jobValue >= 500001 && jobValue<= 1000000)
+                {
+                    baseVal = 500000;
+                    finalFee+=6585.0 + Math.floor(((jobValue-baseVal)/1000)) * 2.34;
+                }
+                else if(jobValue >= 1000001 && jobValue<= 5000000)
+                {
+                    baseVal = 1000000;
+                    finalFee+=7753.0 + Math.floor(((jobValue-baseVal)/1000)) * 1.62;
+                }
+                else if(jobValue >= 5000001 && jobValue<= 10000000)
+                {
+                    baseVal = 5000000;
+                    finalFee+=14231.0 + Math.floor(((jobValue-baseVal)/1000)) *  5.78;
+                }
+                else if(jobValue >= 10000001 && jobValue<= 50000000)
+                {
+                    baseVal = 10000000;
+                    finalFee+=43119.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                else if(jobValue >= 50000001 )
+                {
+                    baseVal = 50000000;
+                    finalFee+=108329.0 + Math.floor(((jobValue-baseVal)/1000)) *  1.63;
+                }
+                finalFee = (finalFee * 6.92)/100;
+                finalFee = finalFee.toFixed(2);
+                var feeSeq = feeList[feeNum].getFeeSeqNbr();
+                var feeItemScript = aa.finance.getFeeItemByPK(capId, feeSeq);
+                if (feeItemScript.getSuccess()) {
+                    var feeItem = feeItemScript.getOutput().getF4FeeItem();
+                    feeItem.setFeeUnit(1);
+                    feeItem.setFee(finalFee);
+                    feeItem.setCalcFlag("Y");
+                    feeItem.setFormula(null);
+                    aa.finance.editFeeItem(feeItem).getSuccess();
+                }
+            }
+        }
+    }
+}
+
+    return feeSeq;
+
 }

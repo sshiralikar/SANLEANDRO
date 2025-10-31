@@ -91,6 +91,11 @@ function mainProccess() {
         }
 
         logDebug(lpNum);
+
+        // if(lpNum != "25-PEOP-00002") {
+        //     continue;
+        // }
+
         logDebug(altId);
         logDebug(recType);
         var requiredTemplate = templateMapping[recType];
@@ -107,7 +112,7 @@ function mainProccess() {
             logDebug("Process the result of the call");
             var currentPinsStatus = pinsCache[lpNum][requiredTemplate];
             logDebug("Current PINS status: " + currentPinsStatus)
-            var result = insuredTemplateStatus == "approved" ? true : false;
+            var result = currentPinsStatus == "approved" ? true : false;
             if(!result) {
                 lpsToLock[lpNum].permits.push(altId);
             }
@@ -133,6 +138,7 @@ function mainProccess() {
                 pinsCache[lpNum] = {};
                 for(var dataIndex in insuredData) {
                     var dataObj = insuredData[dataIndex];
+                    props(dataObj);
                     var insuredTemplate = dataObj.contract_number;
                     var insuredTemplateStatus = dataObj.status;
                     pinsCache[lpNum][insuredTemplate] = dataObj.status;
@@ -141,7 +147,7 @@ function mainProccess() {
                         logDebug("Still in compliance: " + result);
 
                         //testing
-                        sqlObj["EMAIL"] = "sal@grayquarter.com";
+                        // sqlObj["EMAIL"] = "sguerrero@govpath.tech";
 
                         if(!result) {
                             lpsToLock[lpNum] = {
@@ -163,12 +169,15 @@ function mainProccess() {
     logDebug("");
     logDebug("Applying locks and adding to set");
     var expiredLps = [];
+    var inspectorsData = [];
+    //E16-0298
     for(var lpNum in lpsToLock) {
         var expiredObj = lpsToLock[lpNum];
         var lpName = expiredObj["businessName"];
         expiredLps.push(lpNum + " " + lpName);
         var lpEmail = expiredObj["email"];
         var expiredPermits = expiredObj.permits;
+        logDebug("");
         logDebug("Name: " + lpName);
         logDebug("Email: " + lpEmail);
         logDebug("Locks placing: " + expiredPermits.length);
@@ -195,10 +204,20 @@ function mainProccess() {
             var emailParams = aa.util.newHashtable();
             emailParams.put("$$businessName$$", lpName);
             emailParams.put("$$permits$$", permitData.join("\n"));
+            inspectorsData = inspectorsData.concat(permitData);
             sendNotificationNoCap("", lpEmail, "", "PINS_EXPIRED_NOTICE", emailParams, []);
+            // break;
         } else {
             logDebug("No email found for " + lpNum);
         }
+    }
+
+    logDebug("");
+    logDebug("Permits locked: " + inspectorsData.length);
+    if(inspectorsData.length > 0) {
+        var emailParams = aa.util.newHashtable();
+        emailParams.put("$$permits$$", inspectorsData.join("\n"));
+        sendNotificationNoCap("", "", "", "PINS_INSP_TEAM_LOCK_NOTICE", emailParams, []);
     }
 }
 
