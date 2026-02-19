@@ -46,7 +46,7 @@ try {
                     failedValidation = true;
 
                     //if it's missing a 0 let's try adding it
-                    if(!String(businessLicenseField.value)[0] == "0") {
+                    if(!(String(businessLicenseField.value)[0] == "0")) {
 
                         var tempLicenseNum = businessLicenseField.value;
                         businessLicenseField.value = "0" + businessLicenseField.value;

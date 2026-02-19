@@ -6,19 +6,15 @@ for(var i in transLPS) {
     var transactionalLPType = transactionalLP.licenseType;
 
     //only sync with contractor types from CSLB
-    if(transLPType == "Contractor") {
+    if(transactionalLPType == "Contractor") {
         logDebug("Syncing " + transactionalLPNumber + " from " + capId.getCustomID());
-        var syncedRefModel = syncTransactionalLPToReferenceLP(transactionalLPNumber, transactionalLPType, transactionalLP);
-
-        //get all current records and sync them.
-        //not doing incase agency wants transactional info of lp on cap
-        // var currentRecords = getRefrenceLPRecords(syncedRefModel);
-        // for(var currentRecordsIndex in currentRecords) {
-        //     var currentRec = currentRecords[currentRecordsIndex];
-        //     syncReferenceLPToRecord(currentRec, transLPNumber, syncedRefModel);
-        // }
-
-        //finally sync the currently submitted one
-        syncReferenceLPToRecord(capId, transactionalLPNumber, syncedRefModel);
+        var refModel = null;
+        if(!grabReferenceLicenseProfessional(transactionalLPNumber, transactionalLPType)) {
+            logDebug("Creating reference");
+            refModel = createReferenceLicenseProf(transactionalLP, transactionalLPNumber, transactionalLPType);
+        } else {
+            refModel = syncTransactionalLPToReferenceLP(transactionalLPNumber, transactionalLPType, transactionalLP);
+        }
+        syncReferenceLPToRecord(capId, transactionalLPNumber, transactionalLPType, refModel);
     }
 }

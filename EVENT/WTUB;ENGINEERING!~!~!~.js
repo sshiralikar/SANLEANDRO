@@ -92,7 +92,7 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
         var idsToUpdate = [];
         var notifyPINS = [];
         var pinsAuth = getPINSAuthObject();
-        var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
+        var templateRequirementsObj = getPINSTemplateRequirements(capId);
         var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
 
         var utilityPermit = appMatch("Engineering/Utility/*/*", capId);
@@ -102,6 +102,10 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
             var lpType = lp.licenseType;
             if(validPINSLPMap[lpType] != "true") {
                continue;
+            }
+            if(utilityPermit && lpType != "Utility") {
+                logDebug("Only the utility needs PINS requirements skipping record creation");
+                continue;
             }
             var licNum = lp.licenseNbr;
             var refLp = grabReferenceLicenseProfessional(licNum, lpType);
@@ -146,15 +150,10 @@ if(wfTask == "Plans Coordination" && wfStatus == "Hold for Signature") {
             var lpCity = refLp.city ? refLp.city : "";
             var lpState = refLp.licState ? refLp.licState : "";
             var lpCountry = "US";
-            var lpZip = refLp.zip ? refLp.zip : "";;
+            var lpZip = refLp.zip ? refLp.zip : "";
             var description = ["License Number: " + licNum, "License Type: " + lpType];
             var insuredObj = createPINSInsured(lpName + " - " + licNum, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
-                // updateLPAttribute(licNum, "PINS Reference ID", insuredObj.id);
-                if(utilityPermit && lpType != "Utility") {
-                    logDebug("Only the utility needs PINS requirements skipping record creation");
-                    continue;
-                }
                 pinsValidationErrors.push(licNum + " was not in PINS and therefore could not reach requirements");
                 idsToUpdate.push({
                     licNum: String(licNum),

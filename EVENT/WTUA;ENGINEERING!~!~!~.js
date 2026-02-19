@@ -427,7 +427,7 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
     if(professionals) {
         var pinIDsToCheck = [];
         var pinsAuth = getPINSAuthObject();
-        var templateRequirementsObj = getPINSTemplateRequirements(capId, pinsAuth);
+        var templateRequirementsObj = getPINSTemplateRequirements(capId);
         var validPINSLPMap = loadStdChoiceObj("PINS_LICENSE_PROFESSIONAL_TYPES");
 
         var utilityPermit = appMatch("Engineering/Utility/*/*", capId);
@@ -438,6 +438,12 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
             if(validPINSLPMap[lpType] != "true") {
                continue;
             }
+
+			if(utilityPermit && lpType != "Utility") {
+				logDebug("Only the utility needs PINS requirements skipping record creation");
+				continue;
+			}
+
             var licNum = lp.licenseNbr;
             var pinsId = getLPAttribute(licNum, lpType, "PINS Reference ID");
             logDebug("Checking PINS reference on " + licNum + " " + lpType);
@@ -475,12 +481,6 @@ if((wfTask == "Application Intake" || wfTask == "Application Submittal") && Stri
             var insuredObj = createPINSInsured(lpName + " - " + licNum, lpEmail, lpName, lpAddress, lpCity, lpState, lpCountry, lpZip, description.join("\n"), lpType, licSeqNumber, pinsAuth);
             if(insuredObj) {
                 updateLPAttribute(licNum, lpType, "PINS Reference ID", insuredObj.id);
-
-                if(utilityPermit && lpType != "Utility") {
-                    logDebug("Only the utility needs PINS requirements skipping record creation");
-                    continue;
-                }
-
                 createPINSRecord(insuredObj.id, "", templateRequirementsObj.id, templateRequirementsObj.name, pinsAuth);
             }
         }

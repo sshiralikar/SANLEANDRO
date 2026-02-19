@@ -8389,13 +8389,16 @@ function grabTransactionalLicenseProfessional(licenseNumber, itemCap) {
     return false;
 }
 
-function syncReferenceLPToRecord(itemCap, licenseNum, refLpModel) {
+function syncReferenceLPToRecord(itemCap, licenseNum, licenseType, refLpModel) {
 
     if(!itemCap) {
         logDebug("No record provided not sycing reference lp");
         return false;
     }
     var referenceLP = refLpModel;
+    if(!refLpModel && licenseNum) {
+        referenceLP = grabReferenceLicenseProfessional(licenseNum, licenseType);
+    }
     if(!referenceLP) {
         logDebug("Did not have reference LP model so could not update " + itemCap.getCustomID());
         return false;
@@ -9047,7 +9050,7 @@ function getPINSTemplates(authObj) {
     }
 }
 
-function getPINSTemplateRequirements(itemCap, authObj) {
+function getPINSTemplateRequirements(itemCap) {
 
     if(!itemCap) {
         logDebug("No record provided to get template requirements");
@@ -9071,17 +9074,11 @@ function getPINSTemplateRequirements(itemCap, authObj) {
 
     logDebug(recordType + " requires " + pinsRequiredTemplate);
 
-    var templates = getPINSTemplates(authObj);
-    for(var templateIndex in templates) {
-        var template = templates[templateIndex];
-        var templateName = template["name"];
-        var templateId = template["id"];
-        if(templateName == pinsRequiredTemplate) {
-            logDebug("Found template ID: " + templateId);
-            return {
-                id: String(templateId),
-                name: String(templateName)
-            };
+    var idMapping = loadStdChoiceObj("PINS_TEMPLATE_ID_MAPPING");
+    if(idMapping[String(pinsRequiredTemplate)]) {
+        return {
+            name: pinsRequiredTemplate,
+            id: idMapping[String(pinsRequiredTemplate)]
         }
     }
     return false;

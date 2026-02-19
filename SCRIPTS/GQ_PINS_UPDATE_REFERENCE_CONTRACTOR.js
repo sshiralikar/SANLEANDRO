@@ -28,17 +28,16 @@ eval(getScriptText("INCLUDES_CUSTOM", null, false));
 try {
 
     var pinsData = aa.env.getValue("pinsData");
-    // slackLocal("Pins Data: " + pinsData);
+    logDebug("Pins Data: " + pinsData);
     if(pinsData) {
         pinsData = JSON.parse(pinsData);
-        aa.print("Updating " + pinsData.length);
-        // slackLocal("Pins Data: " + pinsData.length);
+        logDebug("Updating " + pinsData.length);
         pinsData.forEach(function (pinsObj) {
             var licNum = pinsObj.licNum;
             var pinsId = pinsObj.pinsId;
             var lpType = pinsObj.pinsObj.lpType;
             updateLPAttribute(licNum, lpType, "PINS Reference ID", pinsId);
-            // slackLocal(licNum + " updated: " + pinsId);
+            logDebug(licNum + " updated: " + pinsId);
         })
     }
 
@@ -46,7 +45,7 @@ try {
     aa.print(err + " " + err.lineNumber);
     slackLocal(err + " " + err.lineNumber);
 }
-
+slackLocal(debug);
 
 function getScriptText(vScriptName) {
     var servProvCode = aa.getServiceProviderCode();
@@ -133,7 +132,7 @@ function slackLocal(msg) {
     headers.put("Content-Type","application/json");
 
     var body = {};
-    body.text = aa.getServiceProviderCode() + ":" + "SUPP" + ": " + msg;
+    body.text = aa.getServiceProviderCode() + ":" + "PROD" + ": " + msg;
 
     //GQ Slack
     // var SLACKURL = "https://hooks.slack.com/services/";

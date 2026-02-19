@@ -30,7 +30,7 @@ eval('function logDebug(msg) { debug += msg + "<BR>"; }');
 try {
 
     var pinsData = aa.env.getValue("pinsData");
-    // slackLocal("Pins Data: " + pinsData);
+    logDebug("Pins Data: " + pinsData);
     if(pinsData) {
         pinsData = JSON.parse(pinsData);
         logDebug("Notifying " + pinsData.length);
@@ -49,6 +49,7 @@ try {
     logDebug(err + " " + err.lineNumber);
     slackLocal(err + " " + err.lineNumber);
 }
+slackLocal(debug);
 
 aa.env.setValue("ScriptReturnCode", "0");
 aa.env.setValue("ScriptReturnMessage", debug);

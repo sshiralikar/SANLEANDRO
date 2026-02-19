@@ -1,18 +1,6 @@
 (function () {
     try {
 
-        var ignoreRecordTypes = {
-            // "Engineering/Encroachment/Containers/NA": true,
-            "Engineering/Encroachment/Annual/NA": true,
-            "Engineering/Encroachment/Tree/NA": true,
-            "Engineering/Utility/Access Only/NA": true,
-        }
-
-        if(ignoreRecordTypes[String(appTypeString)]) {
-            logDebug("Ignoring PCI condition");
-            return;
-        }
-
         var parcels = aa.parcel.getParcelByCapId(capId, null).getOutput();
         parcels = parcels.toArray();
         var pciValue = 0;
@@ -100,8 +88,37 @@
 
         editAppSpecific("Pavement Condition Index", pciValue, capId);
         logDebug("fcnValue: " + fcnValue);
-        var pciGrades = [];
-        var flagForRestoration = false;
+
+        if (fcnValue == "A") {
+			editAppSpecific("Road Type", "Arterial", capId);
+			editAppSpecific("Pavement Section 1", "9", capId);
+			editAppSpecific("Depth of Cover 1", "42", capId);
+		}
+		if (fcnValue == "C") {
+			editAppSpecific("Road Type", "Collector", capId);
+			editAppSpecific("Pavement Section 1", "9", capId);
+			editAppSpecific("Depth of Cover 1", "36", capId);
+		}
+		if (fcnValue == "R") {
+			editAppSpecific("Road Type", "Residential", capId);
+			editAppSpecific("Pavement Section 1", "6", capId);
+			editAppSpecific("Depth of Cover 1", "36", capId);
+		}
+		if (fcnValue == "S") {
+			editAppSpecific("Road Type", "School", capId);
+		}
+
+        var ignoreRecordTypes = {
+            // "Engineering/Encroachment/Containers/NA": true,
+            "Engineering/Encroachment/Annual/NA": true,
+            "Engineering/Encroachment/Tree/NA": true,
+            "Engineering/Utility/Access Only/NA": true,
+        }
+
+        if(ignoreRecordTypes[String(appTypeString)]) {
+            logDebug("Ignoring PCI condition");
+            return;
+        }
 
         if(pciValue > 85) {
             var restorationText = "PCI is greater than 85 and will require a larger area of restoration";
@@ -123,24 +140,6 @@
                 }
             }
         }
-        if (fcnValue == "A") {
-			editAppSpecific("Road Type", "Arterial", capId);
-			editAppSpecific("Pavement Section 1", "9", capId);
-			editAppSpecific("Depth of Cover 1", "42", capId);
-		}
-		if (fcnValue == "C") {
-			editAppSpecific("Road Type", "Collector", capId);
-			editAppSpecific("Pavement Section 1", "9", capId);
-			editAppSpecific("Depth of Cover 1", "36", capId);
-		}
-		if (fcnValue == "R") {
-			editAppSpecific("Road Type", "Residential", capId);
-			editAppSpecific("Pavement Section 1", "6", capId);
-			editAppSpecific("Depth of Cover 1", "36", capId);
-		}
-		if (fcnValue == "S") {
-			editAppSpecific("Road Type", "School", capId);
-		}
     } catch (err) {
         logDebug("Error with PCI call for GIS " + err + " " + err.lineNumber);
         logDebug(debug);
