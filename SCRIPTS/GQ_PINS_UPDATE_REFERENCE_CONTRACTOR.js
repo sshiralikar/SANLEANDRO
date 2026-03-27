@@ -24,20 +24,20 @@ eval(getScriptText("INCLUDES_CUSTOM", null, false));
 //      }
 // ]
 // aa.env.setValue("pinsData", JSON.stringify(data));
-slackLocal("Executed GQ_PINS_UPDATE_REFERENCE_CONTRACTOR");
+// slackLocal("Executed GQ_PINS_UPDATE_REFERENCE_CONTRACTOR");
 try {
 
     var pinsData = aa.env.getValue("pinsData");
-    slackLocal("Pins Data: " + pinsData);
+    logDebug("Pins Data: " + pinsData);
     if(pinsData) {
         pinsData = JSON.parse(pinsData);
-        aa.print("Updating " + pinsData.length);
-        slackLocal("Pins Data: " + pinsData.length);
+        logDebug("Updating " + pinsData.length);
         pinsData.forEach(function (pinsObj) {
             var licNum = pinsObj.licNum;
             var pinsId = pinsObj.pinsId;
-            updateLPAttribute(licNum, "PINS Reference ID", pinsId);
-            slackLocal(licNum + " updated: " + pinsId);
+            var lpType = pinsObj.pinsObj.lpType;
+            updateLPAttribute(licNum, lpType, "PINS Reference ID", pinsId);
+            logDebug(licNum + " updated: " + pinsId);
         })
     }
 
@@ -45,7 +45,7 @@ try {
     aa.print(err + " " + err.lineNumber);
     slackLocal(err + " " + err.lineNumber);
 }
-
+slackLocal(debug);
 
 function getScriptText(vScriptName) {
     var servProvCode = aa.getServiceProviderCode();
@@ -60,8 +60,8 @@ function getScriptText(vScriptName) {
     }
 }
 
-function updateLPAttribute(licNum, attributeField, attributeValue) {
-    var refLp = grabReferenceLicenseProfessional(licNum);
+function updateLPAttribute(licNum, licType, attributeField, attributeValue) {
+    var refLp = grabReferenceLicenseProfessional(licNum, licType);
     if(!refLp) {
         logDebug("Reference lp does not exist " + licNum + " can't update");
         return false;
@@ -93,8 +93,7 @@ function updateLPAttribute(licNum, attributeField, attributeValue) {
         return false;
     }
 }
-
-function grabReferenceLicenseProfessional(licenseNumber) {
+function grabReferenceLicenseProfessional(licenseNumber, licenseType) {
 	var refLicenseResult = aa.licenseScript.getRefLicensesProfByLicNbr(aa.getServiceProviderCode(), licenseNumber);
 	if (!refLicenseResult.getSuccess()) {
         logDebug("Failed to get reference license professional " + refLicenseResult.getErrorType() + " : " + refLicenseResult.getErrorMessage());
@@ -105,14 +104,21 @@ function grabReferenceLicenseProfessional(licenseNumber) {
         logDebug("Reference LP Array returned null");
         return false;
     }
+    var firstReferenceFound = false;
     for (var refLpIndex in referenceLpArray) {
         var refLPObject = referenceLpArray[refLpIndex];
+        var refLPType = refLPObject.licenseType;
         var auditStatus = refLPObject.auditStatus;
         if(auditStatus == "A") {
-            return refLPObject;
+            if(licenseType && refLPType == licenseType) {
+                return refLPObject;
+            }
         }
     }
-    return false;
+    if(referenceLpArray[0]) {
+        firstReferenceFound = referenceLpArray[0];
+    }
+    return firstReferenceFound;
 }
 
 function slackLocal(msg) {
@@ -126,7 +132,7 @@ function slackLocal(msg) {
     headers.put("Content-Type","application/json");
 
     var body = {};
-    body.text = aa.getServiceProviderCode() + ":" + "SUPP" + ": " + msg;
+    body.text = aa.getServiceProviderCode() + ":" + "PROD" + ": " + msg;
 
     //GQ Slack
     // var SLACKURL = "https://hooks.slack.com/services/";

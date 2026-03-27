@@ -2,7 +2,7 @@
 | Program : ACA_ADDRESS_VALIDATE_CITY_LIMITS_BEFORE.js
 | Event   : ACA Before (Before)
 |
-| Usage   : 
+| Usage   :
 |
 | Client  : San Leandro
 | Action# : Query CityLimit layer and prevent ACA users from entering the address if outside the CityLimit layer
@@ -148,7 +148,7 @@ logDebug("balanceDue = " + balanceDue);
 // page flow custom code begin
 
 try {
-    // var showDebug = true; //testing
+    var showDebug = false; //testing
 
     var block = true;
     (function () {
@@ -172,18 +172,18 @@ try {
             if(obj) {
                 var gisTypeScriptModel = obj[0];
                 var buffObj = aa.gis.getGISType("SANLEANDRO", "CityLimit").getOutput();
-                var bufferArr = aa.gis.getBufferByRadius(gisTypeScriptModel, 0, 'FEET', buffObj).getOutput();                 
+                var bufferArr = aa.gis.getBufferByRadius(gisTypeScriptModel, -1, 'FEET', buffObj).getOutput();
                 if(!bufferArr.length) {
                     logDebug("No buffer array");
                     return;
-                }            
+                }
                 var gisObj = bufferArr[0].getGISObjects();
                 if(!gisObj.length) {
                     logDebug("Parcel Number does not exist within City Limit layer");
                     return;
                 }
-                block = false;                
-            }           
+                block = false;
+            }
         }
     })();
 
@@ -218,15 +218,15 @@ if (debug.indexOf("**ERROR") > 0) {
             aa.env.setValue("ErrorMessage", message);
         if (showDebug)
             aa.env.setValue("ScriptReturnMessage", debug);
-    } else {        
+    } else {
         aa.env.setValue("ScriptReturnCode", "0");
         if (showMessage) {
-            aa.env.setValue("ScriptReturnMessage", message);            
-        }            
-        if (showDebug) {
-            aa.env.setValue("ScriptReturnMessage", debug);            
+            aa.env.setValue("ScriptReturnMessage", message);
         }
-            
+        if (showDebug) {
+            aa.env.setValue("ScriptReturnMessage", debug);
+        }
+
     }
 }
 function getGISInfo2ASB(svc,layer,attributename) // optional: numDistance, distanceType
@@ -305,7 +305,7 @@ function props(objExplore) {
         if (typeof(objExplore[x]) != "function") {
             logDebug("  <b> " + x + ": </b> " + objExplore[x]);
             aa.print( x + " : " + objExplore[x]);
-        }	
+        }
     }
 }
 
@@ -322,6 +322,6 @@ function aaExplore(objExplore) {
     for (x in objExplore) {
         if (typeof(objExplore[x]) != "function") {
             aa.print(x + " : " + objExplore[x]);
-        } 
+        }
     }
 }

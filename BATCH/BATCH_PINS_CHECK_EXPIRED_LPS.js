@@ -99,7 +99,7 @@ function mainProccess() {
             logDebug("Process the result of the call");
             var currentPinsStatus = pinsCache[lpNum][requiredTemplate];
             logDebug("Current PINS status: " + currentPinsStatus)
-            var result = insuredTemplateStatus == "approved" ? true : false;
+            var result = currentPinsStatus == "approved" ? true : false;
             if(result) {
                 lpsToUnlock[lpNum].permits.push(altId);
             }
@@ -133,7 +133,7 @@ function mainProccess() {
                         logDebug("Still in compliance: " + result);
 
                         //testing
-                        sqlObj["EMAIL"] = "sal@grayquarter.com";
+                        // sqlObj["EMAIL"] = "sal@grayquarter.com";
 
                         if(result) {
                             lpsToUnlock[lpNum] = {
@@ -155,18 +155,22 @@ function mainProccess() {
     logDebug("");
     logDebug("Removing locks and removing from set");
     var validLps = [];
+    var inspectorsData = [];
     for(var lpNum in lpsToUnlock) {
         var expiredObj = lpsToUnlock[lpNum];
         var lpName = expiredObj["businessName"];
         validLps.push(lpNum + " " + lpName);
         var lpEmail = expiredObj["email"];
+
+        // lpEmail = "sguerrero@govpath.tech";
+        logDebug("");
         var validPermits = expiredObj.permits;
         logDebug("Name: " + lpName);
         logDebug("Email: " + lpEmail);
         logDebug("Removing locks: " + validPermits.length);
         var permitData = [];
         validPermits.forEach(function(altId) {
-            var capId = aa.cap.getCapID(altId).getOutput();
+            capId = aa.cap.getCapID(altId).getOutput();
             var addressLine = "N/A";
             var addresses = aa.address.getAddressByCapId(capId).getOutput();
             if(addresses && addresses.length > 0) {
@@ -177,7 +181,37 @@ function mainProccess() {
             var result = aa.set.removeSetHeadersListByCap("PINS_EXPIRED_INSURANCE", capId);
             if (result.getSuccess()) {
                 logDebug("Successfully removed " + altId + " from set");
-                removeCapCondition("Engineering", "PINS Insurance Expired", capId);
+                var conditions = aa.capCondition.getCapConditions(capId);
+                if(conditions.getSuccess()) {
+                    conditions = conditions.getOutput();
+                    if(conditions) {
+                        logDebug("Conditions found:" + conditions.length);
+                        for(var condIndex in conditions) {
+                            var condModel = conditions[condIndex];
+                            var condStatus = condModel.conditionStatus;
+                            var condName = condModel.conditionDescription;
+                            var meetCondition = false;
+                            if("Applied".equals(condStatus)) {
+                                if(condName == "PINS Insurance Expired") {
+                                    meetCondition = true;
+                                }
+                            }
+                            if(meetCondition) {
+                                condModel.setConditionStatus("Met");
+                                condModel.setConditionStatusType("Not Applied");
+                                condModel.setImpactCode(null);
+                                condModel.setDisplayNoticeOnACA(null);
+                                editResult = aa.capCondition.editCapCondition(condModel);
+                                if(editResult.getSuccess()) {
+                                    logDebug("Updated condition: " + condName + " on " + capId.getCustomID());
+                                } else {
+                                    logDebug("Failed to update condition on " + capId.getCustomID() + " " + editResult.getErrorMessage());
+                                }
+                            }
+                        }
+                    }
+                }
+
             } else {
                 logDebug("Failed at adding record to set: " + result.getErrorType() + " " + result.getErrorMessage());
             }
@@ -187,10 +221,20 @@ function mainProccess() {
             var emailParams = aa.util.newHashtable();
             emailParams.put("$$businessName$$", lpName);
             emailParams.put("$$permits$$", permitData.join("\n"));
+            inspectorsData = inspectorsData.concat(permitData);
             sendNotificationNoCap("", lpEmail, "", "PINS_EXPIRED_UNLOCKED", emailParams, []);
+            // break;
         } else {
             logDebug("No email found for " + lpNum);
         }
+    }
+
+    logDebug("");
+    logDebug("Permits unlocked: " + inspectorsData.length);
+    if(inspectorsData.length > 0) {
+        var emailParams = aa.util.newHashtable();
+        emailParams.put("$$permits$$", inspectorsData.join("\n"));
+        sendNotificationNoCap("", "", "", "PINS_INSP_TEAM_UNLOCK_NOTICE", emailParams, []);
     }
 }
 

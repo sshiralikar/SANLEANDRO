@@ -84,7 +84,7 @@ try {
             return;
         }
 
-        var cslbResults = validateLPWithCSLB(licenseNumber, null, true, true, true, true, capType);
+        var cslbResults = validateLPWithCSLB(licenseNumber, null, false, true, true, true, true, capType);
         logDebug("CSLB results: " + cslbResults.length);
         /*
             {

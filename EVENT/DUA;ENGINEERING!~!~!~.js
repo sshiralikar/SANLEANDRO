@@ -21,7 +21,7 @@ if(documentModelArray) {
                     if(existingDocCategory == "Permit Template" && existingDocId) {
                         var recordTypeArray = String(cap.getCapType()).split("/");
                         var recordModule = recordTypeArray[0];
-                        var removeDocResult = aa.document.removeDocumentByPK(String(existingDocId), null, null, recordModule); 
+                        var removeDocResult = aa.document.removeDocumentByPK(String(existingDocId), null, null, recordModule);
                         if(removeDocResult.getSuccess()) {
                             logDebug("Successfully removed " + existingDocCategory);
                         } else {
@@ -31,15 +31,42 @@ if(documentModelArray) {
                     }
                 }
             }
+            var revisions = getChildren("Engineering/Revision/NA/NA", capId);
+            var newDocName = String(capId.getCustomID());
+            if(revisions && revisions.length > 0) {
+                newDocName += "-V" + revisions.length;
+            }
+            newDocName += ".pdf";
+            logDebug("File name: " + newDocName);
+            documentModel.setFileName(newDocName);
+            documentModel.setDocName(newDocName);
+            var result = aa.document.updateDocument(documentModel);
+            if(result.getSuccess()) {
+                logDebug("Successfully updated doc name");
+            }
             var capDetail = aa.cap.getCapDetail(capId).getOutput();
-            var capBalance = capDetail.getBalance();                
+            var capBalance = capDetail.getBalance();
             if(capBalance <= 0) {
                 updateTask("Plans Coordination", "Fees Paid", "-Updated via Adobe Sign", "");
             } else {
                 resultWorkflowTask("Plans Coordination", "Approved - Fees Due", "-Updated via Adobe Sign", "");
             }
+            var capDetail = aa.cap.getCapDetail(capId).getOutput();
+            var currentAssignedStaff = capDetail.getAsgnStaff();
+            logDebug("Assigned staff: " + currentAssignedStaff);
+            if(currentAssignedStaff) {
+                var staffUser = aa.person.getUser(currentAssignedStaff).getOutput();
+                var staffEmail = staffUser.email;
+                logDebug("Staff email: " + staffEmail);
+                if(staffEmail) {
+                    var emailParams = aa.util.newHashtable();
+                    emailParams.put("$$altId$$", String(capId.getCustomID()));
+                    sendNotification("", staffEmail, "", "ENG_ADOBE_SIGN_UPLOADED", emailParams, []);
+                }
+            }
+
         }
-    }    
+    }
 }
 // Execute Engineering DUA logic ***DO NOT REMOVE ***
 include("ES_ENG_DUA");
